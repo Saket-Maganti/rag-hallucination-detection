@@ -1,0 +1,189 @@
+id,dataset,config,tier,question,context,answer,nli_faithfulness_score,nli_label,human_faithful,human_notes
+1,squad,"chunk=1024,k=5,strict",best,Which NFL team represented the AFC at Super Bowl 50?,..., The NFL team that represented the AFC at Super Bowl 50 was the Denver Broncos.,0.8579,,,
+2,squad,"chunk=256,k=3,strict",worst,What color was used to emphasize the 50th anniversary of the Super Bowl?,...," The context does not specify the exact color that was used to emphasize the 50th anniversary of the Super Bowl. However, it mentions various gold-themed initiatives, suggesting that gold might have been the color used for this purpose.",0.8538,,,
+3,squad,"chunk=256,k=3,strict",worst,What was the theme of Super Bowl 50?,...," I cannot find this information in the provided context. The context only discusses why Super Bowl 50 was named as such, not its theme.",0.4788,,,
+4,squad,"chunk=1024,k=5,strict",best,What city did Super Bowl 50 take place in?,...," The Super Bowl 50 took place in Santa Clara, which is part of the San Francisco Bay Area.",0.9421,,,
+5,squad,"chunk=256,k=3,strict",worst,What venue did Super Bowl 50 take place in?,..., I cannot find this information in the provided context. The context does not specify where Super Bowl 50 took place.,0.7051,,,
+6,pubmedqa,"chunk=512,k=3,cot",best,Double balloon enteroscopy: is it efficacious and safe in a community setting?,"From March 2007 to January 2011, 88 DBE procedures were performed on 66 patients. Indications included evaluation anemia/gastrointestinal bleed, small bowel IBD and dilation of strictures. Video-capsule endoscopy (VCE) was used prior to DBE in 43 of the 66 patients prior to DBE evaluation. The mean age was 62 years. Thirty-two patients were female, 15 were African-American; 44 antegrade and 44 retrograde DBEs were performed
+
+---
+
+. The mean time per antegrade DBE was 107.4±30.0 minutes with a di..."," I cannot find this information in the provided context as it does not discuss the efficacy or safety of double balloon enteroscopy in a community setting. The context only provides data about DBE procedures performed at an unspecified location, but not specifically in a community setting.",0.7281,,,
+7,squad,"chunk=256,k=3,strict",worst,What city did Super Bowl 50 take place in?,..., San Francisco Bay Area,0.4784,,,
+8,pubmedqa,"chunk=256,k=5,strict",worst,Does HER2 immunoreactivity provide prognostic information in locally advanced urothelial carcinoma patients receiving adjuvant M-VEC chemotherapy?,"To evaluate the impact of HER2 immunoreactivity on clinical outcome in locally advanced urothelial carcinoma patients who received surgery alone, or methotrexate, vinblastine, epirubicin, and cisplatin (M-VEC) as adjuvant chemotherapy
+
+---
+
+. The HER2 immunoreactivity was significantly associated with PFS (p = 0.02) and disease-specific OS (p = 0.005) in advanced urothelial carcinoma patients
+
+---
+
+. As for patients with adjuvant M-VEC, HER2 immunoreactivity was a significant prognostic factor f..."," Yes, according to the provided context, HER2 immunoreactivity provides prognostic information for PFS and disease-specific OS in locally advanced urothelial carcinoma patients receiving adjuvant M-VEC chemotherapy. However, this association was only significant using univariate analysis, not multivariate analysis.",0.721,,,
+9,squad,"chunk=256,k=3,strict",worst,The name of the NFL championship game is?,..., Super Bowl 50,0.6293,,,
+10,squad,"chunk=1024,k=5,strict",best,What year did the Denver Broncos secure a Super Bowl title for the third time?,..., The Denver Broncos secured a Super Bowl title for the third time in the year 2016.,0.7505,,,
+11,pubmedqa,"chunk=256,k=5,strict",worst,Are reports of mechanical dysfunction in chronic oro-facial pain related to somatisation?,"(i) To examine the association between self-reported mechanical factors and chronic oro-facial pain
+
+---
+
+. The study examined the association of chronic oro-facial pain with a variety of self-reported mechanical factors: teeth grinding, facial trauma, missing teeth and the feeling that the teeth did not fit together properly
+
+---
+
+. Only two mechanical factors: teeth grinding (odds ratio (OR) 2.0, 95% CI 1.3-3.0) and facial trauma (OR 2.0; 95% CI 1.3-2.9) were independently associated with chro..."," Yes, according to the provided context, there is a common association between self-reported mechanical factors (such as teeth grinding and facial trauma) and chronic oro-facial pain. These same mechanical factors are also commonly associated with the reporting of other frequently unexplained syndromes, suggesting a potential link to somatization. However, the context does not explicitly state tha",0.5468,,,
+12,squad,"chunk=256,k=3,strict",worst,What year did the Denver Broncos secure a Super Bowl title for the third time?,...," I cannot find the exact year in the provided context. However, it is implied that the event occurred after Super Bowl XLIX (2014-2015 season) and before their third Super Bowl win, as they defeated the New England Patriots to deny them a chance to defend their title from Super Bowl XLIX. Therefore,",0.7044,,,
+13,pubmedqa,"chunk=512,k=3,cot",best,Are reports of mechanical dysfunction in chronic oro-facial pain related to somatisation?,". The study examined the association of chronic oro-facial pain with a variety of self-reported mechanical factors: teeth grinding, facial trauma, missing teeth and the feeling that the teeth did not fit together properly. Information was also collected on demographic factors, psychological factors and the reporting of other frequently unexplained syndromes. An adjusted response rate of 72% was achieved
+
+---
+
+(i) To examine the association between self-reported mechanical factors and chronic oro..."," Yes, according to the provided context, there is a common association between reports of mechanical factors (such as teeth grinding and facial trauma) in chronic oro-facial pain and the reporting of other frequently unexplained syndromes. This suggests that there might be an element of somatization involved, as these syndromes are often associated with somatic symptoms that disproportionately con",0.5998,,,
+14,pubmedqa,"chunk=512,k=3,cot",best,Do patterns of knowledge and attitudes exist among unvaccinated seniors?,To examine patterns of knowledge and attitudes among adults aged>65 years unvaccinated for influenza. Surveyed Medicare beneficiaries in 5 areas; clustered unvaccinated seniors by their immunization related knowledge and attitudes. Identified 4 clusters: Potentials (45%) would receive influenza vaccine to prevent disease; Fearful Uninformeds (9%) were unsure if influenza vaccine causes illness; Doubters (27%) were unsure if vaccine is efficacious; Misinformeds (19%) believed influenza vaccine ca...," Yes, according to the provided context, patterns of knowledge and attitudes do exist among unvaccinated seniors aged >65 years. The context describes four clusters of unvaccinated seniors with different immunization-related knowledge and attitudes.",0.7911,,,
+15,pubmedqa,"chunk=512,k=3,cot",best,A short stay or 23-hour ward in a general and academic children's hospital: are they effective?,"We evaluated the usefulness of a short stay or 23-hour ward in a pediatric unit of a large teaching hospital, Westmead Hospital, and an academic Children's hospital, The New Children's Hospital, to determine if they are a useful addition to the emergency service. This is a descriptive comparison of prospectively collected data on all children admitted to the short stay ward at Westmead Hospital (WH) during 1994 and the short stay ward at the New Children's Hospital (NCH) during 1997-98
+
+---
+
+. T..."," Based on the provided context, it is stated that the short stay ward increased hospital efficiency by reducing the average length of stay compared to regular wards. However, the text does not explicitly state whether the short stay ward is effective overall. The effectiveness could be inferred from the reduction in average length of stay and the high percentage of admissions they accounted for, b",0.6379,,,
+16,pubmedqa,"chunk=256,k=5,strict",worst,Do mutations causing low HDL-C promote increased carotid intima-media thickness?,". Carotid intima-media thickness (cIMT) measurements were obtained in cases comprising 10 different mutations in LCAT, ABCA1 and APOA1 to further evaluate the relationship between low HDL resulting from genetic variation and early atherosclerosis
+
+---
+
+Although observational data support an inverse relationship between high-density lipoprotein (HDL) cholesterol and coronary heart disease (CHD), genetic HDL deficiency states often do not correlate with premature CHD
+
+---
+
+. 1.58 mmol/l) and apoli..."," I cannot find this information in the provided context as it does not specify a correlation between mutations causing low HDL-C and increased carotid intima-media thickness. The text mentions that genetic HDL deficiency states often do not correlate with premature CHD, but it does not directly address the relationship between these mutations and carotid intima-media thickness.",0.4226,,,
+17,squad,"chunk=1024,k=5,strict",best,What was the theme of Super Bowl 50?,...," The theme of Super Bowl 50 was the ""Golden Anniversary"".",0.872,,,
+18,pubmedqa,"chunk=512,k=3,cot",best,Do nomograms designed to predict biochemical recurrence (BCR) do a better job of predicting more clinically relevant prostate cancer outcomes than BCR?,"To examine the ability of various postoperative nomograms to predict prostate cancer-specific mortality (PCSM) and to validate that they could predict aggressive biochemical recurrence (BCR). Prostate-specific antigen (PSA), grade, and stage are the classic triad used to predict BCR after radical prostatectomy (RP). Multiple nomograms use these to predict risk of BCR
+
+---
+
+. We performed Cox analyses to examine the ability of 4 postoperative nomograms, the Duke Prostate Center (DPC) nomogram, th..."," Based on the provided context, it is stated that the ability of several nomograms to predict aggressive Biochemical Recurrence (BCR) has been shown in a previous study. However, it is also mentioned that it remains unknown if these same nomograms can predict more definitive endpoints such as Prostate Cancer-Specific Mortality (PCSM). Therefore, the context does not provide information to definiti",0.6838,,,
+19,squad,"chunk=1024,k=5,strict",best,What color was used to emphasize the 50th anniversary of the Super Bowl?,..., Gold was used to emphasize the 50th anniversary of the Super Bowl.,0.6905,,,
+20,pubmedqa,"chunk=512,k=3,cot",best,Does HER2 immunoreactivity provide prognostic information in locally advanced urothelial carcinoma patients receiving adjuvant M-VEC chemotherapy?,"To evaluate the impact of HER2 immunoreactivity on clinical outcome in locally advanced urothelial carcinoma patients who received surgery alone, or methotrexate, vinblastine, epirubicin, and cisplatin (M-VEC) as adjuvant chemotherapy. We studied 114 formalin-fixed paraffin-embedded specimens obtained from locally advanced urothelial carcinoma patients receiving surgery alone or adjuvant M-VEC
+
+---
+
+. The authors evaluated HER2 immunoreactivity using immunohistochemical staining and explored the..."," Yes, according to the provided context, HER2 immunoreactivity provides prognostic information in locally advanced urothelial carcinoma patients receiving adjuvant M-VEC chemotherapy. This is because, for patients with adjuvant M-VEC, HER2 immunoreactivity was found to be a significant factor for progression-free survival (PFS) and disease-specific overall survival (OS) using univariate analysis.",0.7784,,,
+21,pubmedqa,"chunk=512,k=3,cot",best,Can tailored interventions increase mammography use among HMO women?,". Adherence to mammography screening based on self-reports obtained during 1995, 1996, and 1997. Compared to usual care alone, telephone counseling promoted a significantly higher proportion of women having mammograms on schedule (71% vs 61%) than did tailored print (67% vs 61%) but only after the first year of intervention (during 1996)
+
+---
+
+. This study addressed the question: Compared to usual care, is tailored telephone counseling more effective than tailored print materials for promoting m..."," Yes, according to the provided context, both tailored telephone counseling and tailored print communications have shown potential in increasing mammography use among HMO women. However, it's specifically mentioned that after one year of intervention (during 1996), telephone counseling was found to be more effective than usual care and tailored print materials for promoting mammography screening a",0.6649,,,
+22,squad,"chunk=1024,k=5,strict",best,Where was Super Bowl 50 held?,...," Super Bowl 50 was held at Levi's Stadium in Santa Clara, California.",0.9411,,,
+23,pubmedqa,"chunk=256,k=5,strict",worst,A short stay or 23-hour ward in a general and academic children's hospital: are they effective?,"We evaluated the usefulness of a short stay or 23-hour ward in a pediatric unit of a large teaching hospital, Westmead Hospital, and an academic Children's hospital, The New Children's Hospital, to determine if they are a useful addition to the emergency
+
+---
+
+. The short stay ward increased hospital efficiency with an average length of stay of 17.5 hours (Westmead Hospital) compared to 20.5 hours (New Children's Hospital)
+
+---
+
+. There were no adverse events reported at either short stay ward, ..."," Yes, according to the provided context, a short stay or 23-hour ward in both Westmead Hospital and The New Children's Hospital appears to be effective. They increased hospital efficiency by reducing the average length of stay, there were no reported adverse events, parental satisfaction was high, and they accounted for a significant percentage of admissions.",0.4412,,,
+24,squad,"chunk=256,k=3,strict",worst,What does AFC stand for?,...," The context does not provide information about what AFC stands for. However, in American football, AFC typically stands for the American Football Conference.",0.6381,,,
+25,pubmedqa,"chunk=256,k=5,strict",worst,Do patterns of knowledge and attitudes exist among unvaccinated seniors?,"To examine patterns of knowledge and attitudes among adults aged>65 years unvaccinated for influenza. Surveyed Medicare beneficiaries in 5 areas; clustered unvaccinated seniors by their immunization related knowledge and attitudes
+
+---
+
+. More Potentials (75%) and Misinformeds (70%) ever received influenza vaccine than did Fearful Uninformeds (18%) and Doubters (29%).
+
+---
+
+. Identified 4 clusters: Potentials (45%) would receive influenza vaccine to prevent disease; Fearful Uninformeds (9%) were..."," Yes, patterns of knowledge and attitudes among unvaccinated seniors do exist, as they have been clustered into four groups: Potentials, Fearful Uninformeds, Doubters, and Misinformeds.",0.6564,,,
+26,pubmedqa,"chunk=256,k=5,strict",worst,Is there still a need for living-related liver transplantation in children?,". The combination of SLT and LRT has abolished deaths on the waiting list, thus raising the question whether living donor liver transplantation is still necessary
+
+---
+
+To assess and compare the value of split-liver transplantation (SLT) and living-related liver transplantation (LRT). The concept of SLT results from the development of reduced-size transplantation
+
+---
+
+. Liver biopsies performed at our hospital over a 10-year period were reviewed, 95 patients with steatohepatitis identified and ..."," Based on the provided context, the text does not explicitly discuss or compare the outcomes of living-related liver transplantation (LRT) in children. Therefore, it is unclear whether there is still a need for LRT in children. However, the success rate for LRT in children seems to be relatively low, as only 35.3% of the identified children survived after the procedure.",0.4021,,,
+27,pubmedqa,"chunk=512,k=3,cot",best,Do mitochondria play a role in remodelling lace plant leaves during programmed cell death?,". The role of mitochondria during PCD has been recognized in animals; however, it has been less studied during PCD in plants. The following paper elucidates the role of mitochondrial dynamics during developmentally regulated PCD in vivo in A. madagascariensis. A single areole within a window stage leaf (PCD is occurring) was divided into three areas based on the progression of PCD; cells that will not undergo PCD (NPCD), cells in early stages of PCD (EPCD), and cells in late stages of PCD (LPCD)..."," Yes, according to the provided context, mitochondria do play a role in remodeling lace plant leaves during programmed cell death (PCD). The text mentions that the role of mitochondria during PCD has been studied in the lace plant, and it describes how mitochondrial dynamics are delineated into different categories based on characteristics like distribution, motility, and membrane potential. Furth",0.687,,,
+28,pubmedqa,"chunk=256,k=5,strict",worst,Do mitochondria play a role in remodelling lace plant leaves during programmed cell death?,". This treatment resulted in lace plant leaves with a significantly lower number of perforations compared to controls, and that displayed mitochondrial dynamics similar to that of non-PCD cells.
+
+---
+
+. The role of mitochondria during PCD has been recognized in animals; however, it has been less studied during PCD in plants. The following paper elucidates the role of mitochondrial dynamics during developmentally regulated PCD in vivo in A
+
+---
+
+Programmed cell death (PCD) is the regulated death ..."," Yes, according to the provided context, it appears that mitochondria do play a role in remodeling lace plant leaves during programmed cell death (PCD). The text states that treatment resulted in lace plant leaves with significantly lower numbers of perforations and mitochondrial dynamics similar to those of non-PCD cells. Additionally, the study delineated mitochondrial dynamics during PCD in the",0.6556,,,
+29,pubmedqa,"chunk=512,k=3,cot",best,Do mutations causing low HDL-C promote increased carotid intima-media thickness?,"Although observational data support an inverse relationship between high-density lipoprotein (HDL) cholesterol and coronary heart disease (CHD), genetic HDL deficiency states often do not correlate with premature CHD. Carotid intima-media thickness (cIMT) measurements were obtained in cases comprising 10 different mutations in LCAT, ABCA1 and APOA1 to further evaluate the relationship between low HDL resulting from genetic variation and early atherosclerosis
+
+---
+
+. In a 1:2 case-control study o..."," I cannot find this information in the provided context. The context only mentions that cIMT measurements were obtained in cases with mutations, but it does not provide specific results or conclusions about whether these mutations causing low HDL-C promote increased carotid intima-media thickness.",0.5382,,,
+30,squad,"chunk=256,k=3,strict",worst,Who won Super Bowl 50?,...," I cannot find this information in the provided context. The context only states that Super Bowl 50 was the game to determine the champion for the 2015 NFL season, but it does not specify who the winner was.",0.6712,,,
+31,squad,"chunk=256,k=3,strict",worst,Which NFL team represented the AFC at Super Bowl 50?,...," The context does not provide information about which NFL team represented the AFC at Super Bowl 50. However, we know from another piece of information that the Pittsburgh Steelers were the AFC champion team in a previous Super Bowl (Super Bowl XL), but it doesn't specify if they were the AFC repres",0.6173,,,
+32,squad,"chunk=1024,k=5,strict",best,What was the theme of Super Bowl 50?,...," The theme of Super Bowl 50 was the ""Golden Anniversary"".",0.872,,,
+33,pubmedqa,"chunk=256,k=5,strict",worst,Double balloon enteroscopy: is it efficacious and safe in a community setting?,". Video-capsule endoscopy (VCE) was used prior to DBE in 43 of the 66 patients prior to DBE evaluation. The mean age was 62 years. Thirty-two patients were female, 15 were African-American; 44 antegrade and 44 retrograde DBEs were performed
+
+---
+
+. We hope this will encourage prospective data collection, improvement of care and initiate strategies to establish best practice in this area. This was a retrospective study of patients who underwent emergency laparotomy from June 2010 to May 2012
+
+---..."," Based on the provided context, there is no explicit information about the efficacy and safety of double balloon enteroscopy (DBE) in a community setting. However, it is mentioned that 88 DBE procedures were performed from March 2007 to January 2011, indicating that DBE was being used in some capacity during this period. The indications for DBE included evaluation of anemia/gastrointestinal bleed,",0.619,,,
+34,pubmedqa,"chunk=512,k=3,cot",best,Is halofantrine ototoxic?,"Halofantrine is a newly developed antimalarial drug used for the treatment of Plasmodium falciparum malaria. The introduction of this drug has been delayed because of its possible side effects, and due to insufficient studies on adverse reactions in humans. There have been no studies investigating its effect on hearing. Thirty guinea pigs were divided into three groups: a control group, a halofantrine therapeutic dose group and a halofantrine double therapeutic dose group
+
+---
+
+. One cochlea spe..."," Yes, according to the provided context, halofantrine appears to have ototoxic effects. The drug caused loss and distortion of inner hair cells, inner phalangeal cells, and spiral ganglia cells in both therapeutic and double therapeutic dose groups of guinea pigs.",0.8302,,,
+35,pubmedqa,"chunk=256,k=5,strict",worst,Is halofantrine ototoxic?,"Halofantrine is a newly developed antimalarial drug used for the treatment of Plasmodium falciparum malaria. The introduction of this drug has been delayed because of its possible side effects, and due to insufficient studies on adverse reactions in humans
+
+---
+
+. The halofantrine therapeutic dose group showed loss and distortion of inner hair cells and inner phalangeal cells, and loss of spiral ganglia cells
+
+---
+
+. In the halofantrine double therapeutic dose group, the inner and outer hair cel..."," Yes, according to the provided context, halofantrine appears to have ototoxic effects as it causes loss and distortion of inner and outer hair cells, and loss of spiral ganglia cells in guinea pigs. However, it's important to note that these findings are based on animal studies and further research is needed to confirm whether halofantrine has similar effects on human hearing.",0.6754,,,
+36,squad,"chunk=256,k=3,strict",worst,Where was Super Bowl 50 held?,...," The provided context does not specify the exact location where Super Bowl 50 was held, but it states that it was the first Super Bowl held in the San Francisco Bay Area since Super Bowl XIX in 1985. Therefore, it can be inferred that Super Bowl 50 might have been held in the same area as Super Bowl",0.6879,,,
+37,pubmedqa,"chunk=256,k=5,strict",worst,Do nomograms designed to predict biochemical recurrence (BCR) do a better job of predicting more clinically relevant prostate cancer outcomes than BCR?,"To examine the ability of various postoperative nomograms to predict prostate cancer-specific mortality (PCSM) and to validate that they could predict aggressive biochemical recurrence (BCR)
+
+---
+
+. A previous study showed that several nomograms could predict aggressive BCR (prostate-specific antigen doubling time [PSADT] <9 months) more accurately than BCR. However, it remains unknown if they can predict more definitive endpoints, such as PCSM
+
+---
+
+for Prostate Disease Research(CPDR)/Cancer of..."," Yes, according to the provided context, nomograms designed to predict biochemical recurrence (BCR) do a better job of predicting more clinically relevant prostate cancer outcomes such as Prostate Cancer-Specific Mortality (PCSM), as they were found to predict PCSM more accurately than they predicted BCR.",0.385,,,
+38,pubmedqa,"chunk=256,k=5,strict",worst,Can tailored interventions increase mammography use among HMO women?,". Compared to usual care alone, telephone counseling promoted a significantly higher proportion of women having mammograms on schedule (71% vs 61%) than did tailored print (67% vs 61%) but only after the first year of intervention (during 1996)
+
+---
+
+. This study addressed the question: Compared to usual care, is tailored telephone counseling more effective than tailored print materials for promoting mammography screening? Three-year randomized field trial
+
+---
+
+. Adherence to mammography screen..."," Yes, according to the provided context, both tailored telephone counseling and tailored print materials have shown potential in increasing mammography use. However, the specific mention of HMO (Health Maintenance Organization) women is not addressed directly in the context. Therefore, while it can be inferred that they might also benefit from these interventions, the context does not provide defi",0.5315,,,
+39,squad,"chunk=1024,k=5,strict",best,What team was the NFC champion?,..., The NFC champion was the Carolina Panthers.,0.806,,,
+40,pubmedqa,"chunk=512,k=3,cot",best,Patient-Controlled Therapy of Breathlessness in Palliative Care: A New Therapeutic Concept for Opioid Administration?,". To investigate whether intravenous opioid PCT can be an effective therapeutic method to reduce breathlessness in patients with advanced disease. Secondary aims were to study the feasibility and acceptance of opioid PCT in patients with refractory breathlessness. This was a pilot observational study with 18 inpatients with advanced disease and refractory breathlessness receiving opioid PCT. Breathlessness was measured on a self-reported numeric rating scale
+
+---
+
+. Eighteen of 815 patients (adv..."," Yes, based on the provided context, it appears that patient-controlled therapy (PCT) of breathlessness, specifically with opioids, is being investigated as a new therapeutic concept in palliative care. The context provides data showing a decrease in self-reported breathlessness in 18 patients with advanced disease who received opioid PCT. However, the study is described as a pilot observational s",0.6004,,,
+41,pubmedqa,"chunk=512,k=3,cot",best,Is there still a need for living-related liver transplantation in children?,"To assess and compare the value of split-liver transplantation (SLT) and living-related liver transplantation (LRT). The concept of SLT results from the development of reduced-size transplantation. A further development of SLT, the in situ split technique, is derived from LRT, which itself marks the optimized outcome in terms of postoperative graft function and survival
+
+---
+
+. The combination of SLT and LRT has abolished deaths on the waiting list, thus raising the question whether living donor..."," I cannot find this information in the provided context as it does not specify the age group of the patients involved in the study, and therefore, no conclusion can be drawn about the need for living-related liver transplantation in children.",0.4055,,,
+42,squad,"chunk=1024,k=5,strict",best,What does AFC stand for?,...," The context does not provide information about what AFC stands for. However, it is known that AFC refers to the American Football Conference in the National Football League (NFL).",0.5982,,,
+43,pubmedqa,"chunk=512,k=3,cot",best,Differentiation of nonalcoholic from alcoholic steatohepatitis: are routine laboratory markers useful?,"Specific markers for differentiation of nonalcoholic (NASH) from alcoholic steatohepatitis (ASH) are lacking. We investigated the role of routine laboratory parameters in distinguishing NASH from ASH. Liver biopsies performed at our hospital over a 10-year period were reviewed, 95 patients with steatohepatitis identified and their data prior to biopsy reevaluated
+
+---
+
+. The diagnosis NASH or ASH was assigned (other liver diseases excluded) on the basis of the biopsy and history of alcohol consu..."," Yes, according to the provided context, routine laboratory markers can be useful for differentiating nonalcoholic steatohepatitis (NASH) from alcoholic steatohepatitis (ASH). Specifically, high-grade fibrosis and an AST/ALT ratio greater than 1 are more common in ASH, and the mean corpuscular volume (MCV) is elevated in 53% of ASH patients. Additionally, all NASH patients had a normal MCV.",0.5544,,,
+44,squad,"chunk=1024,k=5,strict",best,The name of the NFL championship game is?,..., Super Bowl 50,0.6293,,,
+45,squad,"chunk=1024,k=5,strict",best,What venue did Super Bowl 50 take place in?,...," The Super Bowl 50 took place at Levi's Stadium in the San Francisco Bay Area at Santa Clara, California.",0.9459,,,
+46,squad,"chunk=256,k=3,strict",worst,Super Bowl 50 decided the NFL champion for what season?,..., The Super Bowl 50 decided the NFL champion for the 2015 season.,0.6644,,,
+47,squad,"chunk=256,k=3,strict",worst,What team was the NFC champion?,...," The NFC champion, as mentioned in the provided context, is the Carolina Panthers.",0.9576,,,
+48,squad,"chunk=256,k=3,strict",worst,What was the theme of Super Bowl 50?,...," I cannot find this information in the provided context. The context only mentions that Super Bowl 50 was used instead of Super Bowl L, and why it was chosen to do so. It does not provide any details about the theme of Super Bowl 50.",0.5912,,,
+49,pubmedqa,"chunk=256,k=5,strict",worst,Differentiation of nonalcoholic from alcoholic steatohepatitis: are routine laboratory markers useful?,"Specific markers for differentiation of nonalcoholic (NASH) from alcoholic steatohepatitis (ASH) are lacking. We investigated the role of routine laboratory parameters in distinguishing NASH from ASH
+
+---
+
+. The diagnosis NASH or ASH was assigned (other liver diseases excluded) on the basis of the biopsy and history of alcohol consumption (<140 g/week). Logistic regression models were used for analysis
+
+---
+
+. Liver biopsies performed at our hospital over a 10-year period were reviewed, 95 patie..."," Yes, according to the provided context, routine laboratory parameters such as AST, ALT, and apolipoprotein A-I levels can be useful in distinguishing nonalcoholic steatohepatitis (NASH) from alcoholic steatohepatitis (ASH), as there are significant differences observed between these groups for these markers.",0.6303,,,
+50,squad,"chunk=1024,k=5,strict",best,Super Bowl 50 decided the NFL champion for what season?,..., The Super Bowl 50 decided the NFL champion for the 2015 season.,0.6644,,,

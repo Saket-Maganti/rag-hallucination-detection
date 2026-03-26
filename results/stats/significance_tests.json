@@ -1,0 +1,176 @@
+{
+  "chunk_size_squad": {
+    "factor": "chunk_size",
+    "f": NaN,
+    "p": NaN,
+    "sig": false,
+    "means": {
+      "256": NaN,
+      "512": NaN,
+      "1024": NaN
+    },
+    "pairwise": [
+      {
+        "a": "256",
+        "b": "512",
+        "mean_a": NaN,
+        "mean_b": NaN,
+        "diff": NaN,
+        "p_bonf": NaN,
+        "cohen_d": NaN,
+        "sig": false
+      },
+      {
+        "a": "256",
+        "b": "1024",
+        "mean_a": NaN,
+        "mean_b": NaN,
+        "diff": NaN,
+        "p_bonf": NaN,
+        "cohen_d": NaN,
+        "sig": false
+      },
+      {
+        "a": "512",
+        "b": "1024",
+        "mean_a": NaN,
+        "mean_b": NaN,
+        "diff": NaN,
+        "p_bonf": NaN,
+        "cohen_d": NaN,
+        "sig": false
+      }
+    ]
+  },
+  "chunk_size_pubmedqa": {
+    "factor": "chunk_size",
+    "f": 3.6636,
+    "p": 0.026609,
+    "sig": true,
+    "means": {
+      "256": 0.5654,
+      "512": 0.5994,
+      "1024": 0.5965
+    },
+    "pairwise": [
+      {
+        "a": "256",
+        "b": "512",
+        "mean_a": 0.5654,
+        "mean_b": 0.5994,
+        "diff": -0.034,
+        "p_bonf": 0.050437,
+        "cohen_d": -0.3121,
+        "sig": false
+      },
+      {
+        "a": "256",
+        "b": "1024",
+        "mean_a": 0.5654,
+        "mean_b": 0.5965,
+        "diff": -0.0311,
+        "p_bonf": 0.075552,
+        "cohen_d": -0.2921,
+        "sig": false
+      },
+      {
+        "a": "512",
+        "b": "1024",
+        "mean_a": 0.5994,
+        "mean_b": 0.5965,
+        "diff": 0.0029,
+        "p_bonf": 1.0,
+        "cohen_d": 0.0269,
+        "sig": false
+      }
+    ]
+  },
+  "prompt_strategy_squad": {
+    "factor": "prompt_strategy",
+    "f": NaN,
+    "p": NaN,
+    "sig": false,
+    "means": {
+      "cot": NaN,
+      "strict": NaN
+    },
+    "pairwise": [
+      {
+        "a": "cot",
+        "b": "strict",
+        "mean_a": NaN,
+        "mean_b": NaN,
+        "diff": NaN,
+        "p_bonf": NaN,
+        "cohen_d": NaN,
+        "sig": false
+      }
+    ]
+  },
+  "prompt_strategy_pubmedqa": {
+    "factor": "prompt_strategy",
+    "f": 1.1224,
+    "p": 0.290119,
+    "sig": false,
+    "means": {
+      "cot": 0.5931,
+      "strict": 0.581
+    },
+    "pairwise": [
+      {
+        "a": "cot",
+        "b": "strict",
+        "mean_a": 0.5931,
+        "mean_b": 0.581,
+        "diff": 0.0121,
+        "p_bonf": 0.290122,
+        "cohen_d": 0.112,
+        "sig": false
+      }
+    ]
+  },
+  "top_k_squad": {
+    "factor": "top_k",
+    "f": NaN,
+    "p": NaN,
+    "sig": false,
+    "means": {
+      "3": NaN,
+      "5": NaN
+    },
+    "pairwise": [
+      {
+        "a": "3",
+        "b": "5",
+        "mean_a": NaN,
+        "mean_b": NaN,
+        "diff": NaN,
+        "p_bonf": NaN,
+        "cohen_d": NaN,
+        "sig": false
+      }
+    ]
+  },
+  "top_k_pubmedqa": {
+    "factor": "top_k",
+    "f": 2.3231,
+    "p": 0.128352,
+    "sig": false,
+    "means": {
+      "3": 0.5958,
+      "5": 0.5784
+    },
+    "pairwise": [
+      {
+        "a": "3",
+        "b": "5",
+        "mean_a": 0.5958,
+        "mean_b": 0.5784,
+        "diff": 0.0174,
+        "p_bonf": 0.128355,
+        "cohen_d": 0.1611,
+        "sig": false
+      }
+    ]
+  }
+}
