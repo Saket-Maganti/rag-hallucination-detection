@@ -1,10 +1,40 @@
+# Python
 venv/
 __pycache__/
 *.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# ChromaDB vector stores
 chroma_db/
+chroma_db_*/
+
+# OS
 .DS_Store
-venv/
-__pycache__/
-*.pyc
-chroma_db/
-.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# LaTeX build artifacts
+ragpaper/arxiv/*.aux
+ragpaper/arxiv/*.log
+ragpaper/arxiv/*.out
+ragpaper/arxiv/*.bbl
+ragpaper/arxiv/*.blg
+ragpaper/arxiv/*.fls
+ragpaper/arxiv/*.fdb_latexmk
+ragpaper/arxiv/*.synctex.gz
+ragpaper/arxiv/*.toc
+
+# Large binary files
+*.docx
+*.xlsx
+
+# Verbose per-query diagnostic logs (keep summary CSVs only)
+results/*/logs/

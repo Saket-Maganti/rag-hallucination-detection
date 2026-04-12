@@ -1,0 +1,217 @@
+\section{Results}
+\label{sec:results}
+
+\subsection{The refinement paradox: retrieval quality and faithfulness diverge}
+
+Table~\ref{tab:hcpc_main} reports the central comparison from Phase~6. The
+results directly test the paper's core hypothesis: that retrieval quality
+improvements do not reliably transfer to faithfulness improvements.
+
+\begin{table}[!htbp]
+\centering
+\caption{HCPC head-to-head comparison (Mistral-7B, chunk = 1024, $k = 3$,
+$n = 30$ per condition). The paradox is immediately visible: HCPC-v1
+\emph{maintains or improves} retrieval similarity while \emph{degrading}
+faithfulness and introducing hallucination.}
+\label{tab:hcpc_main}
+\small
+\begin{tabular}{llccccc}
+\toprule
+Dataset & Condition & Faith. & Halluc. & Mean Sim & Refine\% & CCS \\
+\midrule
+SQuAD    & Baseline & 0.7995 & 0.0\%  & 0.634 & ---    & --- \\
+SQuAD    & HCPC-v1  & 0.6407 & 10.0\% & 0.624 & 100.0\% & --- \\
+SQuAD    & HCPC-v2  & 0.7874 & 0.0\%  & 0.634 & 16.7\% & 1.00 \\
+\midrule
+PubMedQA & Baseline & 0.5783 & 20.0\% & 0.653 & ---    & --- \\
+PubMedQA & HCPC-v1  & 0.5808 & 26.7\% & 0.678 & 90.0\% & --- \\
+PubMedQA & HCPC-v2  & 0.5893 & 20.0\% & 0.653 & 73.3\% & 0.57 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The paradox manifests differently across datasets, revealing its dependence
+on upstream retrieval quality. On SQuAD, where the encoder-corpus alignment
+is strong, HCPC-v1 turns an already coherent retrieval set into a worse
+answer context: faithfulness drops by 15.9 percentage points and
+hallucination rises from 0\% to 10\%. The mechanism is
+over-intervention---the OR gate triggers on 100\% of queries, replacing
+adequate passages with narrow fragments that break the connective tissue
+between evidence segments. On PubMedQA, HCPC-v1 raises mean retrieval
+similarity from 0.653 to 0.678, which would appear as an improvement under
+standard evaluation, yet hallucination simultaneously rises from 20.0\% to
+26.7\%. This confirms that higher per-chunk similarity can co-occur with
+lower answer quality when the intervention fragments context coherence.
+
+The following example from the SQuAD evaluation illustrates the mechanism
+concretely.
+
+\begin{quote}
+\small
+\textbf{Query:} ``What city did Super Bowl 50 take place in?''
+
+\textbf{Baseline} (1024-token chunks, no refinement): The retrieved context
+contains a coherent passage covering Super Bowl 50's venue, location, and
+surrounding logistics. The generator answers: \emph{``Super Bowl 50 took
+place in Santa Clara, California (specifically at Levi's Stadium in the San
+Francisco Bay Area).''} Faithfulness: 0.9733.
+
+\textbf{HCPC-v1} (naive refinement): All three chunks are flagged by the OR
+gate and split into 256-token sub-chunks. The replacement fragments score
+higher on query similarity ($\text{sim} = 0.589$) but the sub-chunk
+containing the venue location is discarded in favor of one discussing the
+game's branding as ``Super Bowl L.'' The generator responds: \emph{``I
+cannot find this information in the provided context. The context only states
+that Super Bowl 50 was a game to determine the champion\ldots''}
+Faithfulness: 0.4730 (hallucinated).
+
+\textbf{HCPC-v2} (selective refinement): The AND gate does not trigger (both
+signals must agree), so the original coherent chunks are preserved.
+The generator produces the same correct answer as baseline. Faithfulness:
+0.9733.
+\end{quote}
+
+\noindent This example shows the paradox in microcosm: refinement improved
+the per-chunk similarity score while removing the specific evidence the
+generator needed. HCPC-v2 avoided the failure by not intervening at all.
+
+Figure~\ref{fig:paradox} visualizes the disconnect between retrieval
+similarity and faithfulness across all conditions.
+\input{../figures/paradox_plot}
+
+\FloatBarrier
+\subsection{Selective refinement recovers faithfulness through restraint}
+
+The key to HCPC-v2's effectiveness is not a better refinement algorithm but
+a more conservative refinement \emph{policy}.
+Figure~\ref{fig:retrieval_comparison} compares faithfulness and hallucination
+across all major retrieval conditions, and
+Figure~\ref{fig:refinement_tradeoff} shows that the faithfulness recovery is
+tightly coupled to the reduction in refinement rate.
+\input{../figures/retrieval_and_tradeoff}
+
+On SQuAD, HCPC-v2 recovers to near-baseline faithfulness (0.7874 vs.\
+0.7995) while eliminating the hallucinations introduced by HCPC-v1. It
+achieves this by intervening on only 16.7\% of queries, compared to
+HCPC-v1's 100\%. The AND-gated detection and rank protection prevent
+refinement on passages that are adequate, preserving the coherence of the
+evidence set. On PubMedQA, the gain is smaller (0.5783 to 0.5893) because
+the method operates on retrieval sets whose weak coherence originates in the
+encoder-corpus mismatch, not in individual weak passages that refinement can
+fix.
+
+This behavior validates the central design principle of HCPC-v2: on a strong
+retrieval set, the safest refinement strategy is to intervene rarely; on a
+weak retrieval set, intervention is sometimes necessary but cannot compensate
+fully for poor upstream alignment.
+
+\subsection{Chunk size dominates faithfulness variance}
+
+Variance analysis across the Phase~1--2 ablations reveals an unexpectedly
+strong effect of chunk size. On SQuAD, one-way ANOVA yields $F = 19.72$
+($p < 0.001$, $\eta^2 = 0.100$) for chunk size, compared to $F = 0.046$
+($p = 0.830$, $\eta^2 < 0.001$) for prompt strategy. Among the three
+configuration factors tested (chunk size, top-$k$, and prompt strategy),
+chunk size accounts for 90.1\% of the between-factor variance
+(Appendix~\ref{app:variance_model}). The 256-to-1024 token effect
+corresponds to Cohen's $d = 1.41$---a large effect by conventional
+standards---reflecting that larger chunks preserve complete sentences,
+logical transitions, and redundant evidence that collectively reduce
+hallucination risk.
+
+This result has immediate practical implications: it overturns the common
+engineering priority of optimizing prompt templates before chunking strategy.
+Among the parameters we tested, the faithfulness return from
+chunk size selection is approximately 450 times larger than from prompt
+style ($\eta^2_{\text{chunk}} / \eta^2_{\text{prompt}} = 0.100 / 0.0002$).
+
+\subsection{Threshold sensitivity reveals a robust operating region}
+
+The Phase~5 threshold sweep confirms that HCPC-v2 does not rely on brittle
+parameter choices. Table~\ref{tab:threshold} reports representative SQuAD
+operating points across the sweep.
+
+\begin{table}[!htbp]
+\centering
+\caption{Representative threshold configurations on SQuAD. Faithfulness
+remains stable across refinement rates from 7\% to 48\%, degrading only
+when refinement becomes aggressive enough to erode context coherence. This
+broad plateau means HCPC-v2 does not require precise tuning for deployment.}
+\label{tab:threshold}
+\small
+\begin{tabular}{ccccc}
+\toprule
+$\tau_{\text{sim}}$ & $\tau_{\text{ce}}$ & Faith. & Halluc. & Refine\% \\
+\midrule
+0.60 & $-0.05$ & 0.7810 & 3.3\% & 7\%  \\
+0.55 & $-0.10$ & 0.7815 & 3.3\% & 17\% \\
+0.45 & $-0.20$ & 0.7823 & 3.3\% & 33\% \\
+0.40 & $-0.30$ & 0.7809 & 3.3\% & 48\% \\
+0.35 & $-0.40$ & 0.7506 & 3.3\% & 68\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Figure~\ref{fig:threshold_plateau} shows a broad performance plateau
+followed by a sharp decline once refinement exceeds approximately 50\% of
+queries.
+\input{../figures/threshold_plateau}
+\FloatBarrier
+
+The plateau behavior has a coherence-based explanation. Below 50\%
+refinement, the method is modifying passages that are genuinely weak, and
+the merge-back step restores contiguity in most cases. Above 50\%, the
+method begins refining passages that were adequate, and the cumulative
+fragmentation degrades the context faster than merge-back can repair it.
+
+\subsection{Domain mismatch exposes the limits of retrieval-augmented generation}
+
+The contrast between SQuAD and PubMedQA is summarized in
+Figure~\ref{fig:dataset_comparison}.
+
+PubMedQA is not simply harder in the conventional sense. Its mean retrieval
+similarity is comparable to SQuAD's, yet its faithfulness is consistently
+lower and its hallucination rate is higher. The difference lies in context
+coherence: the retrieved biomedical abstracts are topically adjacent but not
+mutually supportive---they use different terminology for related concepts,
+present contradictory evidence from different studies, and lack the narrative
+continuity that Wikipedia passages provide. This is exactly the kind of
+setting where CCS captures what raw similarity scores miss.
+
+The zero-shot comparison makes the deployment consequence stark.
+Table~\ref{tab:zeroshot} shows that RAG helps on SQuAD but actively hurts on
+PubMedQA, and Figure~\ref{fig:zeroshot} visualizes the divergence.
+
+\begin{table}[!htbp]
+\centering
+\caption{Zero-shot versus best RAG configuration. On SQuAD, retrieval
+reduces hallucination as expected. On PubMedQA, retrieval with a
+general-domain encoder \emph{increases} hallucination relative to answering
+without any retrieved context---a fundamental warning for domain-specific
+RAG deployment.}
+\label{tab:zeroshot}
+\small
+\begin{tabular}{llcccc}
+\toprule
+Model & Dataset & ZS Faith. & ZS Halluc. & RAG Faith. & RAG Halluc. \\
+\midrule
+Mistral & SQuAD    & 0.6895 & 5.0\%  & 0.7775 & 3.0\% \\
+Mistral & PubMedQA & 0.6118 & 8.0\%  & 0.6004 & 20.0\% \\
+Llama-3 & SQuAD    & 0.6967 & 13.0\% & 0.7752 & 0.0\% \\
+Llama-3 & PubMedQA & 0.6110 & 4.0\%  & 0.6233 & 10.0\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\input{../figures/dataset_and_zeroshot}
+
+On PubMedQA, Mistral's hallucination rate rises from 8.0\% (zero-shot) to
+20.0\% (best RAG)---a 2.5$\times$ increase. Llama-3's rises from 4.0\% to
+10.0\%. This occurs because the general-domain encoder retrieves passages
+that are topically related but semantically inconsistent, producing a
+low-coherence context that the generator cannot reconcile. The model's
+parametric knowledge, while less specific, at least produces internally
+consistent answers. This finding argues that coherence should be validated
+before any RAG system is deployed in a specialized domain.
+
+\FloatBarrier

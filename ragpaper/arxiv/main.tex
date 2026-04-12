@@ -1,0 +1,63 @@
+\documentclass[12pt]{article}
+
+\usepackage[margin=1.1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{subcaption}
+\usepackage{xcolor}
+\usepackage{natbib}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+
+\usepackage{placeins}
+
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, calc, fit, decorations.pathmorphing}
+\emergencystretch=2em
+\tolerance=400
+
+% --- Float control: prevent end-dumping ---
+\setcounter{topnumber}{2}
+\setcounter{bottomnumber}{1}
+\setcounter{totalnumber}{3}
+\renewcommand{\topfraction}{0.85}
+\renewcommand{\bottomfraction}{0.7}
+\renewcommand{\textfraction}{0.1}
+\renewcommand{\floatpagefraction}{0.8}
+
+\title{\LARGE\bfseries When Retrieval Improvements Hurt:\\[0.3em]
+Context Coherence and Faithfulness in Retrieval-Augmented Generation}
+
+\author{
+  Saket Maganti
+}
+
+\date{April 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\input{../sections/abstract}
+\end{abstract}
+
+\input{../sections/introduction}
+\input{../sections/background}
+\input{../sections/related_work}
+\input{../sections/methodology}
+\input{../sections/experimental_setup}
+\input{../sections/results}
+\input{../sections/analysis}
+\input{../sections/conclusion}
+
+\bibliographystyle{plainnat}
+\bibliography{../references}
+
+\input{../sections/appendix}
+
+\end{document}

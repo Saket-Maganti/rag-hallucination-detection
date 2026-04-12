@@ -1,43 +1,43 @@
 {
   "chunk_size_squad": {
     "factor": "chunk_size",
-    "f": NaN,
-    "p": NaN,
-    "sig": false,
+    "f": 19.7203,
+    "p": 0.0,
+    "sig": true,
     "means": {
-      "256": NaN,
-      "512": NaN,
-      "1024": NaN
+      "256": 0.7018,
+      "512": 0.7801,
+      "1024": 0.8105
     },
     "pairwise": [
       {
         "a": "256",
         "b": "512",
-        "mean_a": NaN,
-        "mean_b": NaN,
-        "diff": NaN,
-        "p_bonf": NaN,
-        "cohen_d": NaN,
-        "sig": false
+        "mean_a": 0.7018,
+        "mean_b": 0.7801,
+        "diff": -0.0783,
+        "p_bonf": 4.6e-05,
+        "cohen_d": -0.5723,
+        "sig": true
       },
       {
         "a": "256",
         "b": "1024",
-        "mean_a": NaN,
-        "mean_b": NaN,
-        "diff": NaN,
-        "p_bonf": NaN,
-        "cohen_d": NaN,
-        "sig": false
+        "mean_a": 0.7018,
+        "mean_b": 0.8105,
+        "diff": -0.1086,
+        "p_bonf": 0.0,
+        "cohen_d": -0.8001,
+        "sig": true
       },
       {
         "a": "512",
         "b": "1024",
-        "mean_a": NaN,
-        "mean_b": NaN,
-        "diff": NaN,
-        "p_bonf": NaN,
-        "cohen_d": NaN,
+        "mean_a": 0.7801,
+        "mean_b": 0.8105,
+        "diff": -0.0303,
+        "p_bonf": 0.291025,
+        "cohen_d": -0.216,
         "sig": false
       }
     ]
@@ -87,22 +87,22 @@
   },
   "prompt_strategy_squad": {
     "factor": "prompt_strategy",
-    "f": NaN,
-    "p": NaN,
+    "f": 0.046,
+    "p": 0.830261,
     "sig": false,
     "means": {
-      "cot": NaN,
-      "strict": NaN
+      "cot": 0.7625,
+      "strict": 0.7658
     },
     "pairwise": [
       {
         "a": "cot",
         "b": "strict",
-        "mean_a": NaN,
-        "mean_b": NaN,
-        "diff": NaN,
-        "p_bonf": NaN,
-        "cohen_d": NaN,
+        "mean_a": 0.7625,
+        "mean_b": 0.7658,
+        "diff": -0.0033,
+        "p_bonf": 0.830261,
+        "cohen_d": -0.0227,
         "sig": false
       }
     ]
@@ -131,22 +131,22 @@
   },
   "top_k_squad": {
     "factor": "top_k",
-    "f": NaN,
-    "p": NaN,
+    "f": 2.9175,
+    "p": 0.08849,
     "sig": false,
     "means": {
-      "3": NaN,
-      "5": NaN
+      "3": 0.7511,
+      "5": 0.7772
     },
     "pairwise": [
       {
         "a": "3",
         "b": "5",
-        "mean_a": NaN,
-        "mean_b": NaN,
-        "diff": NaN,
-        "p_bonf": NaN,
-        "cohen_d": NaN,
+        "mean_a": 0.7511,
+        "mean_b": 0.7772,
+        "diff": -0.0261,
+        "p_bonf": 0.08849,
+        "cohen_d": -0.1805,
         "sig": false
       }
     ]

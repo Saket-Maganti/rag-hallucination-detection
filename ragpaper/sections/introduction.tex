@@ -1,0 +1,100 @@
+\section{Introduction}
+\label{sec:intro}
+
+Retrieval-augmented generation (RAG) has become the dominant strategy for
+grounding large language model outputs in external
+evidence~\citep{lewis2020rag, gao2024retrievalaugmented}. The approach
+underpins production systems from enterprise search to clinical
+decision support, where factual reliability is not merely desirable but
+safety-critical. The engineering logic behind most RAG development is
+straightforward: retrieve more relevant passages, and the generator will
+produce more faithful answers.
+
+\paragraph{The problem.}
+This intuition conflates two distinct quantities. Retrieval quality is a
+property of \emph{individual passages}---each chunk is scored against the
+query independently. Faithfulness is a property of the \emph{answer}, which
+emerges from the generator reasoning over the full concatenation of retrieved
+evidence. Between these two quantities lies a variable that standard RAG
+evaluation ignores: the internal coherence of the retrieved context as a set.
+When multiple passages are stitched into a prompt, their mutual consistency
+determines whether the generator can synthesize a grounded response or is
+forced to bridge evidential gaps with parametric hallucination.
+
+\paragraph{Real-world consequences.}
+The gap between retrieval quality and faithfulness is not merely theoretical.
+In domain-specific deployments---biomedical question answering, legal
+research, financial analysis---a general-purpose encoder may retrieve
+passages that are individually topical yet collectively incoherent. Our
+experiments show that under such conditions, RAG can produce \emph{more}
+hallucinations than zero-shot prompting without any retrieved context,
+turning a safety mechanism into a liability.
+
+\paragraph{Why existing methods fall short.}
+The RAG community has invested heavily in retrieval-side improvements:
+re-ranking with cross-encoders~\citep{nogueira2019passage}, context
+compression~\citep{xu2023recomp}, and self-reflective
+retrieval~\citep{asai2024selfrag}. These methods optimize passage-level
+relevance or brevity. None directly measure or preserve the coherence of
+the assembled context. Post-retrieval refinement---splitting low-scoring
+passages into sub-chunks and replacing them with higher-scoring
+fragments---exemplifies this blind spot. It improves local matching scores
+while silently destroying the connective tissue between evidence segments.
+
+\paragraph{Our key idea.}
+We hypothesize that faithfulness depends on a \emph{meso-level} property
+of the context: whether the retrieved passages fit together coherently
+enough for the generator to reason over them as a unified evidence set. We
+test this hypothesis through a controlled evaluation covering 6,050+ queries
+across two datasets, two generator families, and four retrieval
+configurations. The central empirical finding is what we call the
+\emph{refinement paradox}: aggressive post-retrieval refinement---the kind
+commonly deployed in production RAG systems that maximize per-passage
+relevance---raises per-chunk similarity while reducing answer faithfulness
+by up to 15.9 percentage points and introducing hallucination where there
+was none. The paradox is not that refinement is inherently harmful, but that
+indiscriminate refinement optimizes the wrong objective.
+
+Figure~\ref{fig:overview} summarizes the study design and the core finding.
+\input{../figures/overview}
+
+\paragraph{Contributions.}
+This paper makes four contributions, each supported by controlled experiments
+across 6,050+ queries:
+\begin{enumerate}
+  \item \textbf{We demonstrate that retrieval quality and answer
+        faithfulness can move in opposite directions.}
+        On SQuAD, naive post-retrieval refinement improves per-chunk
+        similarity while reducing faithfulness from 0.7995 to 0.6407 and
+        introducing 10.0\% hallucination ($-$15.9~pp). On PubMedQA, RAG
+        with a general-domain encoder increases hallucination by
+        2.5$\times$ relative to zero-shot prompting. This challenges the
+        foundational assumption that better retrieval yields more faithful
+        generation.
+
+  \item \textbf{We show that selective, coherence-aware refinement
+        eliminates the paradox.}
+        HCPC-v2 recovers SQuAD faithfulness to 0.7874 with 0\%
+        hallucination by intervening on only 16.7\% of queries. The method
+        is robust across a 7$\times$ range of refinement rates
+        (7\%--48\%) without degradation, demonstrating that the key design
+        principle is restraint, not algorithmic sophistication.
+
+  \item \textbf{We establish that chunk size dominates faithfulness
+        variance by orders of magnitude over prompt strategy.}
+        ANOVA reveals chunk size as the only significant factor on SQuAD
+        ($F = 19.72$, $p < 0.001$, $\eta^2 = 0.100$, Cohen's $d = 1.41$),
+        accounting for 90.1\% of the between-factor variance across the
+        three tested configuration parameters, while prompt strategy
+        explains $< 0.1$\%. This overturns the common engineering priority
+        of optimizing prompts before retrieval configuration.
+
+  \item \textbf{We introduce CCS, a retrieval-time diagnostic that
+        separates safe from dangerous contexts without generation.}
+        CCS consistently distinguishes coherent retrieval sets (0\%
+        hallucination, CCS = 1.0 on SQuAD) from incoherent ones (20\%
+        hallucination, CCS = 0.57 on PubMedQA), providing a computationally
+        cheap guard-rail for deployment decisions.
+\end{enumerate}
+
+\FloatBarrier

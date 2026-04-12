@@ -1,0 +1,27 @@
+Retrieval-augmented generation (RAG) is built on the premise that better
+retrieval yields more faithful answers. We show this premise is unreliable and
+can be actively dangerous. In a controlled study spanning 6,050+ queries across
+SQuAD and PubMedQA, two generator families (Mistral-7B and Llama-3-8B), and
+four retrieval configurations, we identify a \emph{refinement paradox}: naive
+post-retrieval refinement raises local matching scores while reducing answer
+faithfulness from 0.7995 to 0.6407 on SQuAD and introducing 10.0\%
+hallucination by fragmenting otherwise coherent evidence. The mechanism is
+context coherence degradation---splitting a broad passage into a narrow
+high-similarity fragment removes the connective evidence that generators rely
+on to produce grounded answers. Our selective refinement strategy (HCPC-v2)
+recovers faithfulness to 0.7874 with 0\% hallucination by intervening on only
+16.7\% of queries through an AND-gated detection policy with rank protection
+and contiguity-preserving merge-back. On PubMedQA, where a general-domain
+encoder is mismatched to the biomedical corpus, RAG itself becomes harmful:
+hallucination rises from 8.0\% to 20.0\% for Mistral and from 4.0\% to 10.0\%
+for Llama-3 relative to zero-shot prompting. Variance analysis reveals that
+chunk size is the dominant design variable among the parameters tested,
+accounting for 90.1\% of between-factor faithfulness variance on SQuAD
+($F = 19.72$, $p < 0.001$, Cohen's $d = 1.41$), whereas prompt strategy
+explains $< 0.1$\%. We formalize the mediating role of context
+quality through the Context Coherence Score (CCS), a lightweight
+retrieval-time diagnostic computed from pairwise chunk embedding similarities.
+CCS consistently separates high-coherence retrieval sets (0\% hallucination)
+from low-coherence sets that precede generation failures, providing a
+practical guard-rail for RAG deployment without requiring answer-level
+evaluation.

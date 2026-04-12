@@ -1,0 +1,124 @@
+\section{Experimental Setup}
+\label{sec:setup}
+
+\subsection{Datasets}
+
+We select two datasets to create a deliberate contrast between domain-matched
+and domain-mismatched retrieval, testing whether our findings depend on the
+encoder-corpus alignment quality.
+
+\textbf{SQuAD}~\citep{rajpurkar2016squad} contains Wikipedia-sourced evidence
+paragraphs paired with reading comprehension questions. The MiniLM encoder
+was pre-trained on general web text, making this a \emph{domain-matched}
+setting where we expect retrieval to be fundamentally sound. This lets us
+isolate the effect of refinement decisions on an otherwise strong pipeline.
+
+\textbf{PubMedQA} \citep{jin2019pubmedqa} contains biomedical research
+abstracts with yes/no/maybe questions about clinical findings. Applying the
+same general-domain encoder to specialized scientific language creates a
+\emph{domain-mismatched} setting that tests whether coherence-based
+insights generalize when upstream retrieval is systemically weak.
+
+This two-dataset design is intentional: any method that helps only on SQuAD
+could be an artifact of strong retrieval; any insight that holds on both
+datasets is more likely to reflect a general principle about context
+coherence.
+
+\subsection{Models}
+
+Generation is performed with Mistral-7B~\citep{jiang2023mistral} and
+Llama-3-8B~\citep{llama3}. Both are instruction-tuned and served through the
+same local inference stack (Ollama v0.1.29) to ensure that dataset and
+retrieval effects are not confounded by deployment differences. Using two
+architecturally distinct models tests whether our findings are
+model-specific or reflect a more general property of how language models
+interact with retrieved context.
+
+\subsection{Phased evaluation design}
+
+The study is organized into six experimental phases, each isolating a
+specific variable while reusing the shared pipeline. This structure prevents
+confounding and enables direct comparison across ablations.
+
+\begin{table}[!htbp]
+\centering
+\caption{Experimental phases and their role in the study. The phased design
+lets us test each variable in isolation while reusing the same pipeline
+across all conditions.}
+\label{tab:phases}
+\small
+\begin{tabular}{clcl}
+\toprule
+Phase & Focus & Queries & Primary variable \\
+\midrule
+1 & Chunk size ablation    & 720  & chunk $\in \{256, 512, 1024\}$ \\
+2 & Multi-model validation & 1440 & Mistral vs.\ Llama-3 \\
+3 & Re-ranking study       & 240  & with/without cross-encoder \\
+4 & Zero-shot baseline     & 350  & retrieval vs.\ no retrieval \\
+5 & Threshold sweep        & 3000 & $\tau_{\text{sim}}$, $\tau_{\text{ce}}$ \\
+6 & HCPC head-to-head      & 180  & baseline vs.\ v1 vs.\ v2 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Figure~\ref{fig:study_design} visualizes the phase structure.
+\input{../figures/study_design}
+
+Phase~1 evaluates the effect of chunk size, top-$k$, and prompt strategy
+under a fixed generator. Phase~2 replicates the chunking study across both
+model families to test generalization. Phase~3 compares cross-encoder
+re-ranking against HCPC variants to separate scoring effects from refinement
+effects. Phase~4 measures whether retrieval actually helps relative to
+zero-shot prompting---the most basic sanity check for any RAG system.
+Phase~5 explores threshold sensitivity across 168 configurations to verify
+that HCPC-v2 does not depend on brittle parameter choices. Phase~6 is the
+most controlled comparison and directly contrasts baseline, HCPC-v1, and
+HCPC-v2 under identical conditions.
+
+\subsection{Query sampling, power, and reproducibility}
+
+All experiments use queries sampled randomly from the validation split at the
+start of each phase and held fixed across all conditions within that phase.
+This ensures that condition comparisons are not confounded by query
+difficulty variation.
+
+The study uses a deliberate two-tier sample design. Phases~1--2 use
+$n = 100$ per condition (totaling 2,160 queries) for discovery and variance
+analysis, providing the statistical power behind the ANOVA results and effect
+size estimates. Phase~6, the HCPC head-to-head comparison, uses $n = 30$ per
+condition. This is a \emph{confirmatory} phase, not a discovery phase: it
+tests whether the trends established across 6,000+ earlier queries replicate
+under maximally controlled conditions (same queries, same model, same
+corpus, only the retrieval strategy varies). At $n = 30$, a two-sample
+$t$-test detects effects of Cohen's $d \geq 0.75$ at $\alpha = 0.05$ with
+80\% power. The effects we report are substantially larger: the
+baseline-to-HCPC-v1 faithfulness drop on SQuAD corresponds to $d > 1.0$,
+well above this detection threshold. We report 95\% bootstrap confidence
+intervals for key faithfulness estimates in Section~\ref{sec:results} to
+make the precision of Phase~6 estimates transparent.
+
+We acknowledge that Phase~6's per-condition samples are small in absolute
+terms. The hallucination rates (reported as percentages of $n = 30$) have a
+resolution of 3.3~pp, meaning the 0\% vs.\ 10\% difference on SQuAD
+reflects 0 vs.\ 3 hallucinated responses. We do not claim precision at the
+individual-query level from Phase~6; its role is to confirm direction and
+approximate magnitude of effects established in the larger phases.
+
+Critically, every finding from Phase~6 is consistent with the larger
+phases. The chunk-size dominance (90.1\% of between-factor variance) is
+estimated from 720 queries. The model-specific variance decomposition uses
+1,440 queries. The threshold robustness result spans 3,000 configurations.
+Phase~6 confirms these trends under the most controlled comparison rather
+than standing alone as the sole source of evidence.
+
+\subsection{Implementation environment}
+
+All experiments were run on Apple Silicon hardware with MPS acceleration for
+embedding and NLI inference. ChromaDB v0.4 served as the persistent vector
+store. Because all conditions share the same infrastructure, runtime
+differences are attributable to retrieval and refinement behavior rather
+than to heterogeneous serving backends. The full codebase is implemented
+in Python 3.11 using \texttt{langchain}, \texttt{sentence-transformers},
+\texttt{chromadb}, and \texttt{torch} with MPS backend.
+
+\FloatBarrier

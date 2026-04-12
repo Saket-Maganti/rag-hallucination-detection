@@ -1,0 +1,134 @@
+\section{Methodology}
+\label{sec:method}
+
+We compare four retrieval configurations within a shared pipeline, isolating
+the effect of post-retrieval decisions on answer faithfulness. The shared
+infrastructure (Section~\ref{sec:shared}) ensures that differences in
+outcomes are attributable solely to retrieval strategy.
+
+\subsection{Shared pipeline}
+\label{sec:shared}
+
+Figure~\ref{fig:pipeline} shows the common architecture.
+\input{../figures/pipeline}
+
+\noindent All conditions share three components:
+\begin{itemize}
+  \item \textbf{Embedding:}
+        \texttt{all-MiniLM-L6-v2}~\citep{reimers2019sbert}, a 384-dimensional
+        sentence encoder (82M parameters), with vectors stored in ChromaDB
+        using cosine similarity.
+  \item \textbf{Generation:} Ollama-served
+        Mistral-7B~\citep{jiang2023mistral} or
+        Llama-3-8B~\citep{llama3}, both instruction-tuned, at temperature
+        0.1 to minimize stochastic variation.
+  \item \textbf{Faithfulness scoring:}
+        \texttt{cross-encoder/nli-deberta-v3-base}~\citep{he2021deberta}
+        (435M parameters). Each answer sentence is classified against the
+        concatenated retrieved context; the mean entailment probability
+        defines the faithfulness score in $[0,1]$. Responses below 0.50 are
+        classified as hallucinated.
+\end{itemize}
+
+\subsection{Retrieval configurations}
+
+\paragraph{Baseline (fixed chunking).}
+Documents are split into fixed-length chunks of 256, 512, or 1024 tokens
+with 10\% overlap using recursive character splitting. The top-$k$ passages
+($k \in \{3, 5\}$) by cosine similarity are concatenated and passed to the
+generator. This represents the standard RAG configuration against which all
+interventions are measured.
+
+\paragraph{HCPC-v1 (aggressive refinement).}
+After retrieving 1024-token chunks, each passage is rescored with the
+\texttt{ms-marco-MiniLM-L-6-v2} cross-encoder. If \emph{either} the cosine
+similarity falls below 0.45 \emph{or} the cross-encoder logit falls below
+$-0.20$, the chunk is split into 256-token sub-chunks and replaced by the
+highest-scoring sub-span. This OR-gated policy is not a strawman: it
+reflects the standard approach in production systems that apply
+cross-encoder reranking with sub-chunk
+replacement~\citep{xu2023recomp, nogueira2019passage} and is consistent
+with the refinement logic in popular RAG frameworks that default to
+aggressive post-retrieval filtering when any quality signal falls below a
+threshold. We include HCPC-v1 as a representative instance of this
+maximize-relevance philosophy, not as a deliberately weakened baseline.
+
+\paragraph{HCPC-v2 (selective refinement).}
+Our proposed method modifies the refinement policy in three principled ways,
+each targeting a specific failure mode of HCPC-v1:
+
+\begin{enumerate}
+  \item \textbf{AND-gated detection.} Both the cosine similarity
+        \emph{and} the cross-encoder score must fall below their respective
+        thresholds ($\tau_{\text{sim}} = 0.45$, $\tau_{\text{ce}} = -0.20$)
+        before a chunk is declared weak. This prevents refinement from
+        triggering on passages that are borderline under one metric but
+        adequate under the other, reducing false-positive interventions.
+
+  \item \textbf{Rank protection.} The top-$N_{\text{prot}} = 2$ chunks by
+        retrieval score are never refined, regardless of their cross-encoder
+        scores. This protects the passages most likely to contain
+        high-quality evidence from being fragmented.
+
+  \item \textbf{Contiguity-preserving merge-back.} After splitting and
+        rescoring, adjacent sub-chunks from the same parent passage are
+        merged back into a longer span (up to 4096 characters $\approx$
+        1024 tokens) when both pass the quality threshold. This restores
+        the narrative continuity that splitting would otherwise destroy.
+\end{enumerate}
+
+Figure~\ref{fig:architecture} illustrates the full HCPC-v2 decision flow.
+\input{../figures/architecture}
+
+The design philosophy is deliberate conservatism. Each safeguard reduces the
+frequency of refinement, which is precisely the mechanism through which
+HCPC-v2 preserves coherence. On a strong retrieval set, the method
+intervenes rarely; on a weak set, it intervenes more often but cannot fully
+compensate for upstream encoder-corpus misalignment.
+
+\paragraph{Cross-encoder re-ranking baseline.}
+To separate refinement effects from scoring effects, we include a two-stage
+reranker that over-fetches $k_{\text{fetch}} = 7$ candidates and returns the
+top $k = 3$ by cross-encoder score, without any splitting or merging. This
+baseline tests whether improved passage selection alone---without
+refinement---improves faithfulness.
+
+\subsection{The refinement paradox: why local optimization fails}
+
+Figure~\ref{fig:failure_case} illustrates the mechanism behind the
+refinement paradox with a concrete example.
+\input{../figures/failure_case}
+
+The failure occurs because retrieval-level optimization and generation-level
+faithfulness operate at different granularities. A sub-chunk may score higher
+against the query in isolation, but the information it replaces---topic
+transitions, supporting details, contextual qualifiers---served as
+connective tissue in the full context. The generator, which processes the
+concatenated passage set as a sequence, loses the bridge sentences needed to
+ground its reasoning and fills the gap from parametric memory.
+
+This is not a pathological edge case. Under HCPC-v1, the OR gate triggers on
+100\% of SQuAD queries despite the baseline retrieval being entirely adequate,
+producing a systematic faithfulness degradation that standard retrieval
+metrics would not detect.
+
+\subsection{Evaluation framework}
+
+We report six primary metrics:
+\begin{enumerate}
+  \item \textbf{NLI faithfulness} (mean entailment score, $[0,1]$).
+  \item \textbf{Hallucination rate} (fraction of responses below 0.50).
+  \item \textbf{Mean query-chunk similarity} (cosine between query and
+        retrieved chunks).
+  \item \textbf{CCS} (Equation~\ref{eq:ccs}; retrieval-time coherence).
+  \item \textbf{Refinement rate} (fraction of queries triggering
+        intervention).
+  \item \textbf{Latency} (end-to-end generation time).
+\end{enumerate}
+
+Statistical analysis uses one-way ANOVA for chunk size, top-$k$, and prompt
+effects, with effect sizes reported as $\eta^2$ and pairwise Cohen's $d$.
+We use Spearman's $\rho$ for coherence-faithfulness correlations because
+several retrieval metrics are not normally distributed.
+
+\FloatBarrier
