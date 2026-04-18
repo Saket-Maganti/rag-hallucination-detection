@@ -164,25 +164,32 @@ effects. All per-query CCS correlations are individually non-significant
 intervals on both the hallucination rates and the CCS-faithfulness
 relationship.
 
-\paragraph{Dataset coverage.} Two datasets provide a useful contrast between
-domain-matched and domain-mismatched settings, but do not cover multi-hop
-reasoning, conversational QA, or open-domain generation tasks where context
-coherence may play a different role.
+\paragraph{Dataset coverage.} The headline two-dataset comparison covers
+domain-matched (SQuAD) and domain-mismatched (PubMedQA) extremes.
+Section~\ref{sec:multidataset} extends the evaluation to four additional
+datasets (NaturalQuestions, TriviaQA, HotpotQA distractor split, and
+FinanceBench) covering open-domain factoid retrieval, multi-hop
+reasoning, and a specialized professional domain. Conversational QA and
+open-ended generation remain outside scope.
 
-\paragraph{Model scale.} Both generators are in the 7--8B parameter range.
-Larger models may handle incoherent contexts differently---for example, by
-being more robust to fragmentation or by hallucinating more confidently.
-Our findings should be validated at larger scales before being applied to
-production systems using 70B+ models.
+\paragraph{Model scale.} The three generators evaluated in
+§\ref{sec:multidataset} (Mistral-7B, Llama-3-8B, Qwen2.5-7B) all sit in
+the 7--8B parameter range. Larger models may handle incoherent contexts
+differently---for example, by being more robust to fragmentation or by
+hallucinating more confidently. Our findings should be validated at
+larger scales before being applied to production systems using 70B+
+models.
 
-\paragraph{No external method comparison.} We compare retrieval
-configurations within our pipeline rather than against published methods
-such as Self-RAG or CRAG. This is a deliberate design choice (our
-contribution is identifying the coherence failure mode, not proposing a
-state-of-the-art retrieval system), but it means we cannot claim that
-HCPC-v2 is competitive with these methods on standard benchmarks. Future
-work should evaluate whether coherence-aware gating improves faithfulness
-when integrated into these systems.
+\paragraph{External method comparison.} The original draft of this paper
+omitted comparison against Self-RAG and CRAG. Section~\ref{sec:headtohead}
+addresses that gap with a five-condition head-to-head on the same
+multi-dataset query set, including a CRAG reimplementation (the published
+T5 evaluator is private; we substitute a cross-encoder threshold and
+document the substitution transparently) and the published Self-RAG-7B
+checkpoint. The remaining limitation is that Self-RAG is trained on a
+specific reflection-token vocabulary; an apples-to-apples comparison
+against a Self-RAG variant tuned on our exact corpus is out of scope here
+and noted as future work.
 
 \paragraph{Embedding model.} All experiments use a single general-domain
 encoder. The CCS values and refinement thresholds reported here may not
@@ -191,10 +198,13 @@ models.
 
 \paragraph{Faithfulness evaluation.} NLI-based scoring captures
 entailment but may miss subtle hallucinations (e.g., correct facts not
-supported by the context) or penalize paraphrases that are faithful but
-lexically distant from the context. We did not conduct large-scale human
-evaluation, though manual inspection of failure cases
-(Appendix~\ref{app:failure}) confirms the NLI-identified patterns.
+supported by the context) or penalize faithful paraphrases that are
+lexically distant from the context. Section~\ref{sec:human} reports a
+500-item Prolific study (1{,}000 annotation tasks) that calibrates the
+NLI scorer against double-annotated human ratings and tests whether the
+coherence paradox replicates under human evaluation. The reporting
+commitments in §\ref{sec:human} include the falsification scenario where
+NLI and humans diverge.
 
 \paragraph{CCS granularity.} CCS operates at the condition level, not as a
 per-query oracle. The modest per-query correlations ($\rho \leq 0.34$)

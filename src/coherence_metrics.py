@@ -2,7 +2,7 @@
 src/coherence_metrics.py
 Metrics that measure *why* context coherence correlates with faithfulness.
 
-Four complementary signals, all computed per-query over the ordered list of
+Five complementary signals, all computed per-query over the ordered list of
 retrieved passages:
 
 1. semantic_continuity  — mean cosine similarity between adjacent chunks
@@ -13,9 +13,13 @@ retrieved passages:
                           chunks; measures lexical bridging
 4. retrieval_entropy    — Shannon entropy of the cosine-similarity distribution
                           across retrieved chunks; high entropy = diverse retrieval
+5. nli_pairwise_contradict — mean probability of NLI-contradiction across all
+                          chunk pairs; captures stance/semantic conflict that
+                          embedding-space sim can mask (introduced for the
+                          adversarial evaluation in §7.6).
 
-All four are returned in a single dict alongside CCS for downstream logging
-and Spearman correlation analysis against faithfulness scores.
+The first four are returned by compute_coherence_metrics(); the NLI-pairwise
+signal is opt-in via compute_nli_pairwise() because it requires an NLI model.
 
 Usage
 -----
@@ -196,6 +200,74 @@ def compute_coherence_metrics(
     except Exception:
         pass
 
+    return result
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# NLI-pairwise contradiction signal (for adversarial §7.6)
+# ──────────────────────────────────────────────────────────────────────────────
+
+def compute_nli_pairwise(
+    docs: List[Document],
+    nli_pipe: Any,
+    max_chars_per_doc: int = 512,
+) -> Dict[str, float]:
+    """
+    Pairwise NLI contradiction score over retrieved passages.
+
+    For every unordered pair (d_i, d_j), run NLI(premise=d_i, hypothesis=d_j)
+    and record P(contradiction). Return the mean, max, and proportion of pairs
+    whose contradict-probability exceeds 0.5.
+
+    Embedding-space cosine treats "X is effective" and "X is ineffective" as
+    similar (same topic), so cosine-based CCS misses stance conflict. This
+    metric complements CCS for the adversarial-contradictory case.
+
+    Parameters
+    ----------
+    docs : ordered retrieved passages (len >= 2 for a meaningful signal).
+    nli_pipe : a callable that accepts (premise, hypothesis) and returns a
+               dict-like with key 'contradiction' in [0,1]. In the main
+               pipeline this is a thin wrapper around HallucinationDetector.
+
+    Returns
+    -------
+    dict with keys:
+        nli_pairwise_mean     : mean contradiction probability across pairs
+        nli_pairwise_max      : max contradiction probability across pairs
+        nli_pairwise_frac_hi  : fraction of pairs with contradict > 0.5
+        nli_pairs_evaluated   : number of ordered pairs evaluated
+    """
+    result = {
+        "nli_pairwise_mean":    -1.0,
+        "nli_pairwise_max":     -1.0,
+        "nli_pairwise_frac_hi": -1.0,
+        "nli_pairs_evaluated":  0,
+    }
+    if len(docs) < 2:
+        return result
+
+    probs: List[float] = []
+    for i in range(len(docs)):
+        for j in range(i + 1, len(docs)):
+            p = docs[i].page_content[:max_chars_per_doc]
+            h = docs[j].page_content[:max_chars_per_doc]
+            try:
+                scores = nli_pipe(p, h)
+                c_prob = float(scores.get("contradiction", 0.0))
+                probs.append(c_prob)
+            except Exception:
+                continue
+
+    if not probs:
+        return result
+
+    result["nli_pairwise_mean"]    = round(float(np.mean(probs)), 4)
+    result["nli_pairwise_max"]     = round(float(np.max(probs)),  4)
+    result["nli_pairwise_frac_hi"] = round(
+        float(sum(1 for p in probs if p > 0.5)) / len(probs), 4
+    )
+    result["nli_pairs_evaluated"]  = len(probs)
     return result
 
 
