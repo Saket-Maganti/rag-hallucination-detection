@@ -143,7 +143,6 @@ rag-hallucination-detection/
 |-- experiments/                   # One script per experimental phase
 |-- scripts/                       # Analysis utilities
 |-- results/                       # All experimental outputs by phase
-+-- ragpaper/                      # LaTeX source for the paper
 ```
 
 The code is experimental scaffolding. The scientific content lives in `ragpaper/`.
@@ -223,7 +222,7 @@ None of the scientific claims depend on these specific choices.
 
 ---
 
-## Paper-revision infrastructure (EMNLP / ACL 2026 submission)
+## Paper-revision infrastructure 
 
 The following experimental harnesses are built and committed but **not yet
 executed** — code is in place so the expensive runs (multi-dataset
@@ -241,17 +240,6 @@ launched once compute is allocated.
 | 7 | **ContextCoherenceBench release** — packager that bundles adversarial cases, multi-dataset per-query results, and human ratings into a HuggingFace-loadable layout with sha256 manifest | `scripts/package_benchmark.py`, `data/benchmark/README.md` |
 
 Execution order (dependency-first): 5 → 1 → 2 → 3 → 4 → 6 → 7.
-
----
-
-## Paper
-
-The full paper is in `ragpaper/`. Compile with:
-
-```bash
-cd ragpaper
-pdflatex main.tex && bibtex main && pdflatex main.tex && pdflatex main.tex
-```
 
 ---
 
