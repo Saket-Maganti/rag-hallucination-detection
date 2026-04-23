@@ -29,13 +29,12 @@ Run:
     venv/bin/python3 run_hcpc_v2_ablation.py
 """
 
+from __future__ import annotations
+
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from __future__ import annotations
-
 import json
-import os
 from typing import Any
 
 import pandas as pd

@@ -52,6 +52,7 @@ class RAGPipeline:
         embed_model: str = "sentence-transformers/all-MiniLM-L6-v2",
         persist_dir: str = "./chroma_db",
         chunker: Optional[Any] = None,          # NEW: inject adaptive chunker
+        embeddings: Optional[Any] = None,       # NEW: inject custom embedder
     ):
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
@@ -59,11 +60,17 @@ class RAGPipeline:
         self.model_name = model_name
         self.persist_dir = persist_dir
 
-        print(f"[RAG] Loading embedding model: {embed_model}")
-        self.embeddings = HuggingFaceEmbeddings(
-            model_name=embed_model,
-            model_kwargs={"device": "mps"}   # Apple Silicon GPU
-        )
+        if embeddings is not None:
+            # Caller supplied a fully-built embedder (e.g. PrefixedSTEmbeddings
+            # for BGE/E5/GTE in the multi-retriever ablation). Use it as-is.
+            print(f"[RAG] Using injected embeddings: {type(embeddings).__name__}")
+            self.embeddings = embeddings
+        else:
+            print(f"[RAG] Loading embedding model: {embed_model}")
+            self.embeddings = HuggingFaceEmbeddings(
+                model_name=embed_model,
+                model_kwargs={"device": "mps"}   # Apple Silicon GPU
+            )
 
         print(f"[RAG] Connecting to Ollama ({model_name})")
         self.llm = OllamaLLM(model=model_name, temperature=0.1)

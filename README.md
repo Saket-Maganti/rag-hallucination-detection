@@ -224,22 +224,34 @@ None of the scientific claims depend on these specific choices.
 
 ## Paper-revision infrastructure 
 
-The following experimental harnesses are built and committed but **not yet
-executed** — code is in place so the expensive runs (multi-dataset
-generation, head-to-head vs Self-RAG/CRAG, Prolific human eval) can be
-launched once compute is allocated.
+The following experimental harnesses are built and committed. Items
+1-7 are the original revision plan; **item 8 was added in response to
+the Apr-2026 review** (multi-retriever ablation, the single critique
+the original 7 items did not address). Most items are still pending
+execution — code is in place so the expensive runs can be launched
+once compute is allocated. See [`RUNBOOK.md`](RUNBOOK.md) for the
+operational order, runtimes, and Kaggle vs M4 split.
 
-| # | Addition | Code |
-|---|----------|------|
-| 1 | **Mechanistic interpretability** — attention-entropy probe on Mistral-7B with `output_attentions=True`; matched-pair protocol (adversarial controls and HCPC v1-vs-v2 contexts) reporting per-layer Δ entropy and Δ retrieved-mass | `src/mechanistic.py`, `experiments/run_mechanistic_analysis.py` |
-| 2 | **6-dataset validation** — SQuAD, PubMedQA, NaturalQuestions, TriviaQA, HotpotQA (distractor), FinanceBench. Checkpointed per (dataset, generator, condition) tuple for safe resume | `src/dataset_loaders.py`, `experiments/run_multidataset_validation.py` |
-| 3 | **Third generator (Qwen2.5-7B-Instruct)** alongside Mistral-7B and Llama-3-8B | `src/generators.py`, `scripts/setup_qwen.sh` |
-| 4 | **Head-to-head vs Self-RAG + CRAG** — wrapper around the published `selfrag/selfrag_llama2_7b` checkpoint (with reflection-token parsing) + faithful CRAG reimplementation (cross-encoder substitutes the unreleased T5 evaluator; substitution documented transparently). Five conditions: baseline, hcpc_v1, hcpc_v2, crag, selfrag | `src/selfrag_wrapper.py`, `src/crag_retriever.py`, `experiments/run_headtohead_comparison.py` |
-| 5 | **Adversarial coherence cases** — 40 hand-authored items across 4 subsets (disjoint / contradict / drift / control). Per-signal detection AUC across embedding-coherence and NLI-pairwise signals | `data/adversarial/*.jsonl`, `src/adversarial_cases.py`, `experiments/run_adversarial_coherence.py`, `compute_nli_pairwise()` in `src/coherence_metrics.py` |
-| 6 | **Human evaluation** — 500-item stratified sample → 1000 Prolific annotation tasks. Fleiss' κ (binary + ordinal) and Spearman NLI ↔ human correlation with prespecified paradox-survives-human check | `experiments/prepare_prolific_study.py`, `experiments/analyze_prolific_results.py` |
-| 7 | **ContextCoherenceBench release** — packager that bundles adversarial cases, multi-dataset per-query results, and human ratings into a HuggingFace-loadable layout with sha256 manifest | `scripts/package_benchmark.py`, `data/benchmark/README.md` |
+| # | Addition | Code | Status |
+|---|----------|------|--------|
+| 1 | **Mechanistic interpretability** — attention-entropy probe on Mistral-7B with `output_attentions=True`; matched-pair protocol (adversarial controls and HCPC v1-vs-v2 contexts) reporting per-layer Δ entropy and Δ retrieved-mass | [`src/mechanistic.py`](src/mechanistic.py), [`experiments/run_mechanistic_analysis.py`](experiments/run_mechanistic_analysis.py) | code only — Kaggle GPU |
+| 2 | **6-dataset validation** — SQuAD, PubMedQA, NaturalQuestions, TriviaQA, HotpotQA (distractor), FinanceBench. Checkpointed per (dataset, generator, condition) tuple for safe resume | [`src/dataset_loaders.py`](src/dataset_loaders.py), [`experiments/run_multidataset_validation.py`](experiments/run_multidataset_validation.py) | code only — M4 |
+| 3 | **Third generator (Qwen2.5-7B-Instruct)** alongside Mistral-7B and Llama-3-8B | [`src/generators.py`](src/generators.py), [`scripts/setup_qwen.sh`](scripts/setup_qwen.sh) | model not yet pulled — M4 |
+| 4 | **Head-to-head vs Self-RAG + CRAG** — wrapper around the published `selfrag/selfrag_llama2_7b` checkpoint (with reflection-token parsing) + faithful CRAG reimplementation (cross-encoder substitutes the unreleased T5 evaluator; substitution documented transparently). Five conditions: baseline, hcpc_v1, hcpc_v2, crag, selfrag | [`src/selfrag_wrapper.py`](src/selfrag_wrapper.py), [`src/crag_retriever.py`](src/crag_retriever.py), [`experiments/run_headtohead_comparison.py`](experiments/run_headtohead_comparison.py) | code only — Kaggle GPU |
+| 5 | **Adversarial coherence cases** — 40 hand-authored items across 4 subsets (disjoint / contradict / drift / control). Per-signal detection AUC across embedding-coherence and NLI-pairwise signals | [`data/adversarial/*.jsonl`](data/adversarial), [`src/adversarial_cases.py`](src/adversarial_cases.py), [`experiments/run_adversarial_coherence.py`](experiments/run_adversarial_coherence.py), `compute_nli_pairwise()` in [`src/coherence_metrics.py`](src/coherence_metrics.py) | data + code, no results — M4 |
+| 6 | **Human evaluation** — 500-item stratified sample → 1000 Prolific annotation tasks. Fleiss' κ (binary + ordinal) and Spearman NLI ↔ human correlation with prespecified paradox-survives-human check | [`experiments/prepare_prolific_study.py`](experiments/prepare_prolific_study.py), [`experiments/analyze_prolific_results.py`](experiments/analyze_prolific_results.py) | deferred to camera-ready (IRB + budget) |
+| 7 | **ContextCoherenceBench release** — packager that bundles adversarial cases, multi-dataset per-query results, and human ratings into a HuggingFace-loadable layout with sha256 manifest | [`scripts/package_benchmark.py`](scripts/package_benchmark.py), [`data/benchmark/README.md`](data/benchmark/README.md) | runs after 1-5 — M4 |
+| **8** | **Multi-retriever ablation (added in revision)** — Phase-6 central contrast (baseline / hcpc-v1 / hcpc-v2) replicated across MiniLM-L6 (82M, weak baseline), BGE-large (335M), E5-large (335M), GTE-large (335M). Directly answers the reviewer critique "is the paradox just a property of weak embeddings?" by holding everything else constant and varying only the dense retriever | [`src/embedders.py`](src/embedders.py), [`experiments/run_multi_retriever_ablation.py`](experiments/run_multi_retriever_ablation.py) | code only — M4 |
 
-Execution order (dependency-first): 5 → 1 → 2 → 3 → 4 → 6 → 7.
+Execution order (dependency-first): `5 → {1, 8} → {2, 3} → 4 → 7`.
+Item 6 (Prolific) is deferred to camera-ready per the reviewer's
+"either fully execute or remove it" guidance.
+
+Operational steps, wall-clock estimates, and the M4-vs-Kaggle split
+live in [`RUNBOOK.md`](RUNBOOK.md). Full pipeline:
+[`bash scripts/run_all_m4.sh`](scripts/run_all_m4.sh) on the M4, then
+[`python3 scripts/kaggle_gpu_runs.py`](scripts/kaggle_gpu_runs.py) on
+a Kaggle GPU notebook for items 1 and 4.
 
 ---
 
