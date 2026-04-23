@@ -1,0 +1,50 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+The central finding of this paper is uncomfortable, because it
+contradicts a premise most RAG engineering quietly depends on:
+improving retrieval quality will improve answer faithfulness. Across
+6{,}050+ queries spanning two datasets, two model families, and four
+retrieval configurations, we show that premise is unreliable, and in
+some regimes inverted. Naive post-retrieval refinement improves local
+matching scores while degrading faithfulness by up to 15.9 percentage
+points; domain-mismatched retrieval can make a RAG system \emph{less}
+faithful than the same model with no retrieval at all.
+
+Once we stop treating retrieval as a per-passage problem, the pattern
+resolves. Faithfulness depends on whether the retrieved passages form
+a mutually supportive evidence set, not only on whether each passage
+looks individually relevant. HCPC-v2 helps not because it is clever,
+but because it is conservative: it intervenes only when both of two
+independent signals flag a fragmentation risk, it protects the
+highest-ranked passage, and it restores contiguity whenever it does
+refine. CCS is the same idea compressed into a number a practitioner
+can read off at retrieval time, before any generation has happened,
+and before any downstream harm.
+
+Three findings have immediate practical value. First, chunk size is the
+dominant design parameter for faithfulness among the factors tested
+(90.1\% of between-factor variance on SQuAD),
+outweighing prompt engineering by a factor of 450$\times$. Second,
+post-retrieval refinement should be applied selectively based on context
+coherence, not as a default post-processing step. Third, coherence should be
+validated before deploying RAG in any specialized domain where the encoder is
+not matched to the corpus.
+
+\paragraph{What we did not settle, and where to push next.}
+The paradox is well-characterized at the scale we ran, but plenty of
+load-bearing questions remain open. Scaling is one: does a 70B+
+generator, with more parametric capacity to fall back on, amplify the
+failure mode or absorb it? Encoder alignment is another: fitting a
+domain-matched encoder (BioLinkBERT, PubMedBERT) to the PubMedQA corpus
+should test whether the coherence account predicts the right repair.
+Multi-hop and conversational settings are the cases where we expect
+coherence to matter \emph{more}, not less, because the generator has
+to stitch evidence across reasoning steps; if the paradox does not
+appear there, the account needs rethinking. Finally, CCS is used here
+as a diagnostic; turning it into an active objective — a retriever
+that optimizes set-level coherence rather than per-passage relevance —
+would move coherence from something we measure to something we
+directly retrieve for. We see that last direction as the most likely
+to produce a qualitatively different class of RAG systems, and the
+most in need of careful evaluation before anyone ships it.

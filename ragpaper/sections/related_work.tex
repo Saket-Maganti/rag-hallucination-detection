@@ -1,0 +1,191 @@
+\section{Related Work}
+\label{sec:related}
+
+We organize prior work into three threads that converge on the gap this paper
+addresses: the relationship between retrieval quality, context structure, and
+generation faithfulness.
+
+\subsection{RAG evaluation and faithfulness measurement}
+
+The original RAG formulation coupled non-parametric retrieval with parametric
+generation~\citep{lewis2020rag}. Subsequent architectures enhanced retrieval
+through dense encoders~\citep{karpukhin2020dpr}, few-shot
+learning~\citep{izacard2022atlas}, and hybrid strategies. On the evaluation
+side, RAGAS~\citep{es2024ragas} and FActScore~\citep{min2023factscore}
+established automated faithfulness assessment, while broader benchmarking
+studies~\citep{chen2024benchmarking, gao2024retrievalaugmented} confirmed
+that better retrieval is \emph{usually} correlated with better downstream
+behavior.
+
+The critical word is ``usually.'' These studies report average-case
+correlations; they do not characterize the failure regime where the
+correlation breaks down. Our work is focused precisely on that regime: the
+conditions under which retrieval improvements fail to transfer, or actively
+harm, generation faithfulness.
+
+\subsection{Retrieval-side interventions and context preparation}
+
+Three lines of retrieval-side work are most relevant. First, chunking
+strategies~\citep{kamradt2024chunking} determine the granularity of the
+evidence pool but are typically tuned through retrieval accuracy rather than
+faithfulness. Second, cross-encoder re-ranking~\citep{nogueira2019passage,
+glass2022re2g} reorders candidates for relevance but does not consider how
+the selected passages fit together. Third, context
+compression~\citep{xu2023recomp} condenses evidence before generation,
+reducing noise but operating on each passage independently.
+
+\subsection{Adaptive and self-correcting RAG}
+
+Recent work has moved quality control closer to the generator.
+Self-RAG~\citep{asai2024selfrag} trains the model to emit reflection tokens
+that decide whether to retrieve, whether retrieved passages are relevant, and
+whether the generated output is supported---effectively learning to critique
+its own retrieval. CRAG~\citep{yan2024crag} adds a corrective layer that
+evaluates retrieval quality post-hoc: if the retrieved documents are judged
+ambiguous or incorrect, the system triggers web search or knowledge
+refinement before generation. RECOMP~\citep{xu2023recomp} compresses
+retrieved passages into shorter summaries, reducing irrelevant content.
+
+These methods represent important advances, but they share a common design
+assumption: quality is assessed and optimized at the level of individual
+passages or passage-generation pairs. Self-RAG's reflection tokens evaluate
+whether a \emph{single} passage is relevant; CRAG's corrective action
+decides whether the \emph{overall retrieval} is useful but does not examine
+inter-passage consistency; RECOMP compresses each passage independently. None
+of these methods directly measure or optimize the \emph{coherence among}
+retrieved passages---whether the evidence set contains consistent
+terminology, complementary details, and logical continuity across chunks.
+
+Our work addresses an orthogonal failure mode. The refinement paradox we
+document can occur even when every individual passage is relevant (as judged
+by Self-RAG's reflection tokens or CRAG's quality evaluator), because the
+problem lies not in passage-level relevance but in set-level coherence. A
+retrieval set can consist entirely of individually relevant passages that
+nonetheless fragment the context when assembled. HCPC-v2 and CCS are
+therefore complementary to these methods: they could be integrated as an
+additional coherence check within any of these pipelines, gating refinement
+or re-retrieval on whether the assembled context is internally consistent
+rather than only on whether individual passages are adequate.
+
+\subsection{Context quality, distraction, and domain mismatch}
+
+Several studies establish that context quality is more nuanced than relevance
+alone. \citet{shi2023context} demonstrated that even partially irrelevant
+context can degrade generation quality, showing that models are susceptible to
+distraction from noisy passages. \citet{liu2024lost} revealed positional
+bias in how language models use long contexts, with evidence in the middle
+being systematically underweighted. Together, these findings suggest that the
+\emph{structure} of the context---not just its relevance---matters for
+generation.
+
+On the domain side, \citet{thakur2021beir} showed that dense retrievers
+trained on one distribution often fail on others, and
+\citet{gu2024biomedical} demonstrated that domain-specific encoders are
+required to capture specialized terminology. Our PubMedQA results connect
+these retrieval-level observations to an answer-level consequence: when a
+general-domain encoder produces low-coherence retrieval in a specialized
+corpus, RAG can become less faithful than zero-shot prompting.
+
+\subsection{Comparison with Adaptive and Self-Corrective RAG Methods}
+\label{sec:baseline_compare}
+
+Self-RAG~\citep{asai2024selfrag}, CRAG~\citep{yan2024crag}, and
+RECOMP~\citep{xu2023recomp} are the most salient points of comparison.
+All three optimize passage-level or passage-pair signals: Self-RAG's
+reflection tokens gate retrieval and supportedness on individual
+passages, CRAG's post-hoc classifier judges the overall retrieval as a
+coarse binary, and RECOMP compresses each passage independently. None
+explicitly scores the coherence of the assembled context as an object
+read by the generator.
+
+\paragraph{Why these methods would not fully resolve the paradox.}
+The paradox occurs when every individual passage is locally relevant yet
+the \emph{set} loses internal coherence through refinement, fragmentation,
+or encoder-corpus mismatch. Self-RAG's tokens can still approve each
+sub-chunk after splitting because each remains relevant in isolation; the
+connective evidence lost between them is invisible at the passage level.
+CRAG's binary quality verdict does not distinguish a coherent set from a
+fragmented one. RECOMP's per-passage compression is the exact class of
+operation the paradox predicts will harm faithfulness when applied
+indiscriminately. All three are orthogonal to the coherence axis and can
+co-occur with the paradox rather than prevent it.
+
+\paragraph{Why we do not run a head-to-head empirical comparison.}
+Our design isolates a single causal question---does preserving set-level
+coherence recover faithfulness at matched retrieval similarity?---which
+requires holding retrieval similarity and the generator fixed while
+varying one structural property. Introducing Self-RAG or CRAG would
+simultaneously change the retriever, the generator training, and the
+decision policy, conflating the coherence effect with three other axes. A
+system-comparison study answers a different question and is left to
+follow-up work.
+
+\paragraph{Integration, not replacement.}
+A coherence gate (CCS-thresholded retrieval, or the HCPC-v2-style
+selective refinement used here as a probe) is in principle insertable
+inside Self-RAG's reflection step, before CRAG's corrective decision, or
+between RECOMP's compression and generation. We conjecture such
+integration reduces the paradox in each system and leave the measurement
+to follow-up work.
+
+\subsection{Lightweight Empirical Sanity Check with Adaptive RAG}
+\label{sec:sanity_check}
+
+We treat our rerank-only control (\S\ref{sec:method}) as a minimal
+empirical sanity check against adaptive retrieval. It over-fetches
+$k_{\text{fetch}}{=}7$ candidates, re-scores with a cross-encoder, and
+returns the top~$k{=}3$---the same scoring-side mechanism CRAG relies on
+before triggering corrective actions. Within our shared pipeline it
+differs from HCPC-v1 in passage fragmentation and from HCPC-v2 in
+coherence-aware gating, making it the cheapest ``retrieve-then-judge''
+adaptive analogue compatible with our controlled design.
+
+\paragraph{Expected behavior under the coherence account.}
+The hypothesis makes three predictions before any numbers are consulted:
+(i) rerank-only should not reproduce the refinement paradox, because it
+reorders passages without fragmenting them; (ii) it should not close the
+PubMedQA failure, because the coherence deficit there originates in the
+encoder, not in ordering; (iii) it should track baseline faithfulness
+more closely than HCPC-v1 and underperform HCPC-v2 in the regime where
+selective intervention extracts coherence-preserving gains. Results in
+Sections~\ref{sec:results} and~\ref{sec:analysis} are consistent with
+each. This rules out the alternative explanation that the paradox is a
+weakness specific to naive fixed-length retrieval: a scoring-based
+``adaptive'' improvement, applied without coherence awareness, is
+similarly insufficient.
+
+\paragraph{Why we stop here.}
+Extending to a full benchmark comparison would require training
+Self-RAG's reflection-token model on our corpora, implementing CRAG's
+web-augmented recovery loop, and matching both to our generator and
+embedding stack---each adding confounds into a comparison meant to
+isolate one structural property. The scoped sanity check strengthens
+rather than replaces that future evaluation.
+
+\subsection{Positioning of this work}
+
+This paper sits at the intersection of RAG evaluation and retrieval
+system design. We do not propose another retrieval score or reranking
+architecture; Self-RAG, CRAG, and RECOMP each solve a different problem
+(whether to retrieve, correcting bad retrievals, compressing passages),
+and a head-to-head comparison would conflate multiple design axes and
+obscure the variable we study: \emph{set-level coherence}. Instead, we
+isolate coherence by varying only refinement policy within a shared
+pipeline, enabling the controlled ablations in
+Sections~\ref{sec:results} and~\ref{sec:analysis}. CCS and HCPC-v2 are
+complementary to these methods and could be integrated as an additional
+coherence gate within any of them.
+
+Our contribution is the identification of a specific failure mode---the
+refinement paradox---and its cause: a meso-level property of the
+retrieved context, coherence. This perspective unifies several
+otherwise disconnected observations: why naive refinement fails on
+domain-matched corpora, why selective refinement helps only under
+specific conditions, why chunk size dominates prompt strategy, and why
+domain-mismatched retrieval can make grounded generation less reliable
+than ungrounded generation. \citet{ji2023hallucination} and
+\citet{xu2024hallucination} have argued that hallucination is an
+inherent property of autoregressive generation; our results add that in
+RAG settings, hallucination is also a property of the retrieval
+configuration, with context coherence as the specific mediating
+variable.

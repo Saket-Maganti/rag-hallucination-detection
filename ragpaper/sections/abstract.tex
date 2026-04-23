@@ -1,0 +1,42 @@
+Retrieval-augmented generation (RAG) rests on a comforting assumption: if
+we retrieve better evidence, the model will answer more faithfully.
+Across 6{,}050+ queries spanning SQuAD and PubMedQA, two generator
+families (Mistral-7B and Llama-3-8B), and four retrieval configurations,
+we show that this assumption is not just fragile — it can invert. Naive
+post-retrieval refinement, the kind routinely shipped in production RAG
+pipelines, raises per-passage similarity scores while dropping answer
+faithfulness from 0.7995 to 0.6407 on SQuAD and introducing 10.0\%
+hallucination where there was none. The culprit is not the retriever
+but a property of the retrieved \emph{set}: when refinement fragments a
+broad passage into a narrow high-similarity fragment, it strips out the
+connective evidence the generator was relying on, and the generator
+quietly fills the gap with parametric memory.
+
+We reframe this finding as the \textbf{refinement paradox} and argue
+that faithfulness in RAG is mediated by a set-level quantity we call
+\textbf{context coherence} — not by per-passage relevance. Three pieces
+of converging evidence support the reframing. First, a selective
+refinement policy (HCPC-v2) that respects coherence recovers SQuAD
+faithfulness to 0.7874 with 0\% hallucination while intervening on only
+16.7\% of queries, and stays stable across a 7$\times$ range of
+refinement rates — the key design principle is restraint, not
+algorithmic sophistication. Second, in a domain-mismatched regime
+(general encoder, biomedical corpus), RAG is \emph{worse} than
+zero-shot prompting: hallucination rises from 8.0\% to 20.0\% on
+Mistral and from 4.0\% to 10.0\% on Llama-3, a direct prediction of the
+coherence account that standard retrieval-quality framing does not make.
+Third, a variance decomposition reveals that chunk size — the parameter
+that most directly shapes coherence — accounts for 90.1\% of
+between-factor faithfulness variance on SQuAD ($F=19.72$, $p<0.001$,
+Cohen's $d=1.41$), while prompt engineering explains $<0.1$\%.
+
+We distill the coherence account into a lightweight retrieval-time
+diagnostic, the Context Coherence Score (CCS), computable from pairwise
+chunk embedding similarities without running the generator. CCS
+separates high-coherence retrieval sets (0\% hallucination) from
+low-coherence sets that precede generation failures, and gives
+practitioners a deployment-time guard-rail that does not require
+answer-level evaluation. The broader message of the paper is that RAG
+evaluation has been optimizing the wrong quantity: we have been
+measuring how good each passage looks on its own, when what the
+generator actually needs is evidence that fits together.

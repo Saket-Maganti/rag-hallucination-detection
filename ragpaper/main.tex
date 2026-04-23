@@ -1,0 +1,64 @@
+\documentclass[12pt]{article}
+
+\usepackage[margin=1.1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\graphicspath{{figures/}}
+\usepackage{tikz}
+\usepackage{subcaption}
+\usepackage{xcolor}
+\usepackage{natbib}
+\setlength{\bibsep}{6pt plus 6pt minus 2pt}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+
+\usepackage{placeins}
+\usepackage{float}
+
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, calc, fit, decorations.pathmorphing}
+\emergencystretch=2em
+\tolerance=400
+
+% --- Float control: keep text flowing, allow float-only pages when needed ---
+\setcounter{topnumber}{3}
+\setcounter{bottomnumber}{2}
+\setcounter{totalnumber}{4}
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\textfraction}{0.1}
+\renewcommand{\floatpagefraction}{0.7}
+\renewcommand{\dbltopfraction}{0.9}
+\renewcommand{\dblfloatpagefraction}{0.7}
+\setlength{\textfloatsep}{10pt plus 2pt minus 2pt}
+\setlength{\floatsep}{10pt plus 2pt minus 2pt}
+\setlength{\intextsep}{10pt plus 2pt minus 2pt}
+\raggedbottom
+
+\title{\LARGE\bfseries When Better Retrieval Hurts:\\[0.3em]
+Context Coherence Drives Faithfulness in Retrieval-Augmented Generation}
+
+\author{
+  Saket Maganti
+}
+
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\input{sections/abstract}
+\end{abstract}
+
+\input{sections/introduction}\input{sections/background}\input{sections/related_work}\input{sections/methodology}\input{sections/experimental_setup}\input{sections/results}\input{sections/multidataset}\input{sections/headtohead}\input{sections/human_validation}\input{sections/analysis}\input{sections/mechanistic}\input{sections/adversarial}\input{sections/benchmark}\input{sections/conclusion}
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\input{sections/appendix}
+
+\end{document}

@@ -1,0 +1,140 @@
+\section{Experimental Design}
+\label{sec:method}
+
+This section describes the controlled design used to \emph{test} the
+coherence hypothesis, not to propose a system. We treat retrieval
+configuration as an independent variable whose effect on generator behavior
+we wish to measure. Two instruments carry the causal argument: a selective
+refinement probe (HCPC-v2) that perturbs context coherence in a targeted
+way, and the Context Coherence Score (CCS, \S\ref{sec:ccs_def}) that
+measures it without running the generator.
+
+\subsection{A shared pipeline as experimental substrate}
+\label{sec:shared}
+
+\input{figures/pipeline}
+All conditions share a single retrieval and generation substrate so that
+any observed differences in faithfulness are attributable to the retrieval
+regime under test; Figure~\ref{fig:pipeline} shows the common architecture.
+
+\begin{itemize}
+  \item \textbf{Embedding:}
+        \texttt{all-MiniLM-L6-v2}~\citep{reimers2019sbert}, a 384-dimensional
+        sentence encoder, with vectors stored in ChromaDB under cosine
+        similarity.
+  \item \textbf{Generation:} Mistral-7B~\citep{jiang2023mistral} and
+        Llama-3-8B~\citep{llama3} served via Ollama at temperature~0.1.
+        Using two generator families guards against model-specific
+        explanations of the paradox.
+  \item \textbf{Faithfulness scoring:}
+        \texttt{cross-encoder/nli-deberta-v3-base}~\citep{he2021deberta}.
+        Each answer sentence is classified against the concatenated
+        retrieved context; the mean entailment probability is the
+        faithfulness score in $[0,1]$. Responses below 0.50 are labeled
+        hallucinated. The NLI scorer is held fixed across all conditions,
+        so it functions as a constant measurement instrument rather than a
+        tuned component.
+\end{itemize}
+
+The details above are \emph{experimental substrate}, not design claims.
+None of our conclusions depend on the specific choice of encoder or
+generator except where explicitly noted.
+
+\subsection{Retrieval regimes as independent variables}
+
+We compare four retrieval regimes that differ only in how the set of
+passages reaching the generator is selected. They are designed to vary
+context coherence while holding everything else constant.
+
+\paragraph{Baseline (no refinement).}
+Fixed-length chunks of 256, 512, or 1024 tokens with 10\% overlap; top-$k$
+($k\in\{3,5\}$) by cosine similarity. This regime preserves whatever
+coherence the document structure provides, since chunks are contiguous
+spans.
+
+\paragraph{Aggressive refinement (HCPC-v1).}
+After top-$k$ retrieval, each chunk is rescored with a cross-encoder; if
+\emph{either} cosine similarity $<0.45$ \emph{or} cross-encoder logit
+$<-0.20$, the chunk is split into 256-token sub-chunks and the
+highest-scoring fragment replaces the original. This OR-gated refinement is
+the standard recipe in deployed rerank+compress RAG
+stacks~\citep{xu2023recomp, nogueira2019passage}. We include it not as a
+strawman but as a faithful instantiation of the prevailing
+maximize-per-passage-relevance philosophy---it is precisely the regime the
+refinement paradox indicts.
+
+\paragraph{Selective refinement (HCPC-v2): a causal probe.}
+HCPC-v2 is a controlled perturbation of HCPC-v1 designed to surgically
+\emph{remove} its coherence-destroying failure modes while preserving its
+ability to discard genuinely weak passages. If context coherence is the
+causal mediator of faithfulness, this perturbation should recover
+faithfulness even though retrieval similarity is unchanged. Concretely, it
+modifies three behaviors of HCPC-v1:
+
+\begin{enumerate}
+  \item \textbf{AND-gated triggering} ($\tau_{\text{sim}}{=}0.45$,
+        $\tau_{\text{ce}}{=}-0.20$): refinement fires only when both
+        signals flag weakness, preventing over-triggering on adequate
+        passages.
+  \item \textbf{Rank protection}: the top-$N_{\text{prot}}{=}2$ ranked
+        chunks are never refined, protecting the highest-evidence
+        candidates from fragmentation.
+  \item \textbf{Contiguity-preserving merge-back}: adjacent sub-chunks from
+        the same parent are re-joined (up to $\sim$1024 tokens) when both
+        pass the quality threshold, restoring connective evidence lost to
+        splitting.
+\end{enumerate}
+
+\input{figures/architecture}
+Figure~\ref{fig:architecture} illustrates the decision flow. We emphasize
+that HCPC-v2 is not the paper's contribution. The choices of
+$\tau_{\text{sim}}$, $\tau_{\text{ce}}$, and $N_{\text{prot}}$ are
+engineering details that make the probe implementable; the scientific
+question is whether \emph{any} coherence-preserving perturbation of the
+refinement pipeline recovers faithfulness at fixed retrieval similarity.
+Threshold sensitivity analysis (\S\ref{sec:results}) shows the recovery is
+robust across a $7\times$ range of refinement rates---evidence that the
+effect is driven by coherence, not threshold tuning.
+
+\paragraph{Cross-encoder reranking (scoring-only control).}
+A rerank-without-refine condition over-fetches $k_{\text{fetch}}{=}7$
+candidates and returns the top $k{=}3$ by cross-encoder score, with no
+splitting or merging. This isolates the effect of improved passage
+\emph{selection} from the effect of passage \emph{fragmentation}, ruling
+out alternative explanations of the paradox grounded in reranker behavior
+alone.
+
+\subsection{Why this design isolates context coherence}
+
+The four regimes differ along exactly one dimension that matters for our
+hypothesis: how aggressively the original contiguity of retrieved evidence
+is broken. Baseline preserves it fully. Reranking preserves it while
+reordering. HCPC-v1 destroys it indiscriminately. HCPC-v2 destroys it
+selectively. If coherence is causally linked to faithfulness, faithfulness
+should track this ordering---and we find that it does.
+
+\input{figures/failure_case}
+Figure~\ref{fig:failure_case} shows the mechanism concretely in a single
+query: local sub-chunks score higher against the query while discarding the
+very sentence the answer relied on.
+
+\subsection{Measurement framework}
+
+We report six quantities per condition:
+\begin{enumerate}
+  \item \textbf{NLI faithfulness} (mean entailment $\in[0,1]$).
+  \item \textbf{Hallucination rate} (fraction $<0.50$).
+  \item \textbf{Mean query--chunk similarity} (passage-level retrieval
+        quality).
+  \item \textbf{CCS} (Eq.~\ref{eq:ccs}; coherence of the retrieved set).
+  \item \textbf{Refinement rate} (fraction of queries whose context was
+        perturbed).
+  \item \textbf{End-to-end latency} (for completeness, not a contribution).
+\end{enumerate}
+
+Statistical analysis uses one-way ANOVA for between-factor effects, with
+effect sizes reported as $\eta^2$ and pairwise Cohen's $d$. Spearman's
+$\rho$ is used for coherence--faithfulness correlations because retrieval
+metrics are not normally distributed.
+
+\FloatBarrier
