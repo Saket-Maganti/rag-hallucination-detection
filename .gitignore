@@ -38,3 +38,27 @@ ragpaper/arxiv/*.toc
 
 # Verbose per-query diagnostic logs (keep summary CSVs only)
 results/*/logs/
+
+# LaTeX build artifacts (top-level main.*)
+ragpaper/main.aux
+ragpaper/main.log
+ragpaper/main.out
+ragpaper/main.bbl
+ragpaper/main.blg
+ragpaper/main.fls
+ragpaper/main.fdb_latexmk
+ragpaper/main.synctex.gz
+ragpaper/main.toc
+
+# Run logs from overnight executions
+run_queue.log
+frontier.log
+gaps_run.log
+full_run.log
+
+# Agent / worktree state
+.claude/
+
+# Build-zip snapshot
+ragpaper.zip
+

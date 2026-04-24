@@ -338,6 +338,236 @@ def load_financebench(
     return docs, qa
 
 
+# ── Long-form QA datasets (Phase 2 Item 3) ──────────────────────────────────
+#
+# The five datasets above are all short-answer (extractive / yes-no / span).
+# Reviewers commonly ask whether the coherence paradox generalizes to
+# *long-form* generation tasks where the model must synthesize multi-sentence
+# answers. These two loaders cover that gap:
+#
+#   qasper        — scientific-paper long-form QA (AllenAI)
+#   msmarco       — MS-MARCO v2.1 long-form answer generation track
+#
+# Both expose the same (documents, qa_pairs) contract as the short-answer
+# loaders, with `qa_pair["ground_truth"]` being a multi-sentence reference
+# answer. The experiments/run_longform_eval.py runner treats them as
+# long-form by computing ROUGE-L + per-claim NLI instead of single-span
+# faithfulness.
+
+_QASPER_URL = (
+    "https://qasper-dataset.s3.us-west-2.amazonaws.com/"
+    "qasper-train-dev-v0.3.tgz"
+)
+_QASPER_CACHE = os.path.expanduser("~/.cache/rag_hallu/qasper")
+
+
+def _fetch_qasper(split: str) -> List[dict]:
+    """Download QASPER tarball from AllenAI S3 and return parsed JSON items.
+
+    The HF-hosted `allenai/qasper` dataset relies on a legacy `qasper.py`
+    script that newer `datasets` releases refuse to execute.  Fetching the
+    raw tarball directly from AllenAI is version-independent.
+    """
+    import json as _json
+    import tarfile
+    import urllib.request
+
+    os.makedirs(_QASPER_CACHE, exist_ok=True)
+    split_file = {
+        "train":      "qasper-train-v0.3.json",
+        "validation": "qasper-dev-v0.3.json",
+    }.get(split, "qasper-dev-v0.3.json")
+    cached = os.path.join(_QASPER_CACHE, split_file)
+
+    if not os.path.exists(cached):
+        tar_path = os.path.join(_QASPER_CACHE, "qasper.tgz")
+        if not os.path.exists(tar_path):
+            print(f"[Data] Downloading QASPER tarball (~20 MB) to {tar_path}")
+            urllib.request.urlretrieve(_QASPER_URL, tar_path)
+        with tarfile.open(tar_path, "r:gz") as tar:
+            for member in tar.getmembers():
+                if member.name.endswith(split_file):
+                    fh = tar.extractfile(member)
+                    if fh is None:
+                        continue
+                    with open(cached, "wb") as out:
+                        out.write(fh.read())
+                    break
+
+    if not os.path.exists(cached):
+        return []
+    with open(cached) as fh:
+        blob = _json.load(fh)
+    # Raw schema is {paper_id -> {title, abstract, full_text, qas}}.
+    items: List[dict] = []
+    for pid, body in blob.items():
+        body = dict(body)
+        body["id"] = pid
+        items.append(body)
+    return items
+
+
+def load_qasper_longform(
+    split: str = "validation",
+    max_papers: int = 30,
+) -> Tuple[List[Document], List[dict]]:
+    """
+    QASPER (Dasigi et al., NAACL 2021). Scientific-paper QA with free-form
+    long answers and human-annotated evidence paragraphs.
+
+    Raw data is fetched from AllenAI's S3 distribution on first call and
+    cached under `~/.cache/rag_hallu/qasper/`.  This avoids HF `datasets`
+    script-loader deprecation in recent releases.
+    """
+    print(f"[Data] Loading QASPER ({split}) via AllenAI S3 mirror...")
+    try:
+        items = _fetch_qasper(split)
+    except Exception as exc:
+        print(f"[Data] QASPER fetch failed ({exc})")
+        return [], []
+    if not items:
+        print("[Data] QASPER: no items parsed")
+        return [], []
+
+    docs: List[Document] = []
+    qa:   List[dict] = []
+    rng = random.Random(SEED)
+    rng.shuffle(items)
+
+    for item in tqdm(items, desc="QASPER"):
+        paper_id = str(item.get("id") or len(docs))
+        title    = (item.get("title") or "")[:80]
+
+        paper_docs_start = len(docs)
+
+        # Abstract first (one Document per paper).
+        abstract = (item.get("abstract") or "").strip()
+        if len(abstract) >= 80:
+            docs.append(Document(page_content=abstract[:4000], metadata={
+                "paper_id": paper_id,
+                "title":    title,
+                "section":  "abstract",
+            }))
+
+        # Flatten full_text into paragraph-level Documents.
+        for section in (item.get("full_text") or []):
+            sec_name = (section or {}).get("section_name") or ""
+            for p in (section or {}).get("paragraphs") or []:
+                p = (p or "").strip()
+                if len(p) < 80:
+                    continue
+                docs.append(Document(page_content=p[:4000], metadata={
+                    "paper_id": paper_id,
+                    "title":    title,
+                    "section":  sec_name,
+                }))
+
+        # Collect QA pairs.
+        for qa_block in (item.get("qas") or []):
+            q = (qa_block or {}).get("question") or ""
+            if not q:
+                continue
+            free_forms: List[str] = []
+            for ans in (qa_block.get("answers") or []):
+                a = (ans or {}).get("answer") or {}
+                ff = (a.get("free_form_answer") or "").strip()
+                if ff and ff.lower() not in ("yes", "no", "unanswerable", "none"):
+                    free_forms.append(ff)
+            if not free_forms:
+                continue
+            gt = max(free_forms, key=len)
+            qa.append({
+                "paper_id":     paper_id,
+                "question":     q,
+                "ground_truth": gt,
+                "task":         "longform",
+            })
+
+        paper_ids_seen = {d.metadata["paper_id"] for d in docs}
+        if len(paper_ids_seen) >= max_papers:
+            # If this paper contributed docs but no QA pairs, drop its docs.
+            if paper_docs_start < len(docs) and not any(
+                x["paper_id"] == paper_id for x in qa
+            ):
+                del docs[paper_docs_start:]
+            break
+
+    print(f"[Data] QASPER: {len(docs)} paragraphs, {len(qa)} long-form QA pairs")
+    return docs, qa
+
+
+def load_msmarco_longform(
+    split: str = "validation",
+    max_papers: int = 40,
+) -> Tuple[List[Document], List[dict]]:
+    """
+    MS-MARCO v2.1 (Nguyen et al., 2016) — long-form answer generation track.
+    HF id: microsoft/ms_marco (config "v2.1").
+
+    Schema:
+        query                 : str
+        passages.passage_text : list[str]     (10 candidate passages)
+        passages.is_selected  : list[int]     (which passages were used)
+        answers               : list[str]     (human long-form answers)
+
+    We skip examples whose `answers` list is empty or contains only the
+    string "No Answer Present.".
+    """
+    from datasets import load_dataset
+    print(f"[Data] Loading MS-MARCO v2.1 ({split}, streaming)...")
+    try:
+        ds = load_dataset(
+            "microsoft/ms_marco", "v2.1", split=split, streaming=True,
+        )
+    except Exception as exc:
+        print(f"[Data] MS-MARCO load failed ({exc})")
+        return [], []
+
+    docs: List[Document] = []
+    qa:   List[dict] = []
+    seen_paper_ids = set()
+
+    for raw in tqdm(ds, desc="MS-MARCO"):
+        if len(seen_paper_ids) >= max_papers:
+            break
+        query = (raw.get("query") or "").strip()
+        answers = raw.get("answers") or []
+        answers = [a.strip() for a in answers if isinstance(a, str) and a.strip()]
+        answers = [a for a in answers if a.lower() != "no answer present."]
+        if not (query and answers):
+            continue
+
+        passages = raw.get("passages") or {}
+        ptexts   = passages.get("passage_text") or []
+        if not ptexts:
+            continue
+
+        paper_id = str(raw.get("query_id", len(seen_paper_ids)))
+        if paper_id in seen_paper_ids:
+            continue
+        seen_paper_ids.add(paper_id)
+
+        for p in ptexts:
+            p = (p or "").strip()
+            if len(p) < 80:
+                continue
+            docs.append(Document(page_content=p[:4000], metadata={
+                "paper_id": paper_id,
+                "title":    query[:80],
+            }))
+
+        gt = max(answers, key=len)
+        qa.append({
+            "paper_id":     paper_id,
+            "question":     query,
+            "ground_truth": gt,
+            "task":         "longform",
+        })
+
+    print(f"[Data] MS-MARCO: {len(docs)} passages, {len(qa)} long-form QA pairs")
+    return docs, qa
+
+
 # ── Unified registry ─────────────────────────────────────────────────────────
 
 LoaderFn = Callable[[str, int], Tuple[List[Document], List[dict]]]
@@ -378,6 +608,18 @@ DATASET_REGISTRY: Dict[str, Dict] = {
         "default_split": "test",
         "domain": "finance (SEC filings)",
         "task_type": "domain-specific factoid + numerical",
+    },
+    "qasper": {
+        "loader": load_qasper_longform,
+        "default_split": "validation",
+        "domain": "scientific papers (NLP/ML)",
+        "task_type": "long-form abstractive QA",
+    },
+    "msmarco": {
+        "loader": load_msmarco_longform,
+        "default_split": "validation",
+        "domain": "open-domain web passages",
+        "task_type": "long-form answer generation",
     },
 }
 
