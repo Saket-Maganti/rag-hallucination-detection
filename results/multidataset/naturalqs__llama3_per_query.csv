@@ -1,0 +1,213 @@
+question,ground_truth,answer,condition,faithfulness_score,is_hallucination,mean_retrieval_similarity,refined,ccs,dataset,model
+when did the lion king start on broadway,"November 13, 1997","According to the provided context, The Lion King started on Broadway in 1997.",baseline,0.9364,False,0.6187,False,-1.0,naturalqs,llama3
+when did the lion king start on broadway,"November 13, 1997",I cannot find this information in the provided context.,hcpc_v1,0.5531,False,0.6118,False,-1.0,naturalqs,llama3
+when did the lion king start on broadway,"November 13, 1997","According to the provided context, The Lion King started on Broadway in 1997.",hcpc_v2,0.9364,False,0.6187,False,0.5966,naturalqs,llama3
+what was the key factor that allowed hershey and chase,The results of the Avery–MacLeod–McCarty experiment,I cannot find this information in the provided context.,baseline,0.5531,False,0.4451,False,-1.0,naturalqs,llama3
+what was the key factor that allowed hershey and chase,The results of the Avery–MacLeod–McCarty experiment,I cannot find this information in the provided context.,hcpc_v1,0.5531,False,0.5633,False,-1.0,naturalqs,llama3
+what was the key factor that allowed hershey and chase,The results of the Avery–MacLeod–McCarty experiment,I cannot find this information in the provided context.,hcpc_v2,0.5531,False,0.4451,False,0.7138,naturalqs,llama3
+what observation led to the theory of seafloor spreading,"magnetic stripe ""anomalies"" on the ocean floor",I cannot find this information in the provided context.,baseline,0.5531,False,0.7342,False,-1.0,naturalqs,llama3
+what observation led to the theory of seafloor spreading,"magnetic stripe ""anomalies"" on the ocean floor",I cannot find this information in the provided context.,hcpc_v1,0.5531,False,0.7263,False,-1.0,naturalqs,llama3
+what observation led to the theory of seafloor spreading,"magnetic stripe ""anomalies"" on the ocean floor",I cannot find this information in the provided context.,hcpc_v2,0.5531,False,0.7342,False,0.7988,naturalqs,llama3
+when was coffee first made into a drink,the 15th century,"According to the provided context, the earliest credible evidence of either coffee drinking or knowledge of the coffee tree appears in the middle of the 15th century, in Yemen's Sufi monasteries. However, there is a legend about the origin of coffee that involves a monk throwing away some berries and then roasting them to make the world's first cup of coffee. This story is not known to have appeared in writing before 1671, so it is likely apocryphal.
+
+As for when coffee was first made into a drink, the context does not provide a specific answer. It only mentions that the roasted beans were quickly raked from the embers, ground up, and dissolved in hot water, yielding the world's first cup of coffee.",baseline,0.5892,False,0.6192,False,-1.0,naturalqs,llama3
+when was coffee first made into a drink,the 15th century,"According to the provided context, the earliest substantiated evidence of either coffee drinking or knowledge of the coffee tree is from the 15th century, in the Sufi monasteries of Yemen. The specific process of making coffee into a drink is described as follows:
+
+""The roasted beans were quickly raked from the embers , ground up , and dissolved in hot water , yielding the world 's first cup of coffee""
+
+So, based on this context, coffee was first made into a drink in the 15th century.",hcpc_v1,0.4685,True,0.6426,False,-1.0,naturalqs,llama3
+when was coffee first made into a drink,the 15th century,"According to the provided context, the earliest credible evidence of either coffee drinking or knowledge of the coffee tree appears in the middle of the 15th century, in Yemen's Sufi monasteries. However, it is not explicitly stated when coffee was first made into a drink.
+
+But, according to the story about the monk and the roasted beans, the world's first cup of coffee was yielded by dissolving the ground-up beans in hot water. This story is likely apocryphal, as it is not known to have appeared in writing before 1671, which is 800 years after it was supposed to have taken place.
+
+So, based on the provided context, I cannot pinpoint an exact date when coffee was first made into a drink.",hcpc_v2,0.4756,True,0.6192,True,0.7628,naturalqs,llama3
+what is the term for circular movement around a central point,Coriolis effect,"According to the provided context, the term for circular movement around a central point is not explicitly mentioned. However, it does mention ""centrifugal force"" which acts outwards in the radial direction and is proportional to the distance of the body from the axis of the rotating frame.",baseline,0.527,False,0.4985,False,-1.0,naturalqs,llama3
+what is the term for circular movement around a central point,Coriolis effect,"Based on the provided context, I would say that the term for circular movement around a central point is not explicitly mentioned. However, it can be inferred that the centrifugal force acts in the radial direction, which suggests that the object is moving in a circular path around the axis of rotation.
+
+So, my answer based strictly on the context above is: ""I cannot find this information in the provided context.""",hcpc_v1,0.6077,False,0.5136,False,-1.0,naturalqs,llama3
+what is the term for circular movement around a central point,Coriolis effect,"According to the provided context, the term for circular movement around a central point is not explicitly mentioned. However, it does mention ""centrifugal force"" which acts outwards in the radial direction and is proportional to the distance of the body from the axis of the rotating frame. This suggests that centrifugal force is related to circular motion, but it's not the specific term being asked for.
+
+I cannot find this information in the provided context.",hcpc_v2,0.5267,False,0.4985,True,0.6863,naturalqs,llama3
+why were the wars between rome and carthage called the punic wars,"the Latin word Punicus (or Poenicus), meaning ""Carthaginian"", with reference to the Carthaginians' Phoenician ancestry","According to the provided context, the term ""Punic"" comes from the Latin word ""Punicus"" (or ""Poenicus""), meaning ""Carthaginian"", with reference to the Carthaginians' Phoenician ancestry. Therefore, the wars between Rome and Carthage were called the Punic Wars because they involved Carthage, a city-state with Phoenician ancestry.",baseline,0.7152,False,0.7913,False,-1.0,naturalqs,llama3
+why were the wars between rome and carthage called the punic wars,"the Latin word Punicus (or Poenicus), meaning ""Carthaginian"", with reference to the Carthaginians' Phoenician ancestry","According to the provided context, the term ""Punic"" comes from the Latin word ""Punicus"" (or ""Poenicus""), meaning ""Carthaginian"", with reference to the Carthaginians' Phoenician ancestry. Therefore, the wars between Rome and Carthage were called the Punic Wars because they involved the Carthaginians.",hcpc_v1,0.7083,False,0.7913,False,-1.0,naturalqs,llama3
+why were the wars between rome and carthage called the punic wars,"the Latin word Punicus (or Poenicus), meaning ""Carthaginian"", with reference to the Carthaginians' Phoenician ancestry","According to the provided context, the term ""Punic"" comes from the Latin word ""Punicus"" (or ""Poenicus""), meaning ""Carthaginian"", with reference to the Carthaginians' Phoenician ancestry. Therefore, the wars between Rome and Carthage were called the Punic Wars because they involved Carthage, a city-state with Phoenician ancestry.",hcpc_v2,0.7152,False,0.7913,False,0.783,naturalqs,llama3
+what is a e8 in the marine corps,Master sergeant,"According to the provided context, E-8 refers to the pay grade and rank of Sergeant Major (SgtMaj) or Master Gunnery Sergeant (MGySgt).",baseline,0.7673,False,0.4311,False,-1.0,naturalqs,llama3
+what is a e8 in the marine corps,Master sergeant,"According to the provided context, an E-8 has two ranks per pay grade, each with different responsibilities.",hcpc_v1,0.601,False,0.4982,False,-1.0,naturalqs,llama3
+what is a e8 in the marine corps,Master sergeant,"According to the provided context, E-8 refers to the pay grade and rank of Sergeant Major (SgtMaj) or Master Gunnery Sergeant (MGySgt).",hcpc_v2,0.7673,False,0.4311,True,0.615,naturalqs,llama3
+what is the processor for google nexus 5,a 2.26 GHz quad-core Snapdragon 800 processor,The processor for the Google Nexus 5 is a 2.26 GHz quad-core Snapdragon 800 processor.,baseline,0.6653,False,0.5551,False,-1.0,naturalqs,llama3
+what is the processor for google nexus 5,a 2.26 GHz quad-core Snapdragon 800 processor,I cannot find this information in the provided context.,hcpc_v1,0.5531,False,0.584,False,-1.0,naturalqs,llama3
+what is the processor for google nexus 5,a 2.26 GHz quad-core Snapdragon 800 processor,The processor for the Google Nexus 5 is a 2.26 GHz quad-core Snapdragon 800 processor.,hcpc_v2,0.6653,False,0.5551,True,0.6279,naturalqs,llama3
+when was the land rover defender first built,in the 1980s,"According to the provided context, the Land Rover Defender began in 1983 as the Land Rover 110.",baseline,0.6764,False,0.7109,False,-1.0,naturalqs,llama3
+when was the land rover defender first built,in the 1980s,"According to the provided context, the Land Rover Defender began in 1983 as the Land Rover 110.",hcpc_v1,0.6764,False,0.713,False,-1.0,naturalqs,llama3
+when was the land rover defender first built,in the 1980s,"According to the provided context, the Land Rover Defender began in 1983 as the Land Rover 110.",hcpc_v2,0.6764,False,0.7109,False,0.6124,naturalqs,llama3
+who played joey's agent estelle on friends,June Gable,"According to the provided context, June Gable played Joey's agent Estelle Leonard on Friends.",baseline,0.9354,False,0.5801,False,-1.0,naturalqs,llama3
+who played joey's agent estelle on friends,June Gable,"According to the provided context, June Gable played Joey's agent Estelle Leonard in the NBC sitcom Friends.",hcpc_v1,0.8753,False,0.6576,False,-1.0,naturalqs,llama3
+who played joey's agent estelle on friends,June Gable,"According to the provided context, June Gable played Joey's agent Estelle Leonard on Friends.",hcpc_v2,0.9354,False,0.5801,True,0.3019,naturalqs,llama3
+who is the original singer of i write sins not tragedies,Panic! at the Disco,"According to the provided context, the song ""I Write Sins Not Tragedies"" is by American rock band Panic! at the Disco. The vocalist of the band is Brendon Urie. Therefore, the answer is:
+
+Brendon Urie",baseline,0.6785,False,0.796,False,-1.0,naturalqs,llama3
+who is the original singer of i write sins not tragedies,Panic! at the Disco,"According to the provided context, the song ""I Write Sins Not Tragedies"" is by American rock band Panic! at the Disco. The lead vocalist of the band is Brendon Urie. Therefore, the original singer of ""I Write Sins Not Tragedies"" is Brendon Urie.",hcpc_v1,0.6928,False,0.7824,False,-1.0,naturalqs,llama3
+who is the original singer of i write sins not tragedies,Panic! at the Disco,"According to the provided context, the song ""I Write Sins Not Tragedies"" is by American rock band Panic! at the Disco. The vocalist of the band is Brendon Urie. Therefore, the answer is:
+
+Brendon Urie",hcpc_v2,0.6785,False,0.796,False,0.5669,naturalqs,llama3
+what is the main mineral in lithium batteries,lithium,"I cannot find this information in the provided context. The text only mentions that lithium metal is isolated electrolytically from a mixture of lithium chloride and potassium chloride, but it does not provide details about the composition of lithium batteries.",baseline,0.6892,False,0.6497,False,-1.0,naturalqs,llama3
+what is the main mineral in lithium batteries,lithium,"I cannot find this information in the provided context. The context only mentions that lithium has industrial applications, including lithium batteries, but it does not specify the main mineral used in lithium batteries.",hcpc_v1,0.6242,False,0.66,False,-1.0,naturalqs,llama3
+what is the main mineral in lithium batteries,lithium,I cannot find this information in the provided context.,hcpc_v2,0.5531,False,0.6497,True,0.6438,naturalqs,llama3
+what was the name of the plant on little shop of horrors,Audrey II,"According to the provided context, the name of the plant is ""Audrey II"".",baseline,0.6754,False,0.6955,False,-1.0,naturalqs,llama3
+what was the name of the plant on little shop of horrors,Audrey II,I cannot find this information in the provided context.,hcpc_v1,0.5531,False,0.6723,False,-1.0,naturalqs,llama3
+what was the name of the plant on little shop of horrors,Audrey II,"According to the provided context, the name of the plant is ""Audrey II"".",hcpc_v2,0.6754,False,0.6955,True,0.6874,naturalqs,llama3
+where do they drop in game of games,a chute beneath his or her feet,"I cannot find information about ""dropping"" in the provided context. The context only mentions games such as Aw Snap, Blindfolded Musical Chairs, and Danger Word, but does not mention anything about dropping.",baseline,0.4649,True,0.3477,False,-1.0,naturalqs,llama3
+where do they drop in game of games,a chute beneath his or her feet,I cannot find this information in the provided context.,hcpc_v1,0.5531,False,0.367,False,-1.0,naturalqs,llama3
+where do they drop in game of games,a chute beneath his or her feet,"I cannot find information about ""dropping"" in the provided context. The context only mentions games such as Aw Snap, Blindfolded Musical Chairs, and Danger Word, but does not mention anything about dropping.",hcpc_v2,0.4649,True,0.3477,True,0.0997,naturalqs,llama3
+when did the movie karate kid come out,2010,"According to the provided context, Jaden Smith starred in the 2010 remake of ""The Karate Kid"".",baseline,0.951,False,0.4156,False,-1.0,naturalqs,llama3
+when did the movie karate kid come out,2010,I cannot find this information in the provided context.,hcpc_v1,0.5531,False,0.5558,False,-1.0,naturalqs,llama3
+when did the movie karate kid come out,2010,"According to the provided context, Jaden Smith starred in the 2010 remake of ""The Karate Kid"".",hcpc_v2,0.951,False,0.4157,True,0.295,naturalqs,llama3
+how does the cash cab guy read the questions,by way of a walkie-talkie and earpiece worn by the host,I cannot find this information in the provided context.,baseline,0.5531,False,0.4721,False,-1.0,naturalqs,llama3
+how does the cash cab guy read the questions,by way of a walkie-talkie and earpiece worn by the host,I cannot find this information in the provided context.,hcpc_v1,0.5531,False,0.5081,False,-1.0,naturalqs,llama3
+how does the cash cab guy read the questions,by way of a walkie-talkie and earpiece worn by the host,I cannot find this information in the provided context.,hcpc_v2,0.5531,False,0.4726,True,0.5969,naturalqs,llama3
+what is the purpose of a continuing resolution,continues the pre-existing appropriations at the same levels as the previous fiscal year (or with minor modifications) for a set amount of time,"According to the provided context, the funding extends until a specific date or regular appropriations bills are passed, whichever comes first. There can be some changes to some of the accounts in a continuing resolution.",baseline,0.7413,False,0.5753,False,-1.0,naturalqs,llama3
+what is the purpose of a continuing resolution,continues the pre-existing appropriations at the same levels as the previous fiscal year (or with minor modifications) for a set amount of time,"According to the provided context, the purpose of a continuing resolution is ""bridging funding for existing federal programs at current, reduced, or expanded levels"".",hcpc_v1,0.7461,False,0.6865,False,-1.0,naturalqs,llama3
+what is the purpose of a continuing resolution,continues the pre-existing appropriations at the same levels as the previous fiscal year (or with minor modifications) for a set amount of time,"According to the provided context, the purpose of a continuing resolution (CR) is ""a type of appropriations legislation"" that provides funding until a specific date or regular appropriations bills are passed, whichever comes first. There can be some changes to some accounts in a continuing resolution.",hcpc_v2,0.6772,False,0.5753,False,0.6102,naturalqs,llama3
+how many hoops are used in a game of croquet,eight,"According to the provided context, it is mentioned that ""hoops (often called ``wickets'' in the United States) embedded in a grass playing court"" are part of the game. However, there is no specific information about how many hoops are used in a game of croquet.
+
+So, my answer based only on the provided context would be: I cannot find this information in the provided context.",baseline,0.5102,False,0.6678,False,-1.0,naturalqs,llama3
+how many hoops are used in a game of croquet,eight,"According to the provided context, it is mentioned that ""hoops (often called ``wickets'' in the United States) embedded in a grass playing court"" are part of the game. However, the exact number of hoops used in a game of croquet is not specified in this context.
+
+So, my answer would be: I cannot find this information in the provided context.",hcpc_v1,0.5531,False,0.6975,False,-1.0,naturalqs,llama3
+how many hoops are used in a game of croquet,eight,"According to the provided context, it is mentioned that ""hoops (often called ``wickets'' in the United States) embedded in a grass playing court"" are part of the game. However, it does not specify how many hoops are used in a game of croquet.
+
+I cannot find this information in the provided context.",hcpc_v2,0.6022,False,0.6678,True,0.6608,naturalqs,llama3
+how tall is the actor who plays hagrid in harry potter,6ft 1in,"According to the provided context, Robbie Coltrane, the actor who plays Hagrid in Harry Potter, is 6 ft 1 in (185 cm) tall.",baseline,0.8746,False,0.3235,False,-1.0,naturalqs,llama3
+how tall is the actor who plays hagrid in harry potter,6ft 1in,"According to the provided context, Robbie Coltrane plays the role of Hagrid in the Harry Potter films. The context does not mention his height, so I cannot find this information in the provided context.",hcpc_v1,0.6114,False,0.6162,False,-1.0,naturalqs,llama3
+how tall is the actor who plays hagrid in harry potter,6ft 1in,"According to the provided context, Robbie Coltrane, the actor who plays Hagrid in Harry Potter, is 6 ft 1 in (185 cm) tall.",hcpc_v2,0.8746,False,0.3235,False,0.5576,naturalqs,llama3
+what areas of africa were involved in colonization,almost 90 percent of the continent,"According to the provided context, the following areas of Africa were involved in colonization:
+
+* Congo
+* Egypt
+* South Africa
+* Morocco
+* Tanganyika
+* Namibia
+* Benin
+* Chad
+* Ethiopia
+* Eritrea
+* Sudan
+* Tunisia
+* Zanzibar
+* Ashanti
+* Matabeleland
+* Wassoulou
+* Dahomey
+* Mashonaland
+
+Note that this list is based solely on the provided context and may not be an exhaustive list of all areas of Africa involved in colonization.",baseline,0.4568,True,0.5922,False,-1.0,naturalqs,llama3
+what areas of africa were involved in colonization,almost 90 percent of the continent,"According to the provided context, it does not specify which exact areas of Africa were involved in colonization. However, it mentions ""Areas of Africa controlled by European colonial powers in 1913"" and provides a list of African colonies listed by colonizing power (Belgium, France, Germany, Italy, Portugal, Spain, United Kingdom, and Independent states).",hcpc_v1,0.6158,False,0.6347,False,-1.0,naturalqs,llama3
+what areas of africa were involved in colonization,almost 90 percent of the continent,"According to the provided context, the following areas of Africa were involved in colonization:
+
+* Tunisia (1881)
+* Sudan (1881)
+* Egypt (1882)
+* Wassoulou (1883)
+* Eritrea (1887)
+* Dahomey (1890, 1892)
+* Mashonaland (1890)
+* Matabeleland (1893, 1896)
+* Ashanti (1895)
+* Ethiopia (1895)
+* Zanzibar (1896)
+* Benin (1897)
+* Chad (1898) (Kousséri)
+* South Africa (1899)
+* Namibia (1904)
+* Tanganyika (1905)
+* Morocco (1905)
+
+Note that this list only includes the areas mentioned in the provided context, and may not be an exhaustive list of all African regions involved in colonization.",hcpc_v2,0.4394,True,0.5811,True,0.5982,naturalqs,llama3
+what college does everyone in gossip girl go to,New York University,I cannot find this information in the provided context.,baseline,0.5531,False,0.4347,False,-1.0,naturalqs,llama3
+what college does everyone in gossip girl go to,New York University,I cannot find this information in the provided context.,hcpc_v1,0.5531,False,0.5319,False,-1.0,naturalqs,llama3
+what college does everyone in gossip girl go to,New York University,I cannot find this information in the provided context.,hcpc_v2,0.5531,False,0.4399,True,0.3976,naturalqs,llama3
+the area enclosed by hysteresis loop is a measure of,energy loss,I cannot find this information in the provided context.,baseline,0.5531,False,0.5301,False,-1.0,naturalqs,llama3
+the area enclosed by hysteresis loop is a measure of,energy loss,I cannot find this information in the provided context.,hcpc_v1,0.5531,False,0.5693,False,-1.0,naturalqs,llama3
+the area enclosed by hysteresis loop is a measure of,energy loss,I cannot find this information in the provided context.,hcpc_v2,0.5531,False,0.5274,True,0.6401,naturalqs,llama3
+what written material is included in the talmud,"the Mishnah (Hebrew: משנה, c. 200 CE), a written compendium of Rabbinic Judaism's Oral Torah","According to the provided context, the written materials included in the Talmud are:
+
+* Mishnah
+* Gemara
+* Baraita
+* Halakha and Aggadah
+* Minor tractates
+
+Note that I did not find any information about other types of written material being included in the Talmud.",baseline,0.3627,True,0.6082,False,-1.0,naturalqs,llama3
+what written material is included in the talmud,"the Mishnah (Hebrew: משנה, c. 200 CE), a written compendium of Rabbinic Judaism's Oral Torah","According to the provided context, the entire Talmud consists of 63 tractates.",hcpc_v1,0.7251,False,0.6354,False,-1.0,naturalqs,llama3
+what written material is included in the talmud,"the Mishnah (Hebrew: משנה, c. 200 CE), a written compendium of Rabbinic Judaism's Oral Torah","According to the provided context, the Talmud consists of:
+
+* Mishnah
+* Gemara
+* Baraita
+* Halakha and Aggadah
+* Minor tractates
+
+These written materials are included in the Talmud.",hcpc_v2,0.8443,False,0.6045,True,0.5876,naturalqs,llama3
+who plays dawn on nicky ricky dicky and dawn,Lizzy Greene,"According to the provided context, Casey Simpson plays Dawn on Nicky, Ricky, Dicky & Dawn.",baseline,0.9541,False,0.7434,False,-1.0,naturalqs,llama3
+who plays dawn on nicky ricky dicky and dawn,Lizzy Greene,"According to the provided context, Casey Simpson plays Dawn on Nicky, Ricky, Dicky & Dawn.",hcpc_v1,0.9541,False,0.7559,False,-1.0,naturalqs,llama3
+who plays dawn on nicky ricky dicky and dawn,Lizzy Greene,"According to the provided context, Casey Simpson plays Dawn on Nicky, Ricky, Dicky & Dawn.",hcpc_v2,0.9541,False,0.7434,False,0.7166,naturalqs,llama3
+who was the movie citizen kane based on,"based in part upon the American newspaper magnate William Randolph Hearst, Chicago tycoons Samuel Insull and Harold McCormick, and aspects of Welles's own life","According to the provided context, Citizen Kane is a quasi-biographical film that examines the life and legacy of Charles Foster Kane, played by Orson Welles. The character is based in part upon:
+
+* William Randolph Hearst, an American newspaper magnate
+* Samuel Insull, a Chicago tycoon
+* Harold McCormick, a Chicago tycoon
+* Aspects of Orson Welles' own life",baseline,0.7506,False,0.6729,False,-1.0,naturalqs,llama3
+who was the movie citizen kane based on,"based in part upon the American newspaper magnate William Randolph Hearst, Chicago tycoons Samuel Insull and Harold McCormick, and aspects of Welles's own life","According to the provided context, the movie ""Citizen Kane"" is based in part upon:
+
+* William Randolph Hearst, an American newspaper magnate
+* Samuel Insull and Harold McCormick, Chicago tycoons
+* Aspects of Orson Welles's own life",hcpc_v1,0.6547,False,0.6924,False,-1.0,naturalqs,llama3
+who was the movie citizen kane based on,"based in part upon the American newspaper magnate William Randolph Hearst, Chicago tycoons Samuel Insull and Harold McCormick, and aspects of Welles's own life","According to the provided context, Citizen Kane is particularly praised for examining the life and legacy of Charles Foster Kane, played by Orson Welles. Additionally, it is mentioned that the character was based in part upon William Randolph Hearst, Samuel Insull, Harold McCormick, and aspects of Orson Welles's own life.
+
+So, to answer your question: Citizen Kane was based on Charles Foster Kane, with influences from William Randolph Hearst, Samuel Insull, Harold McCormick, and Orson Welles himself.",hcpc_v2,0.7148,False,0.6729,False,0.601,naturalqs,llama3
+who sings the songs in crazy ex girlfriend,Rachel Bloom,"According to the provided context, Rachel Bloom sings the opening theme songs for each season:
+
+* ""Crazy Ex-Girlfriend"" (performed by Rachel Bloom) - Season 1
+* ""I'm Just a Girl in Love"" (performed by Rachel Bloom) - Season 2
+* ""You Do/You Don't Wanna Be Crazy"" (performed by Rachel Bloom) - Season 3
+
+Additionally, the instrumental versions of these songs are used as ending themes for each season.",baseline,0.3835,True,0.4486,False,-1.0,naturalqs,llama3
+who sings the songs in crazy ex girlfriend,Rachel Bloom,"According to the provided context, Rachel Bloom sings ""You Do / You Don't Wanna Be Crazy"" (season 3). Additionally, it mentions that some instrumental tracks are also part of the show's soundtrack.",hcpc_v1,0.886,False,0.6241,False,-1.0,naturalqs,llama3
+who sings the songs in crazy ex girlfriend,Rachel Bloom,"According to the provided context, Rachel Bloom sings the opening theme songs for each season:
+
+* ""Crazy Ex-Girlfriend"" (performed by Rachel Bloom) - Season 1
+* ""I'm Just a Girl in Love"" (performed by Rachel Bloom) - Season 2
+* ""You Do/You Don't Wanna Be Crazy"" (performed by Rachel Bloom) - Season 3
+
+Additionally, the context mentions that the ending theme songs are also performed by Rachel Bloom, but only provides the instrumental titles for each season.",hcpc_v2,0.3536,True,0.4536,True,0.5761,naturalqs,llama3
+when does nathan get in a car accident,"""The Show Must Go On""",I cannot find this information in the provided context.,baseline,0.5531,False,0.3898,False,-1.0,naturalqs,llama3
+when does nathan get in a car accident,"""The Show Must Go On""",I cannot find this information in the provided context.,hcpc_v1,0.5531,False,0.4392,False,-1.0,naturalqs,llama3
+when does nathan get in a car accident,"""The Show Must Go On""",I cannot find this information in the provided context.,hcpc_v2,0.5531,False,0.3789,True,0.6467,naturalqs,llama3
+when is the world consumer right day celebrated,15 March every year,"According to the provided context, World Consumer Rights Day is celebrated on 15 March every year.",baseline,0.9183,False,0.4835,False,-1.0,naturalqs,llama3
+when is the world consumer right day celebrated,15 March every year,"According to the provided context, World Consumer Rights Day is an annual occasion, but the specific date is not mentioned. However, we can infer that it might be celebrated on March 15th, as John F. Kennedy's quote is dated ""On 15 March 1962"".",hcpc_v1,0.6557,False,0.6221,False,-1.0,naturalqs,llama3
+when is the world consumer right day celebrated,15 March every year,"According to the provided context, World Consumer Rights Day is celebrated on 15 March every year.",hcpc_v2,0.9183,False,0.4836,True,0.6056,naturalqs,llama3
+how much square feet is a basketball court,94 by 50 feet,"According to the provided context, the dimensions of an NBA basketball court are:
+
+* Length: 94 feet
+* Width: 50 feet
+
+To calculate the area in square feet, we multiply the length and width:
+
+* Area = Length x Width = 94 ft x 50 ft = 4,700 square feet",baseline,0.6257,False,0.6834,False,-1.0,naturalqs,llama3
+how much square feet is a basketball court,94 by 50 feet,"Based on the provided context, we can calculate the area of an NBA basketball court as follows:
+
+Length (94 ft) × Width (50 ft) = 4700 square feet
+
+So, a basketball court in the National Basketball Association (NBA) is approximately 4700 square feet.",hcpc_v1,0.8905,False,0.7046,False,-1.0,naturalqs,llama3
+how much square feet is a basketball court,94 by 50 feet,"According to the provided context, the dimensions of an NBA basketball court are:
+
+* Length: 94 feet
+* Width: 50 feet
+
+To calculate the area in square feet, we multiply the length and width:
+
+* Area = Length x Width = 94 feet x 50 feet = 4,700 square feet",hcpc_v2,0.6129,False,0.6834,False,0.7021,naturalqs,llama3
+where did the rulers of the qing dynasty originate,Manchuria,"According to the provided context, the rulers of the Qing dynasty originated from the Jurchen Aisin Gioro clan in Manchuria.",baseline,0.7159,False,0.6566,False,-1.0,naturalqs,llama3
+where did the rulers of the qing dynasty originate,Manchuria,"According to the provided context, it does not specify where the rulers of the Qing dynasty originated. Therefore, I cannot find this information in the provided context.",hcpc_v1,0.6734,False,0.6468,False,-1.0,naturalqs,llama3
+where did the rulers of the qing dynasty originate,Manchuria,"According to the provided context, the rulers of the Qing dynasty originated from the Jurchen Aisin Gioro clan in Manchuria.",hcpc_v2,0.7159,False,0.6578,True,0.6432,naturalqs,llama3
