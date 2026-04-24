@@ -38,7 +38,7 @@ def evaluate_rag(results: list[dict]) -> dict:
     emb = LangchainEmbeddingsWrapper(
         HuggingFaceEmbeddings(
             model_name="sentence-transformers/all-MiniLM-L6-v2",
-            model_kwargs={"device": "mps"}
+            model_kwargs={"device": __import__("torch").cuda.is_available() and "cuda" or "cpu"}
         )
     )
 

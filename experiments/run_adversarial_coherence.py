@@ -229,9 +229,13 @@ def main():
         print(f"  {cat}: {len(cases)} cases")
 
     print(f"[Adv] Loading embeddings: {EMBED_MODEL}")
+    import torch as _torch
+    _dev = "cuda" if _torch.cuda.is_available() else (
+        "mps" if getattr(_torch.backends, "mps", None) and _torch.backends.mps.is_available() else "cpu"
+    )
     embeddings = HuggingFaceEmbeddings(
         model_name=EMBED_MODEL,
-        model_kwargs={"device": "mps"},
+        model_kwargs={"device": _dev},
     )
 
     print("[Adv] Loading NLI detector...")

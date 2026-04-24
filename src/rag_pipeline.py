@@ -24,6 +24,15 @@ from langchain_core.documents import Document
 from langchain_core.prompts import PromptTemplate
 
 
+def _best_device() -> str:
+    import torch
+    if torch.cuda.is_available():
+        return "cuda"
+    if getattr(torch.backends, "mps", None) and torch.backends.mps.is_available():
+        return "mps"
+    return "cpu"
+
+
 # ── Prompt templates ──────────────────────────────────────────────────────────
 
 RAG_PROMPT = PromptTemplate(
@@ -69,7 +78,7 @@ class RAGPipeline:
             print(f"[RAG] Loading embedding model: {embed_model}")
             self.embeddings = HuggingFaceEmbeddings(
                 model_name=embed_model,
-                model_kwargs={"device": "mps"}   # Apple Silicon GPU
+                model_kwargs={"device": _best_device()}
             )
 
         print(f"[RAG] Connecting to Ollama ({model_name})")

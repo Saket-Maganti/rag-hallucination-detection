@@ -26,7 +26,12 @@ class HallucinationDetector:
 
     def __init__(self, model_name: str = "cross-encoder/nli-deberta-v3-base"):
         print(f"[NLI] Loading hallucination detector: {model_name}")
-        device = "mps" if torch.backends.mps.is_available() else "cpu"
+        if torch.cuda.is_available():
+            device = 0
+        elif getattr(torch.backends, "mps", None) and torch.backends.mps.is_available():
+            device = "mps"
+        else:
+            device = -1
         self.nli = pipeline(
             "zero-shot-classification",
             model=model_name,
