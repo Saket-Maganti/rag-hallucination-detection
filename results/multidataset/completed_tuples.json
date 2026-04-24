@@ -11,10 +11,10 @@
   "triviaqa__mistral": true,
   "triviaqa__llama3": true,
   "triviaqa__qwen2.5": true,
-  "naturalqs__mistral": true,
-  "naturalqs__llama3": true,
-  "naturalqs__qwen2.5": true,
   "financebench__mistral": true,
   "financebench__llama3": true,
-  "financebench__qwen2.5": true
+  "financebench__qwen2.5": true,
+  "naturalqs__mistral": true,
+  "naturalqs__llama3": true,
+  "naturalqs__qwen2.5": true
 }

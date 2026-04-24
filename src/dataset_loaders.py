@@ -513,56 +513,84 @@ def load_msmarco_longform(
     We skip examples whose `answers` list is empty or contains only the
     string "No Answer Present.".
     """
+    # Robust loader:
+    #   1. Try v2.1 streaming with `.take(bounded)` so we never iterate past
+    #      what we need — fixes the observed multi-minute stall on 2026-04-24.
+    #   2. Per-example try/except so a single malformed row does not kill the
+    #      whole stream.
+    #   3. If v2.1 streaming returns zero usable examples within `hard_limit`
+    #      candidates, fall back to v1.1 (~100 k dev split, smaller + more
+    #      reliable for a 20-question evaluation).
     from datasets import load_dataset
-    print(f"[Data] Loading MS-MARCO v2.1 ({split}, streaming)...")
-    try:
-        ds = load_dataset(
-            "microsoft/ms_marco", "v2.1", split=split, streaming=True,
-        )
-    except Exception as exc:
-        print(f"[Data] MS-MARCO load failed ({exc})")
-        return [], []
+    # Read ~5× max_papers candidates to account for filtered-out examples
+    # (empty answers, "No Answer Present.", <80-char passages, dupes).
+    hard_limit = max(200, max_papers * 8)
 
-    docs: List[Document] = []
-    qa:   List[dict] = []
-    seen_paper_ids = set()
+    def _iter_config(config: str):
+        print(f"[Data] Loading MS-MARCO {config} ({split}, streaming, "
+              f"bounded to {hard_limit} rows)...")
+        try:
+            ds = load_dataset(
+                "microsoft/ms_marco", config, split=split, streaming=True,
+            )
+            return ds.take(hard_limit)
+        except Exception as exc:
+            print(f"[Data] MS-MARCO {config} load failed ({exc})")
+            return None
 
-    for raw in tqdm(ds, desc="MS-MARCO"):
-        if len(seen_paper_ids) >= max_papers:
-            break
-        query = (raw.get("query") or "").strip()
-        answers = raw.get("answers") or []
-        answers = [a.strip() for a in answers if isinstance(a, str) and a.strip()]
-        answers = [a for a in answers if a.lower() != "no answer present."]
-        if not (query and answers):
-            continue
-
-        passages = raw.get("passages") or {}
-        ptexts   = passages.get("passage_text") or []
-        if not ptexts:
-            continue
-
-        paper_id = str(raw.get("query_id", len(seen_paper_ids)))
-        if paper_id in seen_paper_ids:
-            continue
-        seen_paper_ids.add(paper_id)
-
-        for p in ptexts:
-            p = (p or "").strip()
-            if len(p) < 80:
+    def _parse_stream(stream) -> Tuple[List[Document], List[dict]]:
+        docs_: List[Document] = []
+        qa_:   List[dict] = []
+        seen_: set = set()
+        if stream is None:
+            return docs_, qa_
+        for raw in tqdm(stream, desc="MS-MARCO", total=hard_limit):
+            if len(seen_) >= max_papers:
+                break
+            try:
+                query = (raw.get("query") or "").strip()
+                answers = raw.get("answers") or []
+                answers = [a.strip() for a in answers
+                           if isinstance(a, str) and a.strip()]
+                answers = [a for a in answers
+                           if a.lower() != "no answer present."]
+                if not (query and answers):
+                    continue
+                passages = raw.get("passages") or {}
+                ptexts = passages.get("passage_text") or []
+                if not ptexts:
+                    continue
+                paper_id = str(raw.get("query_id", len(seen_)))
+                if paper_id in seen_:
+                    continue
+                seen_.add(paper_id)
+                for p in ptexts:
+                    p = (p or "").strip()
+                    if len(p) < 80:
+                        continue
+                    docs_.append(Document(
+                        page_content=p[:4000],
+                        metadata={"paper_id": paper_id, "title": query[:80]},
+                    ))
+                gt = max(answers, key=len)
+                qa_.append({
+                    "paper_id":     paper_id,
+                    "question":     query,
+                    "ground_truth": gt,
+                    "task":         "longform",
+                })
+            except Exception as exc:
+                # Corrupted single row — skip without aborting the stream.
+                print(f"[Data] MS-MARCO: skipped a malformed row ({exc})")
                 continue
-            docs.append(Document(page_content=p[:4000], metadata={
-                "paper_id": paper_id,
-                "title":    query[:80],
-            }))
+        return docs_, qa_
 
-        gt = max(answers, key=len)
-        qa.append({
-            "paper_id":     paper_id,
-            "question":     query,
-            "ground_truth": gt,
-            "task":         "longform",
-        })
+    # Try v2.1 first (paper default), fall back to v1.1 if empty.
+    docs, qa = _parse_stream(_iter_config("v2.1"))
+    if not qa:
+        print("[Data] MS-MARCO v2.1 produced 0 usable examples "
+              "— falling back to v1.1")
+        docs, qa = _parse_stream(_iter_config("v1.1"))
 
     print(f"[Data] MS-MARCO: {len(docs)} passages, {len(qa)} long-form QA pairs")
     return docs, qa

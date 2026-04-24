@@ -61,10 +61,22 @@ CHUNK_SIZE  = 1024
 TOP_K       = 3
 
 
-def _maybe_load_selfrag(device: str | None):
+def _maybe_load_selfrag(device: str | None,
+                        load_in_8bit: bool = False,
+                        load_in_4bit: bool = False):
+    """Load Self-RAG with optional bitsandbytes quantization.
+
+    Use `--selfrag_8bit` on a single T4 to avoid the OOM we hit on Kaggle
+    when running Self-RAG alongside Ollama + embeddings.  `--selfrag_4bit`
+    is the last resort if you also need another 7B model co-resident.
+    """
     try:
         from src.selfrag_wrapper import SelfRAGGenerator
-        gen = SelfRAGGenerator(device=device)
+        gen = SelfRAGGenerator(
+            device=device,
+            load_in_8bit=load_in_8bit,
+            load_in_4bit=load_in_4bit,
+        )
         gen.load()
         return gen
     except Exception as exc:
@@ -214,11 +226,21 @@ def main():
     parser.add_argument("--n_questions", type=int, default=30)
     parser.add_argument("--selfrag_device", default=None)
     parser.add_argument("--skip_selfrag", action="store_true")
+    parser.add_argument("--selfrag_8bit", action="store_true",
+                        help="load Self-RAG with bitsandbytes 8-bit quant "
+                             "(required on a single T4 alongside Ollama)")
+    parser.add_argument("--selfrag_4bit", action="store_true",
+                        help="load Self-RAG with bitsandbytes 4-bit NF4 quant "
+                             "(last resort; lowest peak VRAM)")
     args = parser.parse_args()
 
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     detector = HallucinationDetector()
-    selfrag = None if args.skip_selfrag else _maybe_load_selfrag(args.selfrag_device)
+    selfrag = None if args.skip_selfrag else _maybe_load_selfrag(
+        args.selfrag_device,
+        load_in_8bit=args.selfrag_8bit,
+        load_in_4bit=args.selfrag_4bit,
+    )
 
     diag_path = os.path.join(OUTPUT_DIR, "diagnostics.jsonl")
     rows: List[Dict] = []

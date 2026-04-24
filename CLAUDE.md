@@ -10,11 +10,13 @@ Main repo: `/Users/saketmaganti/claudeprojs/rag-hallucination-detection`
 Remote: `https://github.com/Saket-Maganti/rag-hallucination-detection`
 Default branch: `main`
 
-## Current status (2026-04-24)
+## Current status (2026-04-25)
 
-**Phase 1 (8-item paper-revision infrastructure) — COMPLETE.** All reviewer-facing experiments ran. Only FinanceBench (HF-gated) and Self-RAG on Kaggle (OOM) have asterisks.
+**Phase 1 (8-item paper-revision infrastructure) — COMPLETE.** All reviewer-facing experiments ran. Only FinanceBench (HF-gated) and Self-RAG on Kaggle (OOM → now 8-bit-loadable) have asterisks.
 
-**Phase 2 (10-item major paper-strengthening upgrade) — IN PROGRESS.** Scripts written for Wave 1 + theory; remaining waves are code-to-write or launch-and-wait.
+**Phase 2 (10-item major paper-strengthening upgrade) — CODE COMPLETE.** Every item now has an executable script; the remaining work is launching runs (Surface 1 + Surface 2) and deploying the HF Space.
+
+**New on 2026-04-25**: Self-RAG 8-bit/4-bit quantization path, final-tables aggregator, NQ-row-count repair helper, benchmark-v2 release builder, MS-MARCO streaming robustness fix, HF Space + leaderboard + deploy helper.
 
 ## Professor's feedback (2026-04-23)
 
@@ -186,10 +188,23 @@ Expected: 13–14 h. `;` separators so one failure doesn't kill the rest. All sc
 
 ### ⚪ Needs code to be written
 
-_All P2 items now have code._
+_All P2 items + all operational helpers now have code._ Remaining work is compute-only.
 
-- P2 #10 HF Space demo: `space/app.py` + `space/requirements.txt` + `space/README.md` written 2026-04-25. Three tabs (CCS calculator, paradox explorer, about), CPU-only, no Ollama dependency. Smoke-tested (syntax ok). Still TODO as camera-ready polish: deploy to an actual `huggingface.co/spaces/...` repo + optional separate leaderboard Space.
-- Remaining P2 items (#1 RAPTOR, #2 frontier-scale, #3 long-form, #5 multi-seed, #9 deployment) all graduated to 🟡 Ready on 2026-04-25 — scripts exist and are smoke-tested.
+- P2 #10 HF Space demo: `space/app.py` + `space/requirements.txt` + `space/README.md` written 2026-04-25. Three tabs (CCS calculator, paradox explorer, about), CPU-only, no Ollama dependency. Companion leaderboard at `leaderboard/app.py` (port 7861) with browse + submit (one-click GitHub-PR URL) + rules tabs.
+- Deploy helper: `python3 scripts/prepare_hf_space.py` → `space_deploy/` with `.gitattributes` LFS config + `_PUSH_INSTRUCTIONS.md`. User still runs `git push hf main` manually.
+- Remaining P2 items (#1 RAPTOR, #2 frontier-scale, #3 long-form, #5 multi-seed, #9 deployment) all graduated to 🟡 Ready on 2026-04-25.
+
+### Helper scripts added 2026-04-25 (ops + paper assembly)
+
+| Script | Purpose |
+|---|---|
+| `experiments/build_final_tables.py` | One-shot Markdown tables for every paper section (12 tables + `ALL_TABLES.md` + `missing.md`). Smoke-tested: 6/12 render from current results, 6 stubbed as "not yet available" — safe to re-run mid-experiment. |
+| `scripts/repair_multidataset_rows.py` | Audits every `*_per_query.csv` for row-count mismatches, dry-run by default, `--apply` backs up to `backups_YYYYMMDD/` and scrubs `completed_tuples.json`. Current state: all 15 tuples clean (90 rows each). |
+| `scripts/build_benchmark_v2.py` | Builds `release/context_coherence_bench_v2/` from expanded adversarial + refreshed paradox CSV. Refuses to cut release if any category < `--min_cases_per_category`; sha256 per file in metadata.json. |
+| `scripts/prepare_hf_space.py` | Stages `space_deploy/` with app + slim results + LFS `.gitattributes` for `git push hf main`. |
+| `leaderboard/app.py` + `release/.../leaderboard.yaml` | Community leaderboard Gradio app with 9 seed entries (baseline/HCPC-v1/HCPC-v2/CRAG × squad/pubmedqa/hotpotqa). |
+| `src/selfrag_wrapper.py` (edit) | New `load_in_8bit` / `load_in_4bit` params → fits T4 alongside Ollama. Use `--selfrag_8bit` on head-to-head CLI. |
+| `src/dataset_loaders.py::load_msmarco` (edit) | Bounded streaming `.take(max(200, max_papers*8))`, per-row try/except, v2.1 → v1.1 fallback. Prevents the multi-minute hang hit in the long-form runner. |
 
 ### Decision matrix — what to prioritize
 
@@ -323,14 +338,27 @@ time.sleep(8)
 - `huggingface-cli` may not be on PATH; use `huggingface_hub.login()` from Python
 - **Mechanistic ran in 5 min on T4** (20 items only, not 3–5 h as runbook estimates) — verify outputs are non-constant to catch stub fallback: `results/mechanistic/entropy_by_layer.csv` should be ≥ 20 KB and vary across layers
 
-## Files added in Phase 2 (this session)
+## Files added in Phase 2 (across sessions)
 
 | Path | Item | Purpose |
 |---|---|---|
 | `experiments/train_mech_classifier.py` | 4 | scikit-learn classifier on per-layer entropy + retrieved mass |
 | `experiments/run_subchunk_sensitivity.py` | 7 | Sweep HCPC sub_chunk_size ∈ {128, 256, 512} |
-| `experiments/generate_adversarial_cases.py` | 6 | LLM-generate new adversarial cases with validator (uses existing coherence metrics) |
-| `ragpaper/sections/theory.tex` | 8 | Proposition + Theorem + Corollary for coherence paradox (needs `\input{sections/theory}` in main.tex) |
+| `experiments/generate_adversarial_cases.py` | 6 | LLM-generate new adversarial cases with validator |
+| `ragpaper/sections/theory.tex` | 8 | Proposition + Theorem + Corollary for coherence paradox |
+| `experiments/run_noise_injection_ablation.py` | Gap 1 | Coherence vs generic retrieval noise |
+| `experiments/run_prompt_template_ablation.py` | Gap 2 | Paradox stability across 4 prompt templates |
+| `experiments/build_rag_vs_zeroshot_table.py` | Gap 3 | Reshape existing results into 2×2 open/closed × weak/strong |
+| `src/raptor_retriever.py` + `experiments/run_raptor_ablation.py` | 1 | 2-level RAPTOR vs HCPC head-to-head |
+| `experiments/run_longform_eval.py` | 3 | Long-form generation (QASPER + MS-MARCO), ROUGE + faith |
+| `src/groq_llm.py` + `experiments/run_frontier_scale.py` | 2 | 70B / Mixtral paradox at scale via Groq API |
+| `experiments/run_multiseed_variance.py` | 5 | 3-seed variance bands on Table 2 (std-of-seed-means) |
+| `experiments/build_deployment_figure.py` | 9 | Latency vs faith Pareto figure + deployment table (no-run) |
+| `space/app.py` + `leaderboard/app.py` | 10 | HF Space demo + community leaderboard Gradio apps |
+| `experiments/build_final_tables.py` | ops | Paper-ready Markdown tables (12 tables + ALL_TABLES.md) |
+| `scripts/repair_multidataset_rows.py` | ops | Audit + repair per-query row-count drift |
+| `scripts/build_benchmark_v2.py` | ops | Package `release/context_coherence_bench_v2/` bundle |
+| `scripts/prepare_hf_space.py` | ops | Stage `space_deploy/` for `git push hf main` |
 
 ## Dependency order (Phase 2)
 

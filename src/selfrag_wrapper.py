@@ -79,10 +79,30 @@ class SelfRAGGenerator:
         model_name: str = "selfrag/selfrag_llama2_7b",
         device: Optional[str] = None,
         dtype: str = "float16",
+        load_in_8bit: bool = False,
+        load_in_4bit: bool = False,
     ):
+        """
+        Parameters
+        ----------
+        load_in_8bit : bool
+            If True, load with bitsandbytes 8-bit quantization.  Needed on
+            a single Kaggle T4 (15 GB) because Self-RAG-7B is ~14 GB in fp16
+            and OOMs when co-resident with Mistral-7B Ollama and our
+            embeddings.  8-bit brings peak to ~7 GB.  Requires
+            `pip install bitsandbytes accelerate`.
+        load_in_4bit : bool
+            If True, load in 4-bit NF4 via bitsandbytes.  ~4 GB peak — use
+            this if you also need to run another 7B model on the same T4.
+            Slightly lower quality than 8-bit.
+        """
         self.model_name = model_name
         self.device = device
         self.dtype  = dtype
+        self.load_in_8bit = bool(load_in_8bit)
+        self.load_in_4bit = bool(load_in_4bit)
+        if self.load_in_8bit and self.load_in_4bit:
+            raise ValueError("pass either load_in_8bit OR load_in_4bit, not both")
         self._model = None
         self._tok   = None
 
@@ -93,13 +113,50 @@ class SelfRAGGenerator:
         from transformers import AutoTokenizer, AutoModelForCausalLM
         if self.device is None:
             self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        torch_dtype = getattr(torch, self.dtype)
-        print(f"[SelfRAG] Loading {self.model_name} on {self.device}...")
+
+        quantized = self.load_in_8bit or self.load_in_4bit
+        if quantized and self.device != "cuda":
+            raise RuntimeError(
+                "bitsandbytes quantization requires CUDA.  Either run on a "
+                "GPU host or pass load_in_8bit=False / load_in_4bit=False."
+            )
+
+        print(f"[SelfRAG] Loading {self.model_name} on {self.device}"
+              f"{' (8-bit)' if self.load_in_8bit else ''}"
+              f"{' (4-bit NF4)' if self.load_in_4bit else ''}...")
         self._tok = AutoTokenizer.from_pretrained(self.model_name)
-        self._model = AutoModelForCausalLM.from_pretrained(
-            self.model_name,
-            torch_dtype=torch_dtype,
-        ).to(self.device)
+
+        if quantized:
+            # bitsandbytes path — model is placed automatically, no .to(device)
+            try:
+                from transformers import BitsAndBytesConfig
+            except ImportError as exc:
+                raise ImportError(
+                    "BitsAndBytesConfig unavailable — "
+                    "`pip install bitsandbytes accelerate` "
+                    "(requires a recent transformers)"
+                ) from exc
+            if self.load_in_8bit:
+                bnb_cfg = BitsAndBytesConfig(load_in_8bit=True)
+            else:
+                bnb_cfg = BitsAndBytesConfig(
+                    load_in_4bit=True,
+                    bnb_4bit_quant_type="nf4",
+                    bnb_4bit_compute_dtype=getattr(torch, self.dtype),
+                    bnb_4bit_use_double_quant=True,
+                )
+            self._model = AutoModelForCausalLM.from_pretrained(
+                self.model_name,
+                quantization_config=bnb_cfg,
+                device_map="auto",
+            )
+        else:
+            # Full-precision / fp16 path — unchanged from the original behaviour.
+            torch_dtype = getattr(torch, self.dtype)
+            self._model = AutoModelForCausalLM.from_pretrained(
+                self.model_name,
+                torch_dtype=torch_dtype,
+            ).to(self.device)
         self._model.eval()
         print(f"[SelfRAG] Ready.")
 
