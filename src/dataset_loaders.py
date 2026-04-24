@@ -56,14 +56,17 @@ def load_naturalqs(
     """
     from datasets import load_dataset
     print(f"[Data] Loading Natural Questions ({split})...")
+    # Stream validation: the non-streaming path triggers a full train-split
+    # generation (~55 GB, 287 parquets) and one bad shard raises
+    # DatasetGenerationError, silently corrupting later iteration.
     try:
         ds = load_dataset("google-research-datasets/natural_questions",
-                          "default", split=split, streaming=False)
+                          "default", split=split, streaming=True)
     except Exception:
         # Fallback: the lighter "nq_open" subset (questions + answers, no docs)
         # paired with a separately loaded Wikipedia dump. We stub by skipping
         # context (callers will see empty passages).
-        ds = load_dataset("nq_open", split="validation")
+        ds = load_dataset("nq_open", split="validation", streaming=True)
 
     docs: List[Document] = []
     qa: List[dict] = []
@@ -79,19 +82,26 @@ def load_naturalqs(
         if not question:
             continue
 
-        # NQ default config: long_answer / short_answers stored under
-        # annotations[0].
+        # NQ default config: `annotations` is a dict whose `short_answers`
+        # is a list-per-annotator (5 annotators). Most annotators leave
+        # `text: []`; we keep the first annotator that supplied any text.
         ground_truth = ""
         if "annotations" in item:
             ann = item["annotations"]
+            candidates = []
             if isinstance(ann, dict):
-                short_answers = ann.get("short_answers", [])
-                if short_answers and short_answers[0].get("text"):
-                    ground_truth = short_answers[0]["text"][0]
-            elif isinstance(ann, list) and ann:
-                sa = ann[0].get("short_answers", [])
-                if sa and sa[0].get("text"):
-                    ground_truth = sa[0]["text"][0]
+                candidates = ann.get("short_answers", []) or []
+            elif isinstance(ann, list):
+                for a in ann:
+                    if isinstance(a, dict):
+                        candidates.extend(a.get("short_answers", []) or [])
+            for sa in candidates:
+                if not isinstance(sa, dict):
+                    continue
+                txt = sa.get("text") or []
+                if txt:
+                    ground_truth = txt[0]
+                    break
         elif "answer" in item:
             answer = item["answer"]
             if isinstance(answer, list) and answer:
