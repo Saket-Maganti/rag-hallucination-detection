@@ -6,16 +6,17 @@
 The behavioral signature of the refinement paradox is not neutral about
 mechanism. Four observations converge on a single account.
 (i)~Faithfulness drops occur precisely when refinement fragments
-previously contiguous evidence, not when it rescores it.
-(ii)~Preserving contiguity (via merge-back) recovers faithfulness at fixed
-retrieval similarity. (iii)~Chunk size---an upstream determinant of how
-much connective evidence survives retrieval---dominates faithfulness
-variance. (iv)~Domain-mismatched encoders produce low-coherence contexts
-that make RAG worse than zero-shot prompting. Each observation is
-consistent with generators acting as \emph{narrative continuators}:
-coherent evidence is extended faithfully, fragmented evidence is patched
-with parametric memory. Per-passage relevance is orthogonal to this
-mechanism, which is why optimizing it in isolation can cause the paradox.
+previously contiguous evidence, not when it merely rescores it.
+(ii)~Preserving contiguity (via merge-back) recovers faithfulness at
+fixed retrieval similarity. (iii)~Chunk size — an upstream determinant
+of how much connective evidence survives retrieval — dominates
+faithfulness variance. (iv)~Domain-mismatched encoders produce
+low-coherence contexts that make RAG worse than zero-shot prompting.
+Each observation is consistent with generators acting as \emph{narrative
+continuators}: coherent evidence is extended faithfully, fragmented
+evidence is patched with parametric memory. Per-passage relevance is
+orthogonal to this mechanism, which is why optimizing it in isolation
+can trigger the paradox.
 
 Table~\ref{tab:coherence_corr} reports Spearman correlations between
 coherence-oriented retrieval metrics and answer faithfulness.
@@ -68,15 +69,16 @@ evidential gaps. Figure~\ref{fig:ccs_hallucination} captures this aggregate
 relationship, and Figure~\ref{fig:proxy} (discussed below) shows that
 CCS-based proxy scores align with full answer-level evaluation.
 
-The coherence account also unifies two results that under a pure
-retrieval-quality view would appear unrelated. First, the selective probe
-helps substantially on SQuAD---where baseline coherence is high, and the
-failure to preserve it is the only remaining degree of freedom---but only
-marginally on PubMedQA, where the coherence deficit is upstream in the
-encoder. Second, chunk size dominates faithfulness variance because it is,
-in effect, a dial on how much connective evidence a retrieved passage
-carries. Two phenomena with no obvious common cause under the standard
-view share a single explanation under the coherence view.
+The coherence account also unifies two results that would look
+unrelated under a pure retrieval-quality view. First, the selective
+probe helps substantially on SQuAD — where baseline coherence is high,
+and the failure to preserve it is the only remaining degree of freedom
+— but only marginally on PubMedQA, where the coherence deficit is
+upstream in the encoder. Second, chunk size dominates faithfulness
+variance because it is, in effect, a dial on how much connective
+evidence a retrieved passage carries. Two phenomena with no obvious
+common cause under the standard view share a single explanation under
+the coherence view.
 
 \input{figures/ccs_and_proxy}
 
@@ -320,14 +322,15 @@ interpretation can be advanced from hypothesis to claim.
 
 \subsection{Model-specific sensitivity}
 
-The variance decomposition reveals a finding with important practical
-implications: different model architectures respond to retrieval
-configuration parameters in fundamentally different ways. On PubMedQA,
-Mistral's faithfulness variance is governed by top-$k$ (97.9\%), while
-Llama-3's is governed by chunk size (95.2\%). This means that a single set
-of ``RAG best practices'' does not transfer across model families. The
-optimal chunking strategy for one generator may be suboptimal for another,
-and configurations should be tuned per-model rather than applied universally.
+The variance decomposition reveals a practically important finding:
+different model architectures respond to retrieval configuration
+parameters in fundamentally different ways. On PubMedQA, Mistral's
+faithfulness variance is governed by top-$k$ (97.9\%), whereas
+Llama-3's is governed by chunk size (95.2\%). A single set of ``RAG
+best practices'' therefore does not transfer across model families; the
+optimal chunking strategy for one generator may be suboptimal for
+another, and configurations should be tuned per-model rather than
+applied universally.
 
 \subsection{Implications for RAG as a research area}
 
@@ -351,9 +354,9 @@ choices.
   \item \textbf{Retrieval can be harmful, not merely insufficient.} In
         domain-mismatched regimes, RAG produces more hallucination than
         zero-shot prompting. This is not a tuning issue; it is a
-        predicted by the coherence framework and---at least in the
-        pipelines tested here---should be treated as a first-class failure
-        mode in RAG deployment.
+        direct prediction of the coherence framework and — at least in
+        the pipelines tested here — should be treated as a first-class
+        failure mode in RAG deployment.
 \end{enumerate}
 
 \subsection{Strengths of this study}

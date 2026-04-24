@@ -2,64 +2,62 @@
 \label{sec:intro}
 
 A RAG pipeline looks, from the outside, like a safety feature. An LLM
-with no retrieval can hallucinate; an LLM with retrieval is anchored to
-a document it can cite. This is the story the field tells about why we
-build these systems, and it is the story behind most of the engineering
-effort that has gone into them~\citep{lewis2020rag,
-gao2024retrievalaugmented}: retrieve more relevant passages, and the
-generator will speak more faithfully. The story underwrites production
-deployments that matter — clinical decision support, legal research,
-enterprise search — places where a confident but ungrounded answer can
-hurt someone.
+without retrieval can hallucinate; an LLM with retrieval is anchored to
+a document it can cite. That is the story the field tells about why we
+build these systems, and the story behind most of the engineering
+investment in them~\citep{lewis2020rag, gao2024retrievalaugmented}:
+retrieve more relevant passages, and the generator will speak more
+faithfully. The story underwrites deployments that matter — clinical
+decision support, legal research, enterprise search — settings where a
+confident but ungrounded answer can hurt someone.
 
 This paper is a report on what we found when we stopped believing the
 story.
 
 \paragraph{Two quantities that have been quietly conflated.}
 Retrieval quality is a property of \emph{individual passages}: each
-chunk is scored against the query on its own. Faithfulness is a
-property of the \emph{answer}, which emerges from a generator reasoning
-over the concatenation of every passage the retriever handed it.
-Between those two quantities lies a variable that standard RAG
-evaluation does not look at — the internal coherence of the retrieved
-context \emph{as a set}. When passages are stitched into a single
-prompt, their mutual consistency is what lets the generator treat them
-as one piece of evidence. When that consistency breaks, the generator
-does not stop; it bridges the gap with whatever its parameters
-remember. The citation looks fine. The answer does not.
+chunk is scored against the query on its own. Faithfulness is a property
+of the \emph{answer}, which emerges from a generator reasoning over the
+concatenation of every passage the retriever handed it. Between these
+two quantities lies a variable standard RAG evaluation does not look at
+— the internal coherence of the retrieved context \emph{as a set}. When
+passages are stitched into a single prompt, their mutual consistency is
+what lets the generator treat them as one piece of evidence. When that
+consistency breaks, the generator does not stop; it bridges the gap with
+whatever its parameters remember. The citation looks fine. The answer
+does not.
 
 \paragraph{Why this matters in deployment.}
 The gap between retrieval quality and faithfulness is not a laboratory
 curiosity. In domain-specific deployments — biomedical QA, legal
 research, financial analysis — a general-purpose encoder routinely
-retrieves passages that are \emph{each} topical but \emph{together}
-inconsistent. Our experiments show that under those conditions, RAG
-produces more hallucination than the same model with no retrieval at
-all. The safety feature becomes the failure mode.
+returns passages that are \emph{each} topical but \emph{together}
+inconsistent. Under those conditions, our experiments show, RAG produces
+more hallucination than the same model with no retrieval at all. The
+safety feature becomes the failure mode.
 
 \paragraph{Why existing methods do not catch it.}
 The field has invested heavily in retrieval-side improvements:
 cross-encoder re-ranking~\citep{nogueira2019passage}, context
 compression~\citep{xu2023recomp}, self-reflective
 retrieval~\citep{asai2024selfrag}. All three optimize passage-level
-relevance or brevity. None of them measure — or preserve — the
-coherence of the context the generator finally sees. Post-retrieval
-refinement, the practice of splitting lower-scoring passages into
-higher-scoring sub-chunks, is the clearest illustration: it makes every
-passage look better while silently destroying the connective tissue
-between them.
+relevance or brevity. None measure — or preserve — the coherence of the
+context the generator finally sees. Post-retrieval refinement, the
+practice of splitting lower-scoring passages into higher-scoring
+sub-chunks, is the clearest illustration: it makes every passage look
+better while silently destroying the connective tissue between them.
 
 \input{figures/overview}
 
 \paragraph{What we claim, and what we do not.}
 \emph{Faithfulness in RAG is governed by set-level coherence, not
 passage-level relevance.} We name this mediating property \textbf{context
-coherence} and show that the central empirical consequence is the
-\textbf{refinement paradox}: aggressive post-retrieval refinement raises
-per-chunk similarity while reducing answer faithfulness by up to 15.9
-percentage points and introducing hallucination where there was none.
-The contribution of this paper is \emph{the failure mode and its
-mediating variable}, not a new state-of-the-art system. HCPC-v2 and CCS
+coherence}, and the central empirical consequence \textbf{the refinement
+paradox}: aggressive post-retrieval refinement raises per-chunk
+similarity while reducing answer faithfulness by up to 15.9 percentage
+points and introducing hallucination where there was none. The
+contribution of this paper is \emph{the failure mode and its mediating
+variable}, not a new state-of-the-art system. HCPC-v2 and CCS
 (introduced below) are instruments we use to test the coherence account;
 if a better instrument replaces them tomorrow, the account stands or
 falls independently. Figure~\ref{fig:overview} summarizes the study
@@ -80,11 +78,10 @@ design and the core finding.
         expected behavior without retraining.
 \end{itemize}
 
-\paragraph{What is new here.}
-The contribution of this paper is not a new retriever, refiner, or
-generator. It is a reframing, supported by four findings that are hard
-to explain within the standard retrieval-quality framing of RAG and
-natural within the coherence framing we propose.
+\paragraph{Contributions.}
+We make four contributions, each of which is hard to explain within the
+standard retrieval-quality framing of RAG and natural within the
+coherence framing we propose.
 
 \begin{enumerate}
   \item \textbf{Retrieval quality and answer faithfulness can move in
@@ -92,7 +89,7 @@ natural within the coherence framing we propose.
         On SQuAD, naive post-retrieval refinement improves per-chunk
         similarity while dropping faithfulness from 0.7995 to 0.6407 and
         introducing 10.0\% hallucination ($-$15.9~pp). Per-passage
-        similarity and faithfulness are close to \emph{decoupled} across
+        similarity and faithfulness are nearly \emph{decoupled} across
         the three refinement regimes we compare, falsifying the
         assumption that drives most RAG optimization.
 
@@ -103,33 +100,33 @@ natural within the coherence framing we propose.
         predicts this inversion; standard retrieval framing does not.
         This is the paper's strongest empirical consequence: when
         retrieved evidence is topically adjacent but semantically
-        inconsistent, parametric memory — which is at least internally
+        inconsistent, parametric memory — at least internally
         consistent — is the safer input.
 
   \item \textbf{Selective, coherence-aware refinement eliminates the
         paradox with minimal intervention.}
         HCPC-v2 recovers SQuAD faithfulness to 0.7874 with 0\%
         hallucination by intervening on only 16.7\% of queries, and
-        stays stable across a 7$\times$ range of refinement rates
+        remains stable across a $7\times$ range of refinement rates
         (7\%--48\%). The design principle that does the work is
         restraint, not cleverness.
 
   \item \textbf{Chunk size dominates faithfulness variance by orders of
         magnitude over prompt strategy.}
-        ANOVA shows chunk size as the only significant factor on SQuAD
+        ANOVA marks chunk size as the only significant factor on SQuAD
         ($F = 19.72$, $p < 0.001$, $\eta^2 = 0.100$, Cohen's $d = 1.41$),
         accounting for 90.1\% of between-factor variance; prompt
-        strategy explains $<0.1$\%. This is consistent with the
+        strategy explains $<0.1\%$. This is consistent with the
         coherence account — chunk size is the knob that most directly
         controls how much connective evidence survives retrieval — and
-        it flips the common engineering priority, which still has teams
-        optimizing prompts before they fix their chunking.
+        it inverts the common engineering priority, which still has
+        teams tuning prompts before fixing their chunking.
 \end{enumerate}
 
 We distill the reframing into \textbf{CCS}, a retrieval-time diagnostic
 computed from pairwise chunk embedding similarities. CCS separates
-coherent retrieval sets (0\% hallucination, CCS $=1.00$ on SQuAD) from
-incoherent ones (20\% hallucination, CCS $=0.57$ on PubMedQA) without
+coherent retrieval sets (0\% hallucination, CCS~$= 1.00$ on SQuAD) from
+incoherent ones (20\% hallucination, CCS~$= 0.57$ on PubMedQA) without
 running the generator — a computationally cheap guard-rail with a
 clean scientific claim behind it: coherence, not relevance, is what
 the generator is sensitive to.

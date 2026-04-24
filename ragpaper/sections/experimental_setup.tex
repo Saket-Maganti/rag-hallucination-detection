@@ -13,16 +13,17 @@ was pre-trained on general web text, making this a \emph{domain-matched}
 setting where we expect retrieval to be fundamentally sound. This lets us
 isolate the effect of refinement decisions on an otherwise strong pipeline.
 
-\textbf{PubMedQA} \citep{jin2019pubmedqa} contains biomedical research
-abstracts with yes/no/maybe questions about clinical findings. Applying the
-same general-domain encoder to specialized scientific language creates a
-\emph{domain-mismatched} setting that tests whether coherence-based
-insights generalize when upstream retrieval is systemically weak.
+\textbf{PubMedQA}~\citep{jin2019pubmedqa} contains biomedical research
+abstracts with yes/no/maybe questions about clinical findings. Applying
+the same general-domain encoder to specialized scientific language
+creates a \emph{domain-mismatched} setting that tests whether
+coherence-based insights generalize when upstream retrieval is
+systemically weak.
 
-This two-dataset design is intentional: any method that helps only on SQuAD
-could be an artifact of strong retrieval; any insight that holds on both
-datasets is more likely to reflect a general principle about context
-coherence.
+The two-dataset design is intentional: a method that helps only on
+SQuAD could be an artifact of strong retrieval, whereas an insight
+holding on both is more likely to reflect a general principle about
+context coherence.
 
 \subsection{Models}
 
@@ -37,8 +38,8 @@ interact with retrieved context.
 \subsection{Phased evaluation design}
 
 The study is organized into six experimental phases, each isolating a
-specific variable while reusing the shared pipeline. This structure prevents
-confounding and enables direct comparison across ablations.
+specific variable while reusing the shared pipeline. This structure
+prevents confounding and supports direct comparison across ablations.
 
 \begin{table}[!htb]
 \centering

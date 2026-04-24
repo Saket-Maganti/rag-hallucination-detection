@@ -18,10 +18,10 @@ that better retrieval is \emph{usually} correlated with better downstream
 behavior.
 
 The critical word is ``usually.'' These studies report average-case
-correlations; they do not characterize the failure regime where the
-correlation breaks down. Our work is focused precisely on that regime: the
-conditions under which retrieval improvements fail to transfer, or actively
-harm, generation faithfulness.
+correlations; they do not characterize the regime in which the
+correlation breaks down. Our work targets precisely that regime — the
+conditions under which retrieval improvements fail to transfer, or
+actively harm, generation faithfulness.
 
 \subsection{Retrieval-side interventions and context preparation}
 
@@ -176,16 +176,16 @@ Sections~\ref{sec:results} and~\ref{sec:analysis}. CCS and HCPC-v2 are
 complementary to these methods and could be integrated as an additional
 coherence gate within any of them.
 
-Our contribution is the identification of a specific failure mode---the
-refinement paradox---and its cause: a meso-level property of the
-retrieved context, coherence. This perspective unifies several
+Our contribution is the identification of a specific failure mode —
+the refinement paradox — and its cause: a meso-level property of the
+retrieved context, its coherence. This perspective unifies several
 otherwise disconnected observations: why naive refinement fails on
 domain-matched corpora, why selective refinement helps only under
 specific conditions, why chunk size dominates prompt strategy, and why
 domain-mismatched retrieval can make grounded generation less reliable
 than ungrounded generation. \citet{ji2023hallucination} and
-\citet{xu2024hallucination} have argued that hallucination is an
-inherent property of autoregressive generation; our results add that in
-RAG settings, hallucination is also a property of the retrieval
+\citet{xu2024hallucination} argue that hallucination is an inherent
+property of autoregressive generation; our results add that in RAG
+settings, hallucination is also a property of the retrieval
 configuration, with context coherence as the specific mediating
 variable.

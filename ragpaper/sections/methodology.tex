@@ -3,11 +3,11 @@
 
 This section describes the controlled design used to \emph{test} the
 coherence hypothesis, not to propose a system. We treat retrieval
-configuration as an independent variable whose effect on generator behavior
-we wish to measure. Two instruments carry the causal argument: a selective
-refinement probe (HCPC-v2) that perturbs context coherence in a targeted
-way, and the Context Coherence Score (CCS, \S\ref{sec:ccs_def}) that
-measures it without running the generator.
+configuration as an independent variable whose effect on generator
+behavior we wish to measure. Two instruments carry the causal argument:
+a selective refinement probe (HCPC-v2) that perturbs context coherence
+in a targeted way, and the Context Coherence Score (CCS,
+\S\ref{sec:ccs_def}) that measures it without running the generator.
 
 \subsection{A shared pipeline as experimental substrate}
 \label{sec:shared}
@@ -107,11 +107,11 @@ alone.
 \subsection{Why this design isolates context coherence}
 
 The four regimes differ along exactly one dimension that matters for our
-hypothesis: how aggressively the original contiguity of retrieved evidence
-is broken. Baseline preserves it fully. Reranking preserves it while
-reordering. HCPC-v1 destroys it indiscriminately. HCPC-v2 destroys it
-selectively. If coherence is causally linked to faithfulness, faithfulness
-should track this ordering---and we find that it does.
+hypothesis: how aggressively the original contiguity of retrieved
+evidence is broken. Baseline preserves it fully. Reranking preserves it
+while reordering. HCPC-v1 destroys it indiscriminately. HCPC-v2 destroys
+it selectively. If coherence causally mediates faithfulness,
+faithfulness should track this ordering — and we find that it does.
 
 \input{figures/failure_case}
 Figure~\ref{fig:failure_case} shows the mechanism concretely in a single

@@ -3,10 +3,10 @@
 
 \subsection{Evidence for the refinement paradox}
 
-Table~\ref{tab:hcpc_main} reports the central behavioral result. The three
-regimes are matched on retrieval similarity to within 0.01, so the
+Table~\ref{tab:hcpc_main} reports the central behavioral result. The
+three regimes are matched on retrieval similarity to within 0.01, so the
 faithfulness differences they produce must originate elsewhere. We argue
-this residual is context coherence.
+that the residual is context coherence.
 
 \begin{table}[!htb]
 \centering
@@ -31,18 +31,19 @@ PubMedQA & HCPC-v2  & 0.5893 & 20.0\% & 0.653 & 73.3\% & 0.57 \\
 \end{tabular}
 \end{table}
 
-The paradox manifests differently across datasets, revealing its dependence
-on upstream retrieval quality. On SQuAD, where the encoder-corpus alignment
-is strong, HCPC-v1 turns an already coherent retrieval set into a worse
-answer context: faithfulness drops by 15.9 percentage points and
-hallucination rises from 0\% to 10\%. The mechanism is
-over-intervention---the OR gate triggers on 100\% of queries, replacing
-adequate passages with narrow fragments that break the connective tissue
-between evidence segments. On PubMedQA, HCPC-v1 raises mean retrieval
-similarity from 0.653 to 0.678, which would appear as an improvement under
-standard evaluation, yet hallucination simultaneously rises from 20.0\% to
-26.7\%. This confirms that higher per-chunk similarity can co-occur with
-lower answer quality when the intervention fragments context coherence.
+The paradox manifests differently across datasets, revealing its
+dependence on upstream retrieval quality. On SQuAD, where the
+encoder--corpus alignment is strong, HCPC-v1 turns an already coherent
+retrieval set into a worse answer context: faithfulness drops by 15.9
+percentage points and hallucination rises from 0\% to 10\%. The
+mechanism is over-intervention — the OR gate triggers on 100\% of
+queries, replacing adequate passages with narrow fragments that break
+the connective tissue between evidence segments. On PubMedQA, HCPC-v1
+raises mean retrieval similarity from 0.653 to 0.678 — an improvement
+under standard evaluation — yet hallucination rises from 20.0\% to
+26.7\%. The co-occurrence confirms that higher per-chunk similarity can
+coexist with lower answer quality when the intervention fragments
+context coherence.
 
 The following example from the SQuAD evaluation illustrates the mechanism
 concretely.
@@ -72,7 +73,7 @@ The generator produces the same correct answer as baseline. Faithfulness:
 0.9733.
 \end{quote}
 
-\noindent This example shows the paradox in microcosm: refinement improved
+\noindent The example shows the paradox in microcosm: refinement raised
 the per-chunk similarity score while removing the specific evidence the
 generator needed. HCPC-v2 avoided the failure by not intervening at all.
 
@@ -143,13 +144,13 @@ tightly coupled to the reduction in refinement rate.
 
 On SQuAD, the selective probe recovers faithfulness to near-baseline
 (0.7874 vs.\ 0.7995) and eliminates the hallucinations induced by
-aggressive refinement, while intervening on only 16.7\% of queries
-(vs.\ 100\% for HCPC-v1). On PubMedQA, the recovery is smaller (0.5783 to
+aggressive refinement, while intervening on only 16.7\% of queries (vs.\
+100\% for HCPC-v1). On PubMedQA, the recovery is smaller (0.5783 to
 0.5893): the residual failure cannot be repaired downstream because the
-coherence loss originates upstream, in an encoder-corpus mismatch that no
-refinement policy can correct. The asymmetry itself is informative---it
-predicts, correctly, that the paradox is most severe in the regime where
-passage-level similarity is healthy but evidence coherence is not.
+coherence loss originates upstream, in an encoder--corpus mismatch that
+no refinement policy can correct. The asymmetry is itself informative
+— it predicts, correctly, that the paradox is most severe in the regime
+where passage-level similarity is healthy but evidence coherence is not.
 
 \subsection{An upstream determinant of coherence dominates faithfulness variance}
 
@@ -169,11 +170,12 @@ standards---reflecting that larger chunks preserve complete sentences,
 logical transitions, and redundant evidence that collectively reduce
 hallucination risk.
 
-This result has immediate practical implications: it overturns the common
-engineering priority of optimizing prompt templates before chunking strategy.
-Among the parameters we tested, the faithfulness return from
-chunk size selection is approximately 450 times larger than from prompt
-style ($\eta^2_{\text{chunk}} / \eta^2_{\text{prompt}} = 0.100 / 0.0002$).
+This result has an immediate practical implication: it inverts the
+common engineering priority of optimizing prompt templates before
+chunking strategy. Among the parameters we tested, the faithfulness
+return from chunk-size selection is roughly 450 times larger than from
+prompt style
+($\eta^2_{\text{chunk}} / \eta^2_{\text{prompt}} = 0.100 / 0.0002$).
 
 \subsection{Robustness: the effect is not a threshold artifact}
 
@@ -217,14 +219,15 @@ fragmentation degrades the context faster than merge-back can repair it.
 The contrast between SQuAD and PubMedQA is summarized in
 Figure~\ref{fig:dataset_comparison}.
 
-PubMedQA is not simply harder in the conventional sense. Its mean retrieval
-similarity is comparable to SQuAD's, yet its faithfulness is consistently
-lower and its hallucination rate is higher. The difference lies in context
-coherence: the retrieved biomedical abstracts are topically adjacent but not
-mutually supportive---they use different terminology for related concepts,
-present contradictory evidence from different studies, and lack the narrative
-continuity that Wikipedia passages provide. This is exactly the kind of
-setting where CCS captures what raw similarity scores miss.
+PubMedQA is not simply harder in the conventional sense. Its mean
+retrieval similarity is comparable to SQuAD's, yet its faithfulness is
+consistently lower and its hallucination rate higher. The difference
+lies in context coherence: the retrieved biomedical abstracts are
+topically adjacent but not mutually supportive — they use different
+terminology for related concepts, present contradictory evidence from
+different studies, and lack the narrative continuity of Wikipedia
+passages. This is exactly the setting where CCS captures what raw
+similarity scores miss.
 
 The zero-shot comparison makes the deployment consequence stark.
 Table~\ref{tab:zeroshot} shows that RAG helps on SQuAD but hurts on

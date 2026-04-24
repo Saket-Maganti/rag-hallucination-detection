@@ -4,6 +4,7 @@
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{lmodern}
+\usepackage{microtype}
 \usepackage{booktabs}
 \usepackage{multirow}
 \usepackage{amsmath}
@@ -23,6 +24,12 @@
 \usetikzlibrary{arrows.meta, positioning, shapes.geometric, calc, fit, decorations.pathmorphing}
 \emergencystretch=2em
 \tolerance=400
+
+% description-list labels: upright smallcaps avoids the missing T1/lmr/bx/sc
+% shape that bold+smallcaps would trigger; visual weight is preserved via
+% letter-space. Wrap labels in \textsc{} as already done in the sources.
+\renewcommand{\descriptionlabel}[1]{%
+  \hspace\labelsep\normalfont #1}
 
 % --- Float control: keep text flowing, allow float-only pages when needed ---
 \setcounter{topnumber}{3}

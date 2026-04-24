@@ -121,13 +121,14 @@ Chunk & $k$ & Prompt & Faithfulness & Halluc. \\
 \end{tabular}
 \end{table}
 
-\paragraph{Chunk size summary.} Mean faithfulness by chunk size on SQuAD:
-256 = 0.7018, 512 = 0.7801, 1024 = 0.8105. Mean hallucination: 256 =
-9.17\%, 512 = 2.5\%, 1024 = 2.5\%. On PubMedQA: faithfulness 256 = 0.5654,
-512 = 0.5994, 1024 = 0.5965; hallucination 256 = 26.67\%, 512 = 15.83\%,
-1024 = 15.0\%. The 256-to-1024 improvement is large on SQuAD (10.87 pp
-faithfulness, 6.67 pp hallucination reduction) and moderate on PubMedQA
-(3.11 pp faithfulness, 11.67 pp hallucination reduction).
+\paragraph{Chunk-size summary.} Mean faithfulness by chunk size on
+SQuAD: $256 = 0.7018$, $512 = 0.7801$, $1024 = 0.8105$. Mean
+hallucination: $256 = 9.17\%$, $512 = 2.5\%$, $1024 = 2.5\%$. On
+PubMedQA: faithfulness $256 = 0.5654$, $512 = 0.5994$, $1024 = 0.5965$;
+hallucination $256 = 26.67\%$, $512 = 15.83\%$, $1024 = 15.0\%$. The
+$256 \to 1024$ improvement is large on SQuAD (10.87~pp faithfulness,
+6.67~pp hallucination reduction) and moderate on PubMedQA (3.11~pp
+faithfulness, 11.67~pp hallucination reduction).
 
 \FloatBarrier
 \subsection{ANOVA results}
@@ -162,7 +163,7 @@ $p = 0.027$. Prompt strategy is non-significant on both datasets
 is negligible ($\eta^2 < 0.005$).
 
 \FloatBarrier
-\subsection{Cohen's $d$ effect sizes}
+\subsection{Cohen's \texorpdfstring{$d$}{d} effect sizes}
 \label{app:cohend}
 
 Table~\ref{tab:cohend} reports pairwise Cohen's $d$ between factor levels.
@@ -252,15 +253,16 @@ mechanisms acting together. The 512-to-1024 effect ($d = 0.55$) is
 smaller because 512-token chunks already capture most complete sentences
 and moderate redundancy.
 
-\paragraph{Why prompt strategy does not matter.} The maximum faithfulness
-difference between strict and chain-of-thought prompts on SQuAD, holding
-chunk size and top-$k$ constant, is 0.0121 (at chunk = 1024, $k = 3$:
-strict = 0.8001, CoT = 0.7891). Both prompts instruct the model to answer
-from the context. When the context is coherent and contains the answer,
-both produce faithful responses. When the context is fragmented or the
-answer is absent, neither can prevent hallucination. For RAG faithfulness,
-prompt engineering yields returns roughly 450 times smaller than chunk size
-selection ($\eta^2_\text{chunk} / \eta^2_\text{prompt} = 0.901 / 0.002$).
+\paragraph{Why prompt strategy does not matter.} The maximum
+faithfulness difference between strict and chain-of-thought prompts on
+SQuAD, holding chunk size and top-$k$ constant, is $0.0121$
+(at chunk~$=1024$, $k=3$: strict~$=0.8001$, CoT~$=0.7891$). Both prompts
+instruct the model to answer from the context. When the context is
+coherent and contains the answer, both produce faithful responses; when
+the context is fragmented or the answer is absent, neither can prevent
+hallucination. For RAG faithfulness, prompt engineering yields returns
+roughly $450\times$ smaller than chunk-size selection
+($\eta^2_{\text{chunk}} / \eta^2_{\text{prompt}} = 0.901 / 0.002$).
 
 \FloatBarrier
 \section{Re-ranking by chunk size}
@@ -376,10 +378,10 @@ $\tau_\text{sim} \in [0.50, 0.60]$ with $N_\text{prot} = 0$, where
 more chunks are eligible for refinement and the proxy rewards higher
 coherence after refinement.
 
-Adaptive thresholds (percentile-based) underperform fixed thresholds
-on both datasets. The best adaptive configuration matches the default
-fixed configuration (proxy = 0.2425 on SQuAD, 0.2496 on PubMedQA).
-Fixed thresholds, once tuned to the dataset, are sufficient; adaptive
+Adaptive (percentile-based) thresholds underperform fixed thresholds on
+both datasets. The best adaptive configuration matches the default fixed
+configuration (proxy $= 0.2425$ on SQuAD, $0.2496$ on PubMedQA). Fixed
+thresholds, once tuned to the dataset, are sufficient; adaptive
 adjustment adds complexity without benefit.
 
 \FloatBarrier

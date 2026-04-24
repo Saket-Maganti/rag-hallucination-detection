@@ -1,0 +1,4 @@
+{"case_id": "disjoint_011", "category": "disjoint", "query": "What is the function of mitochondria in a cell?", "reason": "disjoint:mean_jaccard=0.151"}
+{"case_id": "disjoint_011", "category": "disjoint", "query": "What is the phenomenon responsible for quantum entanglement?", "reason": "disjoint:mean_jaccard=0.153"}
+{"case_id": "disjoint_012", "category": "disjoint", "query": "What are different methods for optimization in reinforcement learning?", "reason": "disjoint:mean_jaccard=0.269"}
+{"case_id": "disjoint_012", "category": "disjoint", "query": "What are the differences between distributed file systems and cluster file systems?", "reason": "disjoint:mean_jaccard=0.246"}

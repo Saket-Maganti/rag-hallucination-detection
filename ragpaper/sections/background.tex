@@ -1,9 +1,9 @@
 \section{Background}
 \label{sec:background}
 
-This section establishes the technical foundations that the methodology builds
-on. We define RAG pipeline components, chunking strategies, faithfulness
-measurement, and the Context Coherence Score.
+This section establishes the technical foundations on which the
+methodology builds. We define RAG pipeline components, chunking
+strategies, faithfulness measurement, and the Context Coherence Score.
 
 \subsection{Retrieval-Augmented Generation}
 
@@ -17,14 +17,14 @@ and the model generates an answer conditioned on both the query and the
 retrieved context.
 
 Dense retrieval~\citep{karpukhin2020dpr} replaced lexical matching with
-learned embeddings, and cross-encoder
-re-ranking~\citep{nogueira2019passage, glass2022re2g} adds a second scoring
-stage to reorder an over-fetched candidate set. More recent work explores
-context compression~\citep{xu2023recomp} and self-reflective
+learned embeddings, and cross-encoder re-ranking~\citep{nogueira2019passage,
+glass2022re2g} adds a second scoring stage that reorders an over-fetched
+candidate set. More recent work explores context
+compression~\citep{xu2023recomp} and self-reflective
 retrieval~\citep{asai2024selfrag}. All of these interventions target
-\emph{retrieval quality}---the relevance of individual chunks to the query.
-What they do not directly target, and what this paper studies, is the
-\emph{coherence} of the retrieved context as a whole.
+\emph{retrieval quality} — the relevance of individual chunks to the
+query. What they do not directly target, and what this paper studies,
+is the \emph{coherence} of the retrieved context as a whole.
 
 \subsection{Chunking and its downstream consequences}
 
@@ -38,12 +38,13 @@ less surrounding context for the generator; larger chunks preserve
 intra-document coherence but may include irrelevant material that dilutes
 the signal.
 
-Despite its centrality, the faithfulness impact of chunk size has not been
-quantified in controlled settings. Most benchmarking work evaluates chunk
-size through retrieval accuracy rather than answer
-faithfulness~\citep{chen2024benchmarking}. We provide the first controlled
-measurement of how chunk size affects faithfulness across datasets and models,
-and show that it dominates other configuration parameters by a wide margin.
+Despite its centrality, the faithfulness impact of chunk size has not
+been quantified in controlled settings. Most benchmarking work evaluates
+chunk size through retrieval accuracy rather than answer
+faithfulness~\citep{chen2024benchmarking}. We provide a controlled
+measurement of how chunk size affects faithfulness across datasets and
+models, and show that it dominates other configuration parameters by a
+wide margin.
 
 \subsection{Faithfulness and hallucination}
 
