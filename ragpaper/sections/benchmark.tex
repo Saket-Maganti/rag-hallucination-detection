@@ -101,3 +101,25 @@ Each script writes a self-contained results directory under
 \texttt{results/} that the packager copies into the release tree. Re-running
 any single experiment refreshes only its own subset, so partial reruns
 remain coherent.
+
+\subsection{Permanent identifier}
+
+The benchmark bundle is archived on Zenodo with a permanent DOI:
+\href{https://doi.org/10.5281/zenodo.19757291}
+     {\texttt{10.5281/zenodo.19757291}}.
+The DOI resolves to the v$2.0.0$ release tarball
+(\texttt{context\_coherence\_bench\_v1.tar.gz}) and includes the
+\texttt{CITATION.bib} entry below for citing this artifact independently
+of the paper:
+
+\begin{verbatim}
+@dataset{maganti2026ccbench,
+  title     = {ContextCoherenceBench: a benchmark for evaluating
+               context coherence in retrieval-augmented generation},
+  author    = {Maganti, Saket},
+  year      = {2026},
+  publisher = {Zenodo},
+  version   = {v2.0.0},
+  doi       = {10.5281/zenodo.19757291},
+}
+\end{verbatim}
