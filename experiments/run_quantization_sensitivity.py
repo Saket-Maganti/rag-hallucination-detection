@@ -66,7 +66,10 @@ V2_SIM, V2_CE = 0.45, -0.20
 
 # Map a short alias the user types to the actual Ollama tag.
 QUANT_TAGS = {
-    "q4_0":   "mistral:7b-instruct-q4_0",
+    # NOTE: Ollama's `mistral:latest` IS the q4_0 build; the explicit
+    # `mistral:7b-instruct-q4_0` tag isn't published on Ollama Hub
+    # (only q5_K_M, q8_0, fp16 are). Map q4_0 to mistral:latest.
+    "q4_0":   "mistral:latest",
     "q5_K_M": "mistral:7b-instruct-q5_K_M",
     "q8_0":   "mistral:7b-instruct-q8_0",
     "fp16":   "mistral:7b-instruct-fp16",
