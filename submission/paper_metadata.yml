@@ -1,0 +1,82 @@
+# OpenReview / NeurIPS 2026 paper metadata
+# Single source of truth for the form fields. When a value changes,
+# update it here first, then copy/paste into the OR submission form.
+
+paper:
+  title: "When Better Retrieval Hurts: Context Coherence Drives Faithfulness in Retrieval-Augmented Generation"
+  short_title: "The Coherence Paradox in RAG"
+  venue: "NeurIPS 2026"
+  track: "main"            # alt: "datasets_and_benchmarks"
+  submission_type: "long"  # 9-page main + unlimited appendix per NeurIPS rules
+  anonymous: true          # double-blind for review
+
+authors:
+  - name: "Saket Maganti"
+    email: "REPLACE_WITH_REAL_EMAIL"
+    affiliation: "Independent researcher"
+    orcid: "REPLACE_OR_LEAVE_BLANK"
+    is_corresponding: true
+
+artifact_links:
+  github: "https://github.com/Saket-Maganti/rag-hallucination-detection"
+  hf_space: "https://huggingface.co/spaces/saketmgnt/sakkk"
+  zenodo_doi: "TBD_AFTER_ZENODO_PUBLISH"
+  release_tag: "v2.0.0"
+
+keywords:
+  primary:
+    - retrieval-augmented generation
+    - hallucination
+    - context coherence
+    - benchmarks
+    - evaluation
+  secondary:
+    - natural language inference
+    - faithfulness
+    - mechanistic interpretability
+    - large language models
+
+tldr: >
+  Better per-passage retrieval can reduce answer faithfulness by
+  fragmenting context coherence; we name this the refinement paradox,
+  introduce a generator-free retrieval-time diagnostic (CCS), and show
+  a coherence-gated retriever (HCPC-v2) recovers faithfulness across
+  SQuAD, PubMedQA, and frontier-scale generators (Llama-3.3-70B,
+  GPT-OSS-120B).
+
+reproducibility:
+  code_open: true
+  data_open: true
+  models_open: true     # all generators are open-weight; Groq is free-tier API
+  estimated_compute: "< 100 GPU-hours total (M4 Pro local + Kaggle T4 free + Groq free-tier API)"
+  random_seeds_documented: true   # see results/multiseed/
+  hyperparameters_documented: true
+
+ethics:
+  human_subjects: false           # Prolific deferred, IRB pending
+  pii_present: false
+  consent_obtained: not_applicable
+  potentially_harmful_content: false
+  dual_use_concerns: low
+
+funding:
+  source: "self-funded"
+  grant_numbers: []
+
+conflicts_of_interest:
+  past_3_years_collaborators: []   # FILL IN
+  current_advisor: ""              # FILL IN
+  current_institution: ""          # FILL IN
+
+# Pre-emptive rebuttal pointers (see openreview_checklist.md §6)
+anticipated_reviewer_questions:
+  multi_seed:        "§10.1 (Table tab:variance) — paradox = 0.069 ± 0.004 on SQuAD"
+  raptor:            "§10.2 (Table tab:raptor) — HCPC wins 2/3 datasets"
+  long_form:         "§10.3 (Table tab:longform) — paradox is short-form-specific; HCPC still wins on unsupported-claim metric"
+  prompt_artifact:   "§10.4 — ANOVA p=0.83"
+  sub_chunk:         "§10.5 — paradox stable across {128, 256, 512}"
+  generic_noise:     "§10.6 — paradox is sign-distinct from noise but not magnitudinally larger"
+  frontier_scale:    "§10.7 (Table tab:frontier) — paradox persists at 70B and 120B"
+  multi_retriever:   "§multi-retriever — paradox survives 4 embedders on PubMedQA"
+  baselines:         "§headtohead — Self-RAG (partial, OOM) and CRAG"
+  mechanism:         "§mechanistic — Δ entropy + Δ retrieved-mass per layer"

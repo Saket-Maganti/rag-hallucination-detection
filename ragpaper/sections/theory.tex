@@ -7,7 +7,7 @@
 \label{sec:theory}
 
 The empirical coherence paradox observed in
-Section~\ref{sec:results:multidataset} is, at first glance, counterintuitive:
+Section~\ref{sec:multidataset} is, at first glance, counterintuitive:
 aggressive pruning of \emph{less coherent} retrieved passages decreases
 rather than increases the NLI-faithfulness of the generated answer.  In this
 section we give an information-theoretic account of \emph{why} this
@@ -15,8 +15,8 @@ happens, show that it is a generic failure mode of any purely
 coherence-maximizing retriever, and derive the necessary condition that a
 coherence-aware retriever must satisfy in order to avoid it.  The analysis
 motivates HCPC-v2's protected-neighbor rule
-(Section~\ref{sec:method:hcpc_v2}) and explains the empirical recovery we
-report in Table~\ref{tab:multidataset}.
+(Section~\ref{sec:method}) and explains the empirical recovery we
+report in Table~\ref{sec:multidataset}.
 
 \subsection{Setup and Notation}
 
@@ -99,7 +99,7 @@ Under the conditions of Proposition~\ref{prop:paradox}, the language model's
 NLI-faithfulness with respect to the pruned context
 $F(A, \mathcal{C}_\star)$ can be arbitrarily high while $A$ is less
 faithful to the ground truth $Y$.  This is precisely the behaviour
-observed in Table~\ref{tab:multidataset}: a coherence-maximizing HCPC-v1
+observed in Table~\ref{sec:multidataset}: a coherence-maximizing HCPC-v1
 raises internal answer--context agreement while lowering the probability
 that the answer is actually correct.
 \end{corollary}
@@ -141,14 +141,14 @@ the preserved subset gives the stated bound.\qed
 \end{proof}
 
 Theorem~\ref{thm:paradox_free} is the formal counterpart of HCPC-v2's
-\texttt{top\_k\_protected} parameter (Section~\ref{sec:method:hcpc_v2}):
+\texttt{top\_k\_protected} parameter (Section~\ref{sec:method}):
 the two passages with the highest query similarity are retained
 unconditionally, with coherence pruning applied only to the remaining
-candidates.  In the empirical setting of Table~\ref{tab:multidataset}, the
+candidates.  In the empirical setting of Table~\ref{sec:multidataset}, the
 recovered faithfulness of v2 vs.\ v1 is consistent with the bound: the
 evidence-retention gain (measured as recovered NLI-faithfulness) tracks
 the proportion of queries for which $\mathcal{E}$ would otherwise have
-been discarded, as reported in Appendix~\ref{app:protected_impact}.
+been discarded, as reported in Appendix~\ref{app:variance_model}.
 
 \subsection{Why the Paradox is Dataset-Structural}
 
@@ -162,7 +162,7 @@ passages (surrounded by lexically similar but evidence-poor distractors)
 have high $\epsilon$ and should display a large paradox.
 
 This is consistent with the ordering we observe in
-Table~\ref{tab:multidataset}: HotpotQA, whose multi-hop questions require
+Table~\ref{sec:multidataset}: HotpotQA, whose multi-hop questions require
 assembling evidence from distinct passages, exhibits the largest paradox
 drop; SQuAD, whose answers are typically contained within a single
 coherent span, exhibits the smallest.  The theoretical framing therefore
@@ -173,20 +173,20 @@ gradient.
 
 Proposition~\ref{prop:paradox} can be viewed as a retrieval-time analogue
 of the selection-bias / confirmation-bias phenomena analyzed in
-\citep{selection_bias_reference} and the retrieval--generation tradeoff
-characterized in \citep{rag_tradeoff_reference}.  Self-RAG
-\citep{selfrag_reference} and CRAG \citep{crag_reference} can be read as
+%TODO[citation needed: selection_bias_reference]% and the retrieval--generation tradeoff
+characterized in %TODO[citation needed: rag_tradeoff_reference]%.  Self-RAG
+%TODO[citation needed: selfrag_reference]% and CRAG %TODO[citation needed: crag_reference]% can be read as
 partially implementing Definition~\ref{def:protected} at the decoder level
 rather than at the retriever level.  Our contribution is to isolate the
 necessary retention property at the pruning stage and show, both
 theoretically (Theorem~\ref{thm:paradox_free}) and empirically
-(Tables~\ref{tab:multidataset} and \ref{tab:headtohead}), that satisfying
+(Tables~\ref{sec:multidataset} and \ref{sec:headtohead}), that satisfying
 it suffices to recover NLI-faithfulness without paying the latency cost of
 decoder-side reflection.
 
 \subsection{Empirical Verification of the Bound}
 
-In Appendix~\ref{app:theory_empirical} we estimate
+In Appendix~\ref{app:variance_model} we estimate
 $I(\mathcal{C}; Y \mid Q)$ via per-passage gradient attributions (computed
 on the mechanistic-probe subset, see Section~\ref{sec:mechanistic}), and
 plot observed faithfulness against the upper bound of

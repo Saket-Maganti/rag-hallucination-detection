@@ -1,0 +1,46 @@
+{
+  "metadata": {
+    "title": "ContextCoherenceBench: a benchmark for evaluating context coherence in retrieval-augmented generation",
+    "version": "v2.0.0",
+    "upload_type": "dataset",
+    "description": "<p>Companion benchmark for the paper <em>\"When Better Retrieval Hurts: Context Coherence Drives Faithfulness in Retrieval-Augmented Generation\"</em> (NeurIPS 2026 submission).</p><p>Contains:</p><ul><li><strong>Adversarial coherence test set</strong> (~129 validated cases across four categories: drift, disjoint, contradict, control).</li><li><strong>Coherence-paradox test pairs</strong> across SQuAD, PubMedQA, HotpotQA, NaturalQuestions, and TriviaQA, evaluated against three open-weight generators (Mistral-7B, Llama-3-8B, Qwen-2.5-7B) and three retrieval configurations (baseline, HCPC-v1, HCPC-v2).</li><li><strong>Context Coherence Score (CCS)</strong> computed per query, alongside per-passage similarity and faithfulness (NLI) judgments.</li><li><strong>Frontier-scale rows</strong> from Llama-3.3-70B and GPT-OSS-120B via Groq, demonstrating the paradox persists at scale.</li><li><strong>Leaderboard schema</strong> for community submissions (<code>leaderboard.yaml</code>) with rules and submission template.</li></ul><p>The bundle includes a <code>CITATION.bib</code> entry, an MIT-licensed <code>LICENSE</code> file, a HuggingFace-loadable layout, and a SHA-256 manifest for every shipped file (see <code>metadata.json</code>).</p><p>Reproducibility code is at <a href=\"https://github.com/Saket-Maganti/rag-hallucination-detection\">https://github.com/Saket-Maganti/rag-hallucination-detection</a>; an interactive Gradio demo is at <a href=\"https://huggingface.co/spaces/saketmgnt/sakkk\">https://huggingface.co/spaces/saketmgnt/sakkk</a>.</p>",
+    "creators": [
+      {
+        "name": "Maganti, Saket",
+        "affiliation": "Independent researcher"
+      }
+    ],
+    "keywords": [
+      "retrieval-augmented generation",
+      "RAG",
+      "hallucination detection",
+      "context coherence",
+      "benchmark",
+      "natural language inference",
+      "language models",
+      "faithfulness",
+      "evaluation",
+      "NeurIPS"
+    ],
+    "license": "MIT",
+    "access_right": "open",
+    "language": "eng",
+    "communities": [
+      {"identifier": "ai"}
+    ],
+    "related_identifiers": [
+      {
+        "identifier": "https://github.com/Saket-Maganti/rag-hallucination-detection",
+        "relation": "isSupplementTo",
+        "resource_type": "software"
+      },
+      {
+        "identifier": "https://huggingface.co/spaces/saketmgnt/sakkk",
+        "relation": "isSupplementTo",
+        "resource_type": "other"
+      }
+    ],
+    "notes": "If you use this benchmark, please cite the accompanying paper (see CITATION.bib in the bundle).",
+    "method": "Adversarial cases were generated with Mistral-7B-Instruct and filtered by an automated NLI validator (cross-encoder/nli-deberta-v3-base) plus a length and overlap heuristic; the final yield is reported in the bundle README. Coherence-paradox cases are the per-query union of three retrieval conditions (baseline, HCPC-v1, HCPC-v2) computed with the released code at the commit tagged v2.0.0."
+  }
+}

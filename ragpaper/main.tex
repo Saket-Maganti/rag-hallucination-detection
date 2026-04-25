@@ -57,9 +57,27 @@
 \title{\LARGE\bfseries When Better Retrieval Hurts:\\[0.3em]
 Context Coherence Drives Faithfulness in Retrieval-Augmented Generation}
 
-\author{
-  Saket Maganti
-}
+% --------------------------------------------------------------------
+% Author block.  NeurIPS 2026 is double-blind for submission; toggle
+% \anonymoustrue before generating the camera-ready version.
+% --------------------------------------------------------------------
+\newif\ifanonymous
+\anonymousfalse       % set to \anonymoustrue for the OpenReview submission
+
+\ifanonymous
+  \author{Anonymous Authors\\\textit{Submission under double-blind review}}
+\else
+  \author{%
+    Saket Maganti\thanks{%
+      Independent researcher.  Correspondence:
+      \href{mailto:freeopenapex@gmail.com}{freeopenapex@gmail.com}.
+      Code, benchmark, and an interactive demo are released at
+      \href{https://github.com/Saket-Maganti/rag-hallucination-detection}{github.com/Saket-Maganti/rag-hallucination-detection}
+      (tag \texttt{v2.0.0}) and
+      \href{https://huggingface.co/spaces/saketmgnt/sakkk}{huggingface.co/spaces/saketmgnt/sakkk}.
+    }
+  }
+\fi
 
 \date{}
 

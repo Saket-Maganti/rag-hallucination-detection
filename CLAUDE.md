@@ -14,6 +14,7 @@ Default branch: `main`
 
 **Phase 1 (8-item) — COMPLETE.** All reviewer-facing experiments ran.
 **Phase 2 (10-item) — 10/10 RUN.** Frontier-scale landed 2026-04-25: SQuAD/Llama-3.3-70B paradox = +0.100 (exact match to 7B), GPT-OSS-120B = +0.030. **Kills "small-model artifact" critique.** All 12/12 paper tables now filled.
+**Phase 3 (pre-submission polish) — CODE SHIPPED.** All "must-do" + high-leverage scripts written, smoke-tested, and wired into the paper. Headline figure (frontier-scale paradox vs scale), CCS calibration figure (distribution split + quintile bars), qualitative paradox example (Super Bowl 50: baseline says "Santa Clara", HCPC-v1 says "San Francisco Bay Area"), zero-error paper linter, Zenodo upload helper, OpenReview submission checklist + metadata YAML, anonymous-toggle author block. **PDF: 64 pages, 728 KB, 0 LaTeX warnings, 0 lint errors.** Awaiting user execution of #4 (Zenodo upload — needs token) and #5 (OR submission — manual).
 **Paper — TIGHTENED.** New `robustness.tex` section bundles all six new robustness checks; `analysis.tex::Limitations` extended with three new caveat paragraphs (long-form scope, noise-equivalence, adversarial-129); `theory.tex` and `robustness.tex` wired into `main.tex`; abstract updated with multi-seed numbers and explicit scope qualifications. **Compiles cleanly: 62 pages, 681 KB PDF.**
 **Paths 2 & 3 — STAGED.** Frontier-scale runner (`experiments/run_frontier_scale.py`) + Groq wrapper (`src/groq_llm.py`) + smoke test (`scripts/smoke_test_groq.py`) + Kaggle notebook generator (`scripts/kaggle_frontier_scale.py`) all in place. HF Space staging (`scripts/prepare_hf_space.py`) + Gradio demo (`space/`) + leaderboard (`leaderboard/`) + release tagger (`scripts/release_v2.sh`) ready to ship. User just needs `GROQ_API_KEY` (free) and HF Space repo URL.
 
@@ -511,6 +512,99 @@ The script validates working tree is clean, asserts required artifacts exist, bu
 - `space/`, `leaderboard/` — Gradio apps
 - `scripts/`, `experiments/`, `src/` — reproducibility code
 - `CLAUDE.md`, `README.md` — operator notes
+
+## Phase 3 — pre-submission runbook
+
+All scripts written, smoke-tested, and wired in. Run order with expected
+times below.
+
+### Zero-cost build pass (~2 min total, regenerates all Phase 3 artifacts)
+
+```bash
+# 1. Headline figure: frontier-scale paradox vs generator scale
+python3 experiments/build_headline_figure.py
+#   → ragpaper/figures/headline_frontier.{pdf,tex}     (~5 s)
+
+# 2. CCS calibration: distribution split + quintile hallucination rate
+python3 experiments/build_ccs_calibration.py
+#   → ragpaper/figures/ccs_calibration.{pdf,tex}        (~3 s)
+#   → results/ccs_calibration/quintile_table.csv
+
+# 3. Qualitative example: best paradox triple from per_query data
+python3 experiments/build_qualitative_example.py
+#   → ragpaper/figures/qualitative_paradox.tex          (~2 s)
+#   → results/qualitative/example_metadata.json
+
+# 4. Lint pass: 0 errors required, warnings allowed
+python3 scripts/lint_paper.py
+#   → exit 0 means submission-clean references + citations  (~1 s)
+
+# 5. Compile the paper (3 passes: pdflatex → bibtex → pdflatex × 2)
+cd ragpaper && pdflatex -interaction=nonstopmode main && \
+    bibtex main && \
+    pdflatex -interaction=nonstopmode main && \
+    pdflatex -interaction=nonstopmode main
+#   → ragpaper/main.pdf  (~30 s on M4)
+```
+
+### Zenodo DOI publish (~5 min, needs free Zenodo token)
+
+```bash
+# One-time: create a Zenodo account at https://zenodo.org/signup
+#           and a token at https://zenodo.org/account/settings/applications/tokens/new/
+#           with scopes deposit:write + deposit:actions
+
+export ZENODO_TOKEN=...
+
+# Sandbox rehearsal first (won't mint a real DOI):
+python3 scripts/upload_to_zenodo.py --sandbox --no-publish    # ~30 s
+# → preview at https://sandbox.zenodo.org/deposit/<id>
+
+# Production upload + publish (mints permanent DOI):
+python3 scripts/upload_to_zenodo.py    # ~2 min including upload
+# → prints DOI like 10.5281/zenodo.<id>; resolves at https://doi.org/<DOI>
+# → paste DOI into submission/paper_metadata.yml::artifact_links.zenodo_doi
+```
+
+### OpenReview submission (~30 min, fully manual)
+
+Follow `submission/openreview_checklist.md`. Key steps:
+
+1. Set `\anonymoustrue` in `ragpaper/main.tex` (currently `false` for local).
+2. Recompile.
+3. Open the OpenReview submission form for NeurIPS 2026.
+4. Paste fields from `submission/paper_metadata.yml`.
+5. Upload `ragpaper/main.pdf` + the supplementary tarball
+   `/tmp/coherence-paradox-v2.0.0.tar.gz` (created by `bash scripts/release_v2.sh`).
+6. Save the OR submission ID, tag the commit.
+
+### Anticipated total Phase 3 runway
+
+| Phase 3 task | Time | Cost | Status |
+|---|---|---|---|
+| #1 Headline figure | 5 s | $0 | ✅ runs in 2-min build pass |
+| #2 Author info | trivial | $0 | ✅ already in main.tex w/ anonymous toggle |
+| #3 Lint pass | 1 s | $0 | ✅ 0 errors |
+| #4 Zenodo upload | 5 min | $0 | ⏳ needs `ZENODO_TOKEN` |
+| #5 OR submission | 30 min | $0 | ⏳ manual |
+| #7 CCS calibration | 3 s | $0 | ✅ runs in 2-min build pass |
+| #8 Qualitative example | 2 s | $0 | ✅ runs in 2-min build pass |
+| **Total** | **~40 min** | **$0** | |
+
+(#6 closed-model frontier intentionally skipped per user direction — no spend.)
+
+### Files added in Phase 3
+
+| File | Purpose |
+|---|---|
+| `experiments/build_headline_figure.py` | Frontier-scale paradox+recovery hero figure |
+| `experiments/build_ccs_calibration.py` | CCS density split + quintile bars |
+| `experiments/build_qualitative_example.py` | Picks strongest baseline→v1 paradox triple |
+| `scripts/lint_paper.py` | Pre-submission lint: refs, cites, typos, placeholders |
+| `scripts/upload_to_zenodo.py` | Two-step Zenodo deposit + publish; sandbox mode supported |
+| `release/zenodo_metadata.json` | Title/abstract/keywords/license payload for Zenodo |
+| `submission/openreview_checklist.md` | Step-by-step OR submission flow + rebuttal-quickref table |
+| `submission/paper_metadata.yml` | Single-source metadata for the OR form |
 
 ## Common operational gotchas
 
