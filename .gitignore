@@ -67,3 +67,9 @@ space_deploy/
 logs/
 notebooks/frontier_scale_kaggle.ipynb
 
+# Phase 5 build outputs
+pip-package/dist/
+pip-package/build/
+pip-package/*.egg-info/
+hf_dataset_staging/
+
