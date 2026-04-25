@@ -34,12 +34,15 @@ from typing import Optional
 
 # Groq free-tier catalogue at 2026-04.  Kept explicit rather than fetched so
 # the experiment is reproducible even if Groq rotates models later.
+# NOTE 2026-04-25: mixtral-8x7b-32768 was decommissioned by Groq; replaced
+# with openai/gpt-oss-120b (frontier) and openai/gpt-oss-20b (mid-scale).
 GROQ_MODELS = {
     "llama-3.3-70b":   "llama-3.3-70b-versatile",
-    "llama-3.1-70b":   "llama-3.1-70b-versatile",
     "llama-3.1-8b":    "llama-3.1-8b-instant",
-    "mixtral-8x7b":    "mixtral-8x7b-32768",
-    "gemma2-9b":       "gemma2-9b-it",
+    "qwen3-32b":       "qwen/qwen3-32b",
+    "gpt-oss-120b":    "openai/gpt-oss-120b",
+    "gpt-oss-20b":     "openai/gpt-oss-20b",
+    "llama-4-scout":   "meta-llama/llama-4-scout-17b-16e-instruct",
 }
 
 
