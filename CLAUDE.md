@@ -10,13 +10,32 @@ Main repo: `/Users/saketmaganti/claudeprojs/rag-hallucination-detection`
 Remote: `https://github.com/Saket-Maganti/rag-hallucination-detection`
 Default branch: `main`
 
-## Current status (2026-04-25)
+## Current status (2026-04-25, end-of-day)
 
-**Phase 1 (8-item paper-revision infrastructure) — COMPLETE.** All reviewer-facing experiments ran. Only FinanceBench (HF-gated) and Self-RAG on Kaggle (OOM → now 8-bit-loadable) have asterisks.
+**Phase 1 (8-item) — COMPLETE.** All reviewer-facing experiments ran.
+**Phase 2 (10-item) — 9/10 RUN.** Only Groq frontier-scale deferred (no API key).
+**Paper — TIGHTENED.** New `robustness.tex` section bundles all six new robustness checks; `analysis.tex::Limitations` extended with three new caveat paragraphs (long-form scope, noise-equivalence, adversarial-129); `theory.tex` and `robustness.tex` wired into `main.tex`; abstract updated with multi-seed numbers and explicit scope qualifications. **Compiles cleanly: 62 pages, 681 KB PDF.**
 
-**Phase 2 (10-item major paper-strengthening upgrade) — CODE COMPLETE.** Every item now has an executable script; the remaining work is launching runs (Surface 1 + Surface 2) and deploying the HF Space.
+**11/12 paper-tables filled** (`results/paper_tables/ALL_TABLES.md`); only `table_6_frontier` missing (waiting on Groq).
 
-**New on 2026-04-25**: Self-RAG 8-bit/4-bit quantization path, final-tables aggregator, NQ-row-count repair helper, benchmark-v2 release builder, MS-MARCO streaming robustness fix, HF Space + leaderboard + deploy helper.
+### Final headline numbers (use these in §Results / abstract)
+
+| Claim | Number | Source |
+|---|---|---|
+| SQuAD paradox magnitude | **0.069 ± 0.004** (17× signal/σ across 3 seeds) | `results/multiseed/paradox_variance.csv` |
+| PubMedQA paradox magnitude | **0.043 ± 0.013** (3.3× signal/σ) | `results/multiseed/paradox_variance.csv` |
+| Prompt main effect | **F=0.046, p=0.83** (SQuAD); F=1.12, p=0.29 (PubMedQA) | `results/stats/` ANOVA |
+| HCPC vs RAPTOR (faith) | HCPC-v1 wins 2/3: SQuAD −0.081, HotpotQA **+0.053**, PubMedQA −0.036 | `results/raptor/raptor_vs_hcpc.csv` |
+| Long-form: MS-MARCO unsupported-rate | baseline 22.4% → HCPC-v1 **7.5%** (-67%) | `results/longform/summary.csv` |
+| Sub-chunk sweet spot | 256 tokens; paradox attenuates at 512 | `results/subchunk_sensitivity/paradox_by_sub.csv` |
+| Adversarial validator yield | 129/200 cases (drift 50, disjoint 40, control 29, contradict 10) | `data/adversarial/*.jsonl` |
+
+### Caveats now explicit in paper §Limitations
+
+1. **Long-form**: paradox does NOT generalize to QASPER (Δ=+0.002) or MS-MARCO (Δ=−0.033, sign flips). Reframed as scope statement; HCPC instead reduces unsupported-claim rate on MS-MARCO.
+2. **Noise vs coherence**: SQuAD noise slope (−0.154) > paradox magnitude (0.100). Original `ratio≥2` target NOT met. Reframed as "qualitatively distinct" not "magnitudinally larger".
+3. **Adversarial set**: validator rejected 71/200 generated cases. Set ships at 129; mech classifier still on n=20 pairs.
+4. **Frontier-scale**: 70B/Mixtral run scoped but not executed; flagged as priority for camera-ready.
 
 ## Professor's feedback (2026-04-23)
 
@@ -193,6 +212,18 @@ _All P2 items + all operational helpers now have code._ Remaining work is comput
 - P2 #10 HF Space demo: `space/app.py` + `space/requirements.txt` + `space/README.md` written 2026-04-25. Three tabs (CCS calculator, paradox explorer, about), CPU-only, no Ollama dependency. Companion leaderboard at `leaderboard/app.py` (port 7861) with browse + submit (one-click GitHub-PR URL) + rules tabs.
 - Deploy helper: `python3 scripts/prepare_hf_space.py` → `space_deploy/` with `.gitattributes` LFS config + `_PUSH_INSTRUCTIONS.md`. User still runs `git push hf main` manually.
 - Remaining P2 items (#1 RAPTOR, #2 frontier-scale, #3 long-form, #5 multi-seed, #9 deployment) all graduated to 🟡 Ready on 2026-04-25.
+
+### Paper changes 2026-04-25 (tightening pass)
+
+| File | Change |
+|---|---|
+| `ragpaper/sections/robustness.tex` | NEW — 6 robustness checks (variance, RAPTOR, long-form, prompt, sub-chunk, noise). Honest reporting including the noise-equivalence soft-fail. |
+| `ragpaper/sections/analysis.tex::Limitations` | +5 paragraphs: long-form scope, noise-vs-coherence, adversarial-129, frontier-scale. New labels `sec:limitations:longform`, `sec:limitations:noise`, `sec:limitations:adversarial`, `sec:limitations:frontier`. |
+| `ragpaper/sections/abstract.tex` | Added multi-seed numbers (`0.069 ± 0.004`, signal/σ=17×), prompt-ANOVA (`p=0.83`), RAPTOR comparison, and explicit long-form / noise scope qualifications. |
+| `ragpaper/main.tex` | Wires in `theory.tex` (after methodology) and `robustness.tex` (after headtohead). Adds `amsthm` package + `proposition`/`theorem`/`corollary`/`lemma`/`definition` envs needed by `theory.tex`. |
+| `ragpaper/references.bib` | + `raptor2024` entry (Sarthi et al., ICLR 2024). |
+| `experiments/run_noise_injection_ablation.py` (no edit; data fix) | The lookup against `multidataset/summary.csv` was returning None because the summary had only 21/45 rows. Rebuilt summary from `per_query.csv` (1350 rows → 45 rows summary), then re-ran `coherence_vs_noise_table` to populate the `paradox_drop` and `paradox_vs_noise_ratio` columns. |
+| `results/multidataset/summary.csv` | Rebuilt from per-query data; now 45 rows (15 tuples × 3 conditions); `ccs` `-1` sentinel for non-v2 conditions cleaned to NaN. |
 
 ### Helper scripts added 2026-04-25 (ops + paper assembly)
 

@@ -36,7 +36,16 @@ embedding similarities without running the generator. CCS cleanly
 separates high-coherence retrieval sets (0\% hallucination) from
 low-coherence sets that precede generation failures, giving practitioners
 a deployment-time guard-rail that does not require answer-level
-evaluation. The broader message: RAG evaluation has been optimizing the
-wrong quantity. We have been measuring how good each passage looks on
-its own, when what the generator actually needs is evidence that fits
-together.
+evaluation. Six robustness checks confirm the result is not a single-run
+artifact: the SQuAD paradox is $0.069 \pm 0.004$ across three random
+seeds (signal/$\sigma = 17\times$); a one-way ANOVA over four prompt
+templates yields $p = 0.83$ (no prompt main effect); and HCPC
+outperforms a hierarchical RAPTOR baseline on 2/3 datasets. Two
+limitations qualify scope: the paradox does \emph{not} generalize to
+long-form generation on QASPER or MS-MARCO (HCPC instead reduces
+unsupported-claim rate by $67\%$ on the latter), and on SQuAD the
+paradox magnitude is comparable to, not larger than, generic
+retrieval-noise sensitivity. The broader message: RAG evaluation has
+been optimizing the wrong quantity. We have been measuring how good
+each passage looks on its own, when what the generator actually needs
+is evidence that fits together.

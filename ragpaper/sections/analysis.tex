@@ -436,6 +436,56 @@ per-query oracle. The modest per-query correlations ($\rho \leq 0.34$)
 reflect both sample size limitations and the genuine complexity of
 faithfulness, which depends on factors beyond context coherence alone.
 
+\paragraph{Long-form scope.}
+\label{sec:limitations:longform}
+The headline paradox is a property of short-answer QA. On QASPER
+(scientific long-form QA, $n=20$) the paradox is essentially zero
+($\Delta = +0.002$); on MS-MARCO v2.1 (open-domain long-form, $n=20$)
+the sign \emph{flips} ($\Delta = -0.033$, HCPC-v1 wins). We attribute
+this to the looser dependence of long-form answers on a single
+contiguous span. HCPC-v2 selective refinement remains a net win on
+long-form via a different metric (unsupported-claim rate, $-67\%$ on
+MS-MARCO), so we frame long-form as a complementary use case rather
+than as confirmation of the paradox itself
+(\S\ref{sec:rob:longform}).
+
+\paragraph{Coherence vs generic noise.}
+\label{sec:limitations:noise}
+Our pre-registered prediction was that the paradox magnitude exceeds
+the noise sensitivity slope by at least a factor of two — the strongest
+form of the ``coherence is a distinct failure mode'' claim. The
+ablation in \S\ref{sec:rob:noise} does not support this strong form on
+SQuAD, where the noise slope ($-0.154$) exceeds the paradox magnitude
+($+0.100$). The coherence and noise mechanisms are sign-distinct on
+PubMedQA and HotpotQA (where noise has a small positive effect on
+faithfulness while coherence-disrupting refinement still hurts), but
+they are not magnitudinally separated on SQuAD. We weaken the claim
+accordingly: the paradox is a \emph{qualitatively distinct} failure
+mode, not a magnitudinally larger one.
+
+\paragraph{Adversarial set size.}
+\label{sec:limitations:adversarial}
+The expanded adversarial set targeted $200$ cases ($50$ per category)
+but the validator (which requires the LLM-generated case to actually
+trip a faithfulness drop relative to a control passage) accepted only
+$129$. Of the four categories, \texttt{drift} reached the target
+($50$), \texttt{disjoint} reached $40$, \texttt{control} reached $29$,
+and \texttt{contradict} stayed at the seed $10$ because the validator
+rejected most generated contradictions as too easy to spot. The
+mechanistic classifier results in \S\ref{sec:mechanistic} remain at
+$n=20$ pairs; the larger set has been packaged for an external
+benchmark release but is not yet used in classifier training.
+
+\paragraph{Frontier-scale evaluation.}
+\label{sec:limitations:frontier}
+We evaluate three open-weight $7$--$8$B generators throughout. A
+frontier-scale check using Llama-$3.3$-$70$B and Mixtral-$8\times7$B
+via the Groq API was scoped but not run before submission; we mark this
+as the highest-priority follow-up for the camera-ready revision. The
+prediction the coherence account makes is that the paradox magnitude
+should shrink at $70$B+ as the parametric prior becomes a more
+plausible substitute for fragmented evidence, but should not invert.
+
 \subsection{Boundary conditions of the coherence account}
 
 The coherence hypothesis also predicts \emph{when} coherence-preserving
