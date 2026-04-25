@@ -238,13 +238,22 @@ def paradox_by_scale(
 
 
 def _scale_label(model_alias: str) -> str:
-    if "70b" in model_alias.lower():
+    a = model_alias.lower()
+    if "120b" in a:
+        return "120B"
+    if "70b" in a:
         return "70B"
-    if "8x7b" in model_alias.lower() or "mixtral" in model_alias.lower():
+    if "32b" in a:
+        return "32B"
+    if "8x7b" in a or ("mixtral" in a and "8x" in a):
         return "8x7B"
-    if "9b" in model_alias.lower():
+    if "20b" in a:
+        return "20B"
+    if "17b" in a or "scout" in a:
+        return "17B-MoE"
+    if "9b" in a:
         return "9B"
-    if "8b" in model_alias.lower():
+    if "8b" in a:
         return "8B"
     return "?"
 

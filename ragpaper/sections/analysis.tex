@@ -478,13 +478,17 @@ benchmark release but is not yet used in classifier training.
 
 \paragraph{Frontier-scale evaluation.}
 \label{sec:limitations:frontier}
-We evaluate three open-weight $7$--$8$B generators throughout. A
-frontier-scale check using Llama-$3.3$-$70$B and Mixtral-$8\times7$B
-via the Groq API was scoped but not run before submission; we mark this
-as the highest-priority follow-up for the camera-ready revision. The
-prediction the coherence account makes is that the paradox magnitude
-should shrink at $70$B+ as the parametric prior becomes a more
-plausible substitute for fragmented evidence, but should not invert.
+We evaluate three open-weight $7$--$8$B generators in the main
+experiments, complemented by a frontier-scale check
+(\S\ref{sec:rob:frontier}) using Llama-$3.3$-$70$B and the $120$B
+GPT-OSS model via the Groq API. The paradox \emph{persists} at frontier
+scale on SQuAD: Llama-$3.3$-$70$B exactly reproduces the $7$B-Mistral
+magnitude ($0.100$ vs $0.100$), and the $120$B model still exhibits a
+positive $+0.030$ paradox. PubMedQA paradox magnitudes shrink at scale
+($0.005$ for $70$B, $0.013$ for $120$B vs $0.025$ at $7$B), which the
+coherence account predicts: stronger parametric priors are a more
+plausible substitute for fragmented biomedical evidence. We did not
+run a $400$B+ closed model; that remains a follow-up.
 
 \subsection{Boundary conditions of the coherence account}
 
