@@ -1,0 +1,44 @@
+# Build outputs / caches — never ship in images
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+*.egg-info/
+.venv/
+venv/
+
+# Large local artifacts — image must stay portable
+chroma_db/
+chroma_db_*/
+hf_dataset_staging/
+space_deploy/
+logs/
+*.zip
+
+# Compiled paper artifacts (regenerable)
+ragpaper/main.aux
+ragpaper/main.log
+ragpaper/main.bbl
+ragpaper/main.blg
+ragpaper/main.out
+ragpaper/main.toc
+ragpaper/main.fls
+ragpaper/main.fdb_latexmk
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Git noise
+.git/
+.github/
+
+# Agent worktrees
+.claude/
+
+# Existing release tarballs
+release/*.tar.gz

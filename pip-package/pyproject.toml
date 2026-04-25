@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "context-coherence"
+version = "0.1.0"
+description = "Context Coherence Score (CCS) — a generator-free retrieval-time diagnostic for RAG hallucination, with a coherence-gated retriever policy."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.9"
+authors = [
+    { name = "Saket Maganti" },
+]
+keywords = [
+    "retrieval-augmented-generation",
+    "rag",
+    "hallucination",
+    "context-coherence",
+    "evaluation",
+    "nlp",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+# Deliberately minimal — pure-numpy core. Embedders are pluggable.
+dependencies = [
+    "numpy>=1.20",
+]
+
+[project.optional-dependencies]
+embedders = [
+    "sentence-transformers>=2.2",
+]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "ruff>=0.1",
+]
+
+[project.urls]
+Homepage = "https://github.com/Saket-Maganti/rag-hallucination-detection"
+Paper = "https://huggingface.co/spaces/saketmgnt/sakkk"
+Benchmark = "https://doi.org/10.5281/zenodo.19757291"
+Issues = "https://github.com/Saket-Maganti/rag-hallucination-detection/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]

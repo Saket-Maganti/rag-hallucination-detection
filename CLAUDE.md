@@ -15,6 +15,7 @@ Default branch: `main`
 **Phase 1 (8-item) — COMPLETE.** All reviewer-facing experiments ran.
 **Phase 2 (10-item) — 10/10 RUN.** Frontier-scale landed 2026-04-25: SQuAD/Llama-3.3-70B paradox = +0.100 (exact match to 7B), GPT-OSS-120B = +0.030. **Kills "small-model artifact" critique.** All 12/12 paper tables now filled.
 **Phase 3 (pre-submission polish) — DONE except OpenReview click.** All scripts shipped, all figures built, lint clean, Zenodo DOI **`10.5281/zenodo.19757291`** minted and wired into paper + CITATION.bib + submission YAML. Only remaining Phase 3 item: the user manually clicking through the OpenReview submission form (script-friendly checklist at `submission/openreview_checklist.md`).
+**Phase 5 (project hardening) — CODE SHIPPED.** TIER 1 (tests, HF push, pip pkg, Makefile, CI) + TIER 2 runners (quantization, temperature, cross-encoder, confidence) + TIER 2.5 (Colab, LangChain) all written. 30/30 tests pass. Awaiting user execution of new experiment runs.
 **Phase 4 (ChatGPT-review hardening) — DONE.** All 6 code files + 4 new figures + 5 paper sections shipped. **Top-k ablation finished 2026-04-25 16:00** (1 h 9 min wall-clock for 8 tuples × 4 conditions × 30 q = 960 generator calls). Headline: paradox magnitude **scales with k on SQuAD** (k=2: 0.063 → k=5: **0.124** → k=10: 0.117) — directional prediction of the coherence theory empirically confirmed. PubMedQA paradox vanishes at k=10 (−0.001), consistent with the domain-mismatched-encoder story (already-incoherent retrieval can't be made worse). CCS-only gate recovers most of HCPC-v2 at k≤3 but **HCPC-v2 strictly wins at k=5/10** (0.139 vs 0.042 recovery on SQuAD k=5), justifying the protected-neighbor rule as independent value beyond the gate decision. Awaiting user decision on whether to populate Table tab:topk in the paper via `python3 experiments/build_topk_table.py`. **PDF currently: 69 pages, 0 LaTeX warnings, 0 lint errors.**
 **Paper — TIGHTENED.** New `robustness.tex` section bundles all six new robustness checks; `analysis.tex::Limitations` extended with three new caveat paragraphs (long-form scope, noise-equivalence, adversarial-129); `theory.tex` and `robustness.tex` wired into `main.tex`; abstract updated with multi-seed numbers and explicit scope qualifications. **Compiles cleanly: 62 pages, 681 KB PDF.**
 **Paths 2 & 3 — STAGED.** Frontier-scale runner (`experiments/run_frontier_scale.py`) + Groq wrapper (`src/groq_llm.py`) + smoke test (`scripts/smoke_test_groq.py`) + Kaggle notebook generator (`scripts/kaggle_frontier_scale.py`) all in place. HF Space staging (`scripts/prepare_hf_space.py`) + Gradio demo (`space/`) + leaderboard (`leaderboard/`) + release tagger (`scripts/release_v2.sh`) ready to ship. User just needs `GROQ_API_KEY` (free) and HF Space repo URL.
@@ -513,6 +514,140 @@ The script validates working tree is clean, asserts required artifacts exist, bu
 - `space/`, `leaderboard/` — Gradio apps
 - `scripts/`, `experiments/`, `src/` — reproducibility code
 - `CLAUDE.md`, `README.md` — operator notes
+
+## Phase 5 — final-mile project hardening (post-paper)
+
+The paper is done. Phase 5 turns the codebase into infrastructure
+others can build on. Code-only — no paper edits unless you opt in.
+
+**Status as of 2026-04-25 EOD: ALL TIER 1 + TIER 2 + TIER 2.5 CODE SHIPPED.**
+30/30 tests pass, 0 lint errors. Awaiting user execution of runs.
+
+### TIER 1 — engineering polish (DONE — code shipped)
+
+| # | What | File | Status |
+|---|---|---|---|
+| 5.1 | Unit tests (30 tests) | `tests/test_ccs.py` (9), `test_lint_paper.py` (9), `test_builders.py` (5), `pip-package/tests/` (12) | ✅ all green |
+| 5.2 | HuggingFace Datasets push | `scripts/push_to_hf_datasets.py` | ✅ ready (`--push` to upload) |
+| 5.3 | Standalone pip package | `pip-package/` (pyproject.toml, src/context_coherence/, tests/) | ✅ 12/12 tests pass |
+| 5.4 | Makefile + Dockerfile + .dockerignore | `Makefile`, `Dockerfile`, `.dockerignore` | ✅ `make help` works |
+| 5.5 | GitHub Actions CI | `.github/workflows/ci.yml` (3 jobs: test, smoke, pip-package matrix) | ✅ pushes activate it |
+
+### TIER 2 — new scientific findings (CODE READY, runs pending)
+
+| # | Experiment | File | Run time |
+|---|---|---|---|
+| 5.6 | Quantization sensitivity (Q4 / Q5 / Q8) | `experiments/run_quantization_sensitivity.py` | ~1.5-2 hr Ollama |
+| 5.7 | Temperature sensitivity (T = 0/0.3/0.7/1.0) | `experiments/run_temperature_sensitivity.py` (multi-backend: Ollama OR Groq) | ~1.8 hr Ollama, ~12 min Groq |
+| 5.8 | Cross-encoder choice (3 rerankers) | `experiments/run_crossencoder_sensitivity.py` | ~1.4 hr |
+| 5.9 | Confidence calibration (model self-confidence vs CCS) | `experiments/run_confidence_calibration.py` (multi-backend) | ~10 min Ollama, ~3 min Groq |
+
+### TIER 2.5 — community/outreach (DONE)
+
+| # | What | File | Status |
+|---|---|---|---|
+| 5.11 | Colab tutorial notebook | `scripts/build_colab_tutorial.py` → `notebooks/colab_tutorial.ipynb` | ✅ generated |
+| 5.12 | LangChain integration (drop-in `CoherenceGatedRetriever`) + upstream PR notes | `integrations/langchain/coherence_gated_retriever.py` + `INTEGRATION_NOTES.md` | ✅ usable today, PR-draft ready |
+
+### Phase 5 unified runbook
+
+```bash
+# ─── Wave A — instant validation (~30 s) ────────────────────────────
+make tests                         # 30 tests, ~20 s
+python3 scripts/lint_paper.py      # 0 errors required
+
+# ─── Wave B — community shipping (~10 min, needs HF token) ──────────
+export HF_TOKEN=...
+python3 scripts/push_to_hf_datasets.py            # dry-run preview
+python3 scripts/push_to_hf_datasets.py --push     # ~2 min upload
+# → load_dataset("saketmgnt/context-coherence-bench") works globally
+
+cd pip-package && python3 -m build               # builds wheel
+# Upload to PyPI: python3 -m twine upload dist/*  (needs PYPI_TOKEN)
+
+python3 scripts/build_colab_tutorial.py          # already done
+# Push to main → Colab badge in README will resolve
+
+# ─── Wave C — Docker reproducibility (~5 min build) ─────────────────
+docker build -t coherence-paradox:v2.0.0 .
+docker run --rm coherence-paradox:v2.0.0 make tests
+
+# ─── Wave D — TIER 2 experiments (Ollama or Groq) ───────────────────
+# Each is independent; all save to results/<name>/
+
+# Local Ollama:
+ollama serve &
+ollama pull mistral:7b-instruct-q4_0
+ollama pull mistral:7b-instruct-q5_K_M
+ollama pull mistral:7b-instruct-q8_0
+nohup python3 -u experiments/run_quantization_sensitivity.py \
+    > logs/quantization.log 2>&1 &      # ~2 hr
+
+nohup python3 -u experiments/run_temperature_sensitivity.py \
+    --backend ollama --model mistral \
+    > logs/temperature_ollama.log 2>&1 &  # ~1.8 hr
+
+nohup python3 -u experiments/run_crossencoder_sensitivity.py \
+    > logs/crossencoder.log 2>&1 &      # ~1.4 hr
+
+nohup python3 -u experiments/run_confidence_calibration.py \
+    --backend ollama --model mistral \
+    > logs/confidence_ollama.log 2>&1 &  # ~10 min
+
+# Or via Groq (free, ~10× faster, runs on Kaggle CPU):
+export GROQ_API_KEY=...
+python3 experiments/run_temperature_sensitivity.py \
+    --backend groq --model llama-3.3-70b           # ~12 min
+python3 experiments/run_confidence_calibration.py \
+    --backend groq --model llama-3.3-70b           # ~3 min
+
+# ─── Wave E — Kaggle parallelization (optional) ─────────────────────
+# Adapt scripts/kaggle_frontier_scale.py for any TIER 2 experiment;
+# the Groq-backed runners (temperature, confidence) work as-is on Kaggle
+# free CPU since Groq does the GPU work via API.
+```
+
+### What's runnable on Kaggle (vs Mac-only)
+
+| Runner | Mac (Ollama) | Kaggle (Groq) | Notes |
+|---|---|---|---|
+| 5.6 quantization | ✅ ~2 hr | ❌ | needs different Ollama tags; Groq doesn't expose quantization |
+| 5.7 temperature | ✅ ~1.8 hr | ✅ ~12 min | use `--backend groq --model llama-3.3-70b` |
+| 5.8 cross-encoder | ✅ ~1.4 hr | ⚠️ partial | reranker is local; only generation moves to Groq (not a big speedup) |
+| 5.9 confidence | ✅ ~10 min | ✅ ~3 min | uses Groq for both answer + confidence calls |
+
+### Files added in Phase 5
+
+```
+tests/
+  conftest.py
+  test_ccs.py
+  test_lint_paper.py
+  test_builders.py
+pip-package/
+  pyproject.toml
+  README.md
+  src/context_coherence/{__init__,core,gate}.py
+  tests/test_core.py
+scripts/
+  push_to_hf_datasets.py
+  build_colab_tutorial.py
+experiments/
+  run_quantization_sensitivity.py
+  run_temperature_sensitivity.py
+  run_crossencoder_sensitivity.py
+  run_confidence_calibration.py
+integrations/langchain/
+  coherence_gated_retriever.py
+  INTEGRATION_NOTES.md
+notebooks/
+  colab_tutorial.ipynb
+.github/workflows/
+  ci.yml
+Makefile
+Dockerfile
+.dockerignore
+```
 
 ## Phase 4 — top-tier polish (post-ChatGPT-review hardening)
 

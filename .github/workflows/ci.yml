@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  # ── Lint + main test suite (Python 3.11) ─────────────────────────
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install minimal test deps
+        run: |
+          pip install --upgrade pip
+          # Core deps needed by the imports in src/ and the tests
+          pip install pandas numpy pytest scipy matplotlib
+
+      - name: Lint paper (LaTeX refs / cites / placeholders)
+        run: python3 scripts/lint_paper.py
+
+      - name: Test main repo
+        run: python3 -m pytest tests/test_ccs.py tests/test_lint_paper.py -v --tb=short
+        # We deliberately skip tests/test_builders.py here — it requires
+        # sentence-transformers (~500 MB); covered in the full-deps job.
+
+  # ── Full smoke (figure builders run end-to-end) ──────────────────
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install full deps
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt pytest pytest-cov sentence-transformers
+
+      - name: Run all builder smoke tests
+        run: python3 -m pytest tests/ -v --tb=short
+
+  # ── Standalone pip package ───────────────────────────────────────
+  pip-package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install + test
+        working-directory: pip-package
+        run: |
+          pip install --upgrade pip
+          pip install -e ".[dev]"
+          pytest tests/ -v --tb=short
+
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
