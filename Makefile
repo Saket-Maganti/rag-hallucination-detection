@@ -58,7 +58,18 @@ paper:
 		bibtex main && \
 		pdflatex -interaction=nonstopmode main.tex && \
 		pdflatex -interaction=nonstopmode main.tex
-	@echo "[make] $(RAGPAPER)/main.pdf updated."
+	@echo "[make] $(RAGPAPER)/main.pdf updated (longform, ~55 pages)."
+
+paper-neurips:
+	cd $(RAGPAPER) && pdflatex -interaction=nonstopmode main_neurips.tex && \
+		bibtex main_neurips && \
+		pdflatex -interaction=nonstopmode main_neurips.tex && \
+		pdflatex -interaction=nonstopmode main_neurips.tex
+	@echo "[make] $(RAGPAPER)/main_neurips.pdf updated (NeurIPS-tight, ~28 pages)."
+
+papers: paper paper-neurips
+	@echo "[make] both PDFs built:"
+	@ls -lh $(RAGPAPER)/main.pdf $(RAGPAPER)/main_neurips.pdf
 
 lint:
 	$(PYTHON) scripts/lint_paper.py

@@ -1,0 +1,145 @@
+% =====================================================================
+%  main_neurips.tex — NeurIPS 2026 submission build
+%
+%  Same section files as main.tex (longform), but a slim appendix
+%  containing only the supplementary material reviewers actually need.
+%  Compiles to main_neurips.pdf at ~25-30 pages total (9 main + ~15-20
+%  appendix). Use this for the OpenReview submission.
+%
+%  To compile:
+%      pdflatex main_neurips && bibtex main_neurips && \
+%      pdflatex main_neurips && pdflatex main_neurips
+%  Or:
+%      make paper-neurips
+% =====================================================================
+
+\documentclass[11pt]{article}
+
+% Tighter margins for the NeurIPS submission style
+\usepackage[margin=1.0in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\theoremstyle{plain}
+\newtheorem{proposition}{Proposition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}
+\newtheorem{lemma}{Lemma}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\usepackage{graphicx}
+\graphicspath{{figures/}}
+\usepackage{tikz}
+\usepackage{subcaption}
+\usepackage{xcolor}
+\usepackage{natbib}
+\setlength{\bibsep}{4pt plus 4pt minus 2pt}    % tighter bib for NeurIPS
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+
+\usepackage{placeins}
+\usepackage{float}
+
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, calc, fit, decorations.pathmorphing}
+\emergencystretch=2em
+\tolerance=400
+
+\renewcommand{\descriptionlabel}[1]{%
+  \hspace\labelsep\normalfont #1}
+
+% --- Float control: same as main.tex but a touch tighter
+\setcounter{topnumber}{3}
+\setcounter{bottomnumber}{2}
+\setcounter{totalnumber}{4}
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\textfraction}{0.1}
+\renewcommand{\floatpagefraction}{0.7}
+\renewcommand{\dbltopfraction}{0.9}
+\renewcommand{\dblfloatpagefraction}{0.7}
+\setlength{\textfloatsep}{8pt plus 2pt minus 2pt}
+\setlength{\floatsep}{8pt plus 2pt minus 2pt}
+\setlength{\intextsep}{8pt plus 2pt minus 2pt}
+\raggedbottom
+
+% Header marking this build as NeurIPS submission style
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[R]{\small\textit{NeurIPS 2026 submission}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+
+\title{\LARGE\bfseries When Better Retrieval Hurts:\\[0.3em]
+Context Coherence Drives Faithfulness in Retrieval-Augmented Generation}
+
+% Anonymous-toggle for double-blind. Default true for the NeurIPS submission.
+\newif\ifanonymous
+\anonymoustrue        % flip to \anonymousfalse for the camera-ready
+
+\ifanonymous
+  \author{Anonymous Authors\\\textit{Submission under double-blind review}}
+\else
+  \author{%
+    Saket Maganti\thanks{%
+      Independent researcher.  Correspondence:
+      \href{mailto:freeopenapex@gmail.com}{freeopenapex@gmail.com}.
+      Code, benchmark, and an interactive demo are released at
+      \href{https://github.com/Saket-Maganti/rag-hallucination-detection}{github.com/Saket-Maganti/rag-hallucination-detection}
+      and
+      \href{https://huggingface.co/spaces/saketmgnt/sakkk}{huggingface.co/spaces/saketmgnt/sakkk}.
+    }
+  }
+\fi
+
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\input{sections/abstract}
+\end{abstract}
+
+% =====================================================================
+%  Main paper (9-page NeurIPS limit)
+% =====================================================================
+\input{sections/introduction}
+\input{sections/background}
+\input{sections/setup}
+\input{sections/paradox}
+\input{sections/theory}
+\input{sections/method}
+\input{sections/robustness}
+\input{sections/discussion}
+\input{sections/conclusion}
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+% =====================================================================
+%  SLIM APPENDIX — only what reviewers strictly need to verify the
+%  main paper's claims. The full longform appendix is in main.tex.
+% =====================================================================
+\appendix
+\input{sections/appendix}        % hyperparameters, ANOVA, Cohen's d, full
+                                  % multimodel table, latency table
+\input{sections/multidataset}    % per-(dataset, model) paradox cells
+\input{sections/headtohead}      % Self-RAG / CRAG comparison
+
+% Deliberately NOT included in the NeurIPS slim appendix (they live in
+% the longform version, main.pdf):
+%   - mechanistic.tex      (still preregistered; results pending)
+%   - adversarial.tex      (full adversarial protocol)
+%   - benchmark.tex        (ContextCoherenceBench packaging detail)
+%   - human_validation.tex (deferred Prolific protocol)
+%   - analysis.tex         (extended CCS-as-policy + when-CCS-fails
+%                           narrative — main paper §5 + §8 are sufficient
+%                           for the submission)
+
+\end{document}
