@@ -288,6 +288,38 @@ not an emergent property of weak generators; it is a property of the
 retrieval set's coherence that survives a $10\times$ scale increase in
 generator parameters.
 
+\subsection{Top-$k$ sensitivity}
+\label{sec:rob:topk}
+
+A reviewer-anticipated critique is that the paradox is sensitive to the
+choice of top-$k$, the number of passages handed to the generator. The
+coherence account makes a directional prediction: increasing $k$ adds
+relevance breadth (more matches) but spreads the retrieved set across
+more disparate sources, so coherence should decrease and the paradox
+magnitude should grow. We sweep $k \in \{2, 3, 5, 10\}$ on Mistral-$7$B
+across SQuAD and PubMedQA and add the bare CCS gate
+(\S\ref{sec:ccs_policy}) as a fourth condition to isolate the gate from
+HCPC-v$2$'s rank-protection mechanism.
+
+\begin{table}[!htb]
+\centering
+\caption{Top-$k$ sensitivity on Mistral-7B, $n=30$ per cell.
+Numbers populated automatically from
+\texttt{results/topk\_sensitivity/paradox\_by\_k.csv} by
+\texttt{experiments/run\_topk\_sensitivity.py} once the run completes.
+\emph{$\Delta_{\textrm{paradox}}$} is faith$_{\textrm{base}}-$faith$_{\textrm{v1}}$;
+\emph{gate~rec.} is the bare CCS-gate's recovery vs HCPC-v$1$.}
+\label{tab:topk}
+\footnotesize
+\begin{tabular}{lcccccc}
+\toprule
+Dataset & $k$ & faith$_{\textrm{base}}$ & faith$_{\textrm{v1}}$ & $\Delta_{\textrm{paradox}}$ & gate~rec. & v$2$~rec. \\
+\midrule
+\multicolumn{7}{c}{\emph{(populated after \texttt{run\_topk\_sensitivity.py})}} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \subsection{Summary}
 \label{sec:rob:summary}
 

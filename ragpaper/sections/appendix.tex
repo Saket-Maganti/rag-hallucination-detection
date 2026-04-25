@@ -475,3 +475,16 @@ condition, sampled randomly from the validation split at the start of
 each experiment and held fixed across all conditions within that
 experiment. This ensures that condition comparisons are not confounded
 by query difficulty variation.
+
+\section{Real-world case studies}
+\label{app:case_studies}
+
+To make the refinement paradox concrete beyond the aggregate metrics,
+we present a small case-study set: queries on which the same generator
+gives a faithful answer with raw retrieval, hallucinates after
+per-passage refinement, and recovers under the coherence-gated policy.
+The cases are auto-selected from the per-query logs by the script
+\texttt{experiments/build\_qualitative\_example.py} as the queries
+with the largest baseline$\to$HCPC-v$1$ faithfulness gap.
+
+\input{figures/qualitative_cases}

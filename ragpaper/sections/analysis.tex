@@ -82,6 +82,10 @@ the coherence view.
 
 \input{figures/ccs_and_proxy}
 
+\input{figures/disentanglement}
+
+\input{figures/coherence_heatmap}
+
 \subsection{CCS as a conceptual lens on retrieved context structure}
 \label{sec:ccs_lens}
 
@@ -235,6 +239,91 @@ regimes with low CCS contain a higher \emph{rate} of hallucination. That
 is the prediction we test and the one the data support. Treating CCS as a
 necessary-but-not-sufficient diagnostic---rather than an end-to-end
 predictor---is the principled way to use it.
+
+\subsection{CCS as a decision policy, not just a diagnostic}
+\label{sec:ccs_policy}
+
+The previous section established that CCS is correlated with
+hallucination rate. The natural follow-on question is whether CCS can
+be \emph{operationalized}: turned into a deployment-time decision rule
+that flips the system's behaviour at retrieval time.  We argue it
+already has been, and surface the framing here.
+
+\paragraph{HCPC-v$2$ \emph{is} the CCS gate.}
+The protected-neighbor rule of HCPC-v$2$
+(\S\ref{sec:method}) is a coherence-preserving policy: it declines to
+refine when refinement would shatter the coherence of the top-ranked
+chunks. Read this way, HCPC-v$2$ is not a separate algorithm so much
+as a decision policy with one knob (the protected rank cut-off) and
+two regimes (preserve vs refine). The recovery numbers in
+Section~\ref{sec:results} are therefore the recovery numbers
+\emph{of the policy}, not just of an algorithm.
+
+\paragraph{A simpler ablation: the bare CCS gate.}
+To isolate the gate from HCPC-v$2$'s rank-protection mechanism, we
+also evaluate a stripped-down policy --- the bare CCS gate
+($\textsc{CCSGateRetriever}$):
+\begin{enumerate}
+  \item compute CCS on the top-$k$ retrieved set,
+  \item if CCS $< \tau$, refine all passages (HCPC-v$1$ behaviour),
+  \item otherwise, do nothing (baseline).
+\end{enumerate}
+This deliberately drops the protected-neighbor rule. If the bare gate
+recovers most of HCPC-v$2$'s gain, the gate decision is the active
+ingredient; if HCPC-v$2$ still wins materially, the protection rule
+adds independent value. We report the comparison in the top-$k$
+sensitivity table (\S\ref{sec:rob:topk}, Table~\ref{tab:topk}).
+
+\paragraph{Deployment translation.}
+Operationally, the policy is a single \texttt{if}:
+
+\begin{quote}\small\ttfamily
+docs, log = retriever.retrieve(query)\\
+if log["context\_coherence"] < tau: re-retrieve / expand-k / fall back\\
+else: pass docs to generator
+\end{quote}
+
+\noindent
+This requires no fine-tuning, no labelled data, and no generator call.
+The marginal cost over a vanilla retriever is one pairwise-similarity
+computation over $k$ embeddings, $O(k^2)$ in the embedding dimension
+--- negligible compared to the generator forward pass.
+
+\subsection{When CCS fails (and why it is still useful)}
+\label{sec:ccs_fails}
+
+A theory is more credible when its proponents articulate where it
+breaks. We mark three regimes in which CCS does \emph{not} reliably
+predict faithfulness, and explain each from the coherence account.
+
+\paragraph{Highly redundant corpora.}
+When the corpus is dominated by near-duplicate passages (e.g.\ legal
+boilerplate, software changelogs), every retrieval set has high CCS
+by construction. The signal saturates and provides no discrimination.
+Diagnostic: if the median CCS across queries exceeds $0.85$, treat
+CCS as an availability check, not a quality signal.
+
+\paragraph{Long-context generators with single-document inputs.}
+If the generator's context window comfortably holds the entire
+relevant document and the retrieval step is reduced to "select this
+one document", coherence is trivially $1.0$. The paradox does not
+arise because there is no fragmentation to begin with --- consistent
+with our long-form non-result on QASPER (\S\ref{sec:rob:longform}).
+
+\paragraph{Domain-mismatched encoders.}
+When the encoder is general-purpose and the corpus is specialised
+(general MiniLM on biomedical PubMedQA), every retrieval set has
+\emph{low} CCS because the encoder cannot resolve fine-grained
+in-domain similarity. This collapses the CCS distribution and is the
+mechanism behind the zero-shot-beats-RAG finding in
+Section~\ref{sec:results}. CCS still detects the failure (its
+distribution flags the regime) but cannot fix it.
+
+The common thread: CCS is a \emph{measurement}, not a remedy. It
+tells the deployer that something is wrong with the retrieved set
+relative to the generator's needs, but the appropriate intervention
+(re-retrieve, expand $k$, fall back to zero-shot, switch encoder)
+depends on which of the three regimes is causing the low-CCS reading.
 
 \subsection{Qualitative Analysis of Coherence Failure}
 \label{sec:qualitative}

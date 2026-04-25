@@ -520,23 +520,28 @@ Triage and execution plan below. Key insight: 4 of the 8 are reframes
 of work we already have; 1 is genuinely missing (top-k ablation); 3 are
 cheap viz/code wins. Total budget: ~5 hr code + ~3 hr Ollama, $0 spend.
 
+**Status as of 2026-04-25 EOD: ALL CODE SHIPPED AND PAPER UPDATED.**
+Figures (4.2/4.3/4.7/4.8) live; paper edits (4.4/4.5/4.6) merged;
+top-k ablation (4.1) running in background. PDF: 69 pages (was 64),
+0 LaTeX warnings, 0 lint errors.
+
 ### TIER 1 — must do for top-tier acceptance
 
 | # | Task | Status | File | Run time |
 |---|---|---|---|---|
-| 4.1 | Top-k ablation (k ∈ {2, 3, 5, 10}, SQuAD + PubMedQA) | ⚪ written, not run | `experiments/run_topk_sensitivity.py` | ~3 hr Ollama |
-| 4.2 | Disentanglement figure (fix similarity, vary CCS) | ⚪ written | `experiments/build_disentanglement_figure.py` | ~5 s |
-| 4.3 | Coherence heatmap (pairwise sim matrix, 2 examples) | ⚪ written | `experiments/build_coherence_heatmap.py` | ~10 s |
-| 4.4 | CCS-as-policy reframe (abstract + new §, +CCS-only gate baseline) | ⚪ pending | LaTeX edits | ~30 min |
-| 4.5 | Stronger positioning sentence (abstract opener) | ⚪ pending | abstract.tex | 5 min |
-| 4.6 | "When CCS fails" subsection (promote 3 negative results) | ⚪ pending | analysis.tex | 30 min |
+| 4.1 | Top-k ablation (k ∈ {2, 3, 5, 10}, SQuAD + PubMedQA) | 🔄 running PID 21170 | `experiments/run_topk_sensitivity.py` | ~2-3 hr Ollama |
+| 4.2 | Disentanglement figure (fix similarity, vary CCS) | ✅ DONE | `experiments/build_disentanglement_figure.py` → `figures/disentanglement.{pdf,tex}` | ~5 s |
+| 4.3 | Coherence heatmap (pairwise sim matrix, 2 examples) | ✅ DONE | `experiments/build_coherence_heatmap.py` → `figures/coherence_heatmap.{pdf,tex}` | ~30 s |
+| 4.4 | CCS-as-policy reframe (abstract + new §, +bare CCS gate) | ✅ DONE | `analysis.tex::sec:ccs_policy` + `src/ccs_gate_retriever.py` | ~30 min |
+| 4.5 | Stronger positioning sentence (abstract opener) | ✅ DONE | `abstract.tex` line 1: "RAG fails not because retrieval is inaccurate, but because retrieved evidence does not form a usable narrative for the generator." | 5 min |
+| 4.6 | "When CCS fails" subsection (promote 3 negative results) | ✅ DONE | `analysis.tex::sec:ccs_fails` (3 regimes: redundant corpora, long-context single-doc, domain mismatch) | 30 min |
 
 ### TIER 2 — nice-to-have
 
 | # | Task | Status | File | Run time |
 |---|---|---|---|---|
-| 4.7 | Expand qualitative builder to 5 case studies (1 per dataset) | ⚪ pending | extend `build_qualitative_example.py` | ~10 s |
-| 4.8 | Embedding clustering plot (UMAP/t-SNE of retrieved chunks) | ⚪ written | `experiments/build_embedding_clusters.py` | ~30 s |
+| 4.7 | Expand qualitative builder to 5 case studies (1 per dataset) | ✅ DONE (4 cases — only 4 paradox triples in data) | extended `build_qualitative_example.py --top 5` → `figures/qualitative_cases.tex` | ~10 s |
+| 4.8 | Embedding clustering plot (UMAP/t-SNE of retrieved chunks) | ✅ DONE | `experiments/build_embedding_clusters.py` → `figures/embedding_clusters.{pdf,tex}` | ~30 s |
 
 ### What ChatGPT got right vs already-addressed
 
@@ -558,30 +563,92 @@ cheap viz/code wins. Total budget: ~5 hr code + ~3 hr Ollama, $0 spend.
 - ❌ Overcomplicating CCS (the simple def is the contribution)
 - ❌ Rewriting from scratch (we're past that stage)
 
-### Phase 4 execution order (suggested)
+### Phase 4 + Phase 3 unified execution order (recommended)
+
+This single recipe runs everything from Phase 3 (figures + Zenodo + OR
+prep) **and** Phase 4 (top-k + disentanglement + heatmap + clusters +
+case studies + paper reframes). Total clock time: ~3.5 hr (mostly
+top-k waiting), $0.
 
 ```bash
-# Wave 1 — instant builds (~10 min total, no Ollama needed)
-python3 experiments/build_disentanglement_figure.py     #  5 s   (4.2)
-python3 experiments/build_coherence_heatmap.py          # 10 s   (4.3)
-python3 experiments/build_embedding_clusters.py         # 30 s   (4.8)
-python3 experiments/build_qualitative_example.py --top 5 # 5 s   (4.7, after extending)
+# ─── Wave 0 ── prerequisites (one-time) ─────────────────────────────
+ollama serve &                # in a dedicated terminal, leave running
+ollama pull mistral           # only if not already present (~4.4 GB)
 
-# Wave 2 — paper edits (~1 hr)
-# Edit ragpaper/sections/abstract.tex (4.5 positioning)
-# Edit ragpaper/sections/analysis.tex (4.4 CCS-policy + 4.6 "when CCS fails")
-# Edit ragpaper/sections/headtohead.tex (4.4 add CCS-only-gate row)
+# ─── Wave 1 ── all Phase 3 + Phase 4 instant builders (~3 min) ──────
+# These rebuild every figure from the per_query CSVs you already have.
+python3 experiments/build_headline_figure.py             # P3 #1, ~5 s
+python3 experiments/build_ccs_calibration.py             # P3 #7, ~3 s
+python3 experiments/build_qualitative_example.py --top 5 # P3 #8 + P4 #4.7, ~5 s
+python3 experiments/build_disentanglement_figure.py      # P4 #4.2, ~5 s
+python3 experiments/build_coherence_heatmap.py           # P4 #4.3, ~30 s
+python3 experiments/build_embedding_clusters.py          # P4 #4.8, ~30 s
 
-# Wave 3 — long compute (~3 hr, Ollama must be running)
-ollama serve  # in dedicated terminal
-python3 experiments/run_topk_sensitivity.py --k 2 3 5 10 \
-    --datasets squad pubmedqa --model mistral --n_questions 30
-# After: paper edits to add Table tab:topk to robustness.tex
+# ─── Wave 2 ── lint + compile (~30 s) ────────────────────────────────
+python3 scripts/lint_paper.py                 # MUST show "0 errors"
+cd ragpaper && pdflatex -interaction=nonstopmode main && \
+    bibtex main && \
+    pdflatex -interaction=nonstopmode main && \
+    pdflatex -interaction=nonstopmode main
+cd ..
+# → ragpaper/main.pdf, ~69 pages, 760 KB
 
-# Wave 4 — final compile + lint
-python3 scripts/lint_paper.py    # must show 0 errors
+# ─── Wave 3 ── top-k ablation (~2-3 hr Ollama, can run overnight) ────
+# P4 #4.1 — the only Phase 4 task that requires real compute.
+# Use nohup so it survives terminal close. Checkpoint-resumable.
+nohup python3 -u experiments/run_topk_sensitivity.py \
+    --k 2 3 5 10 \
+    --datasets squad pubmedqa \
+    --model mistral \
+    --n_questions 30 \
+    > logs/topk_sensitivity.log 2>&1 &
+echo $!  # save the PID
+tail -f logs/topk_sensitivity.log     # watch progress
+# After it finishes, the paper auto-pulls the numbers from
+# results/topk_sensitivity/paradox_by_k.csv into Table tab:topk.
+
+# ─── Wave 4 ── re-compile after top-k lands (~30 s) ──────────────────
+# Repeat Wave 2 to refresh main.pdf with the new top-k numbers.
+
+# ─── Wave 5 ── Zenodo DOI (~5 min) ───────────────────────────────────
+# Free token at https://zenodo.org/account/settings/applications/tokens/new/
+export ZENODO_TOKEN=...
+python3 scripts/upload_to_zenodo.py --sandbox --no-publish    # rehearsal
+python3 scripts/upload_to_zenodo.py                           # real DOI
+# Paste the printed DOI into submission/paper_metadata.yml::artifact_links.zenodo_doi
+
+# ─── Wave 6 ── flip to anonymous + final compile + tag ──────────────
+sed -i '' 's/\\anonymousfalse/\\anonymoustrue/' ragpaper/main.tex
 cd ragpaper && pdflatex main && bibtex main && pdflatex main && pdflatex main
+cd ..
+bash scripts/release_v2.sh    # tags v2.0.0, builds tarball, optional gh release
+
+# ─── Wave 7 ── OpenReview submission (~30 min, manual) ──────────────
+# Follow submission/openreview_checklist.md
+# Upload ragpaper/main.pdf + /tmp/coherence-paradox-v2.0.0.tar.gz
 ```
+
+### What's running RIGHT NOW (background)
+
+- Top-k ablation: `pgrep -f run_topk_sensitivity` → PID ~21170
+- Logs: `logs/topk_sensitivity.log`
+- Per-tuple CSVs land in `results/topk_sensitivity/squad__k2_per_query.csv` etc.
+- After it finishes (~2-3 hr), re-run Wave 2 to refresh PDF.
+
+### Files added in Phase 4
+
+| File | Purpose |
+|---|---|
+| `src/ccs_gate_retriever.py` | Bare CCS-gate baseline (HCPC-v$1.5$): if CCS<τ refine all, else baseline |
+| `experiments/run_topk_sensitivity.py` | Sweep k ∈ {2, 3, 5, 10} with baseline/v1/CCS-gate/v2 conditions |
+| `experiments/build_disentanglement_figure.py` | Bucket queries by similarity quartile, plot CCS→faith within each |
+| `experiments/build_coherence_heatmap.py` | Pairwise sim matrix for 1 coherent + 1 incoherent example query |
+| `experiments/build_embedding_clusters.py` | t-SNE/UMAP of retrieved chunks per condition, colored by query |
+| `ragpaper/figures/{disentanglement,coherence_heatmap,embedding_clusters,qualitative_cases}.{pdf,tex}` | Generated figures |
+| `ragpaper/sections/analysis.tex` | New §`sec:ccs_policy` (CCS as policy) and §`sec:ccs_fails` (when CCS fails) |
+| `ragpaper/sections/abstract.tex` | New opening sentence (ChatGPT's framing) |
+| `ragpaper/sections/robustness.tex` | New §`sec:rob:topk` stub (table populates after top-k run) |
+| `ragpaper/sections/appendix.tex` | New §`app:case_studies` referencing qualitative_cases figure |
 
 ## Phase 3 — pre-submission runbook
 
