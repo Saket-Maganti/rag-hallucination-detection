@@ -1,134 +1,98 @@
 \section{Introduction}
 \label{sec:intro}
 
-A RAG pipeline looks, from the outside, like a safety feature. An LLM
-without retrieval can hallucinate; an LLM with retrieval is anchored to
-a document it can cite. That is the story the field tells about why we
-build these systems, and the story behind most of the engineering
-investment in them~\citep{lewis2020rag, gao2024retrievalaugmented}:
-retrieve more relevant passages, and the generator will speak more
-faithfully. The story underwrites deployments that matter — clinical
-decision support, legal research, enterprise search — settings where a
-confident but ungrounded answer can hurt someone.
+Retrieval-augmented generation (RAG) has converged on a deployment
+template that few practitioners question: dense retrieval, then a
+cross-encoder rerank, then per-passage compression or refinement,
+then generation. Each stage is justified locally --- denser embeddings
+pull the right passages, rerankers rescore them more carefully, and
+refinement compresses each retained passage to its query-relevant
+fragment. Each stage individually \emph{does} improve per-passage
+relevance scores. The implicit and load-bearing assumption is that
+because every stage helps locally, the composition helps globally:
+better retrieval $\Rightarrow$ more faithful answers.
 
-This paper is a report on what we found when we stopped believing the
-story.
+\paragraph{The phenomenon.} We report a counter-intuitive failure of
+this assumption. Across $6{,}050+$ queries spanning SQuAD and
+PubMedQA, two generator families (Mistral-$7$B and Llama-$3$-$8$B), and
+four retrieval configurations, naive post-retrieval refinement
+\emph{cuts} answer faithfulness from $0.7995$ to $0.6407$ on SQuAD and
+introduces $10\%$ hallucination where there was none --- while leaving
+per-passage similarity slightly higher
+(Figure~\ref{fig:headline_frontier}). We name this the
+\textbf{refinement paradox}.
 
-\paragraph{Two quantities that have been quietly conflated.}
-Retrieval quality is a property of \emph{individual passages}: each
-chunk is scored against the query on its own. Faithfulness is a property
-of the \emph{answer}, which emerges from a generator reasoning over the
-concatenation of every passage the retriever handed it. Between these
-two quantities lies a variable standard RAG evaluation does not look at
-— the internal coherence of the retrieved context \emph{as a set}. When
-passages are stitched into a single prompt, their mutual consistency is
-what lets the generator treat them as one piece of evidence. When that
-consistency breaks, the generator does not stop; it bridges the gap with
-whatever its parameters remember. The citation looks fine. The answer
-does not.
+\paragraph{The mechanism.} The culprit is not any individual passage
+but a property of the retrieved \emph{set}. When refinement splinters
+a broad passage into a narrow high-similarity fragment, it strips the
+connective evidence the generator was relying on. The generator,
+finding no longer-form context to ground its claims in, silently fills
+the gap with parametric memory --- producing a fluent answer that no
+longer follows from the supplied context. We call this property
+\textbf{context coherence} and quantify it with the
+\textbf{Context Coherence Score} (CCS): the mean minus the standard
+deviation of pairwise cosine similarities between retrieved chunk
+embeddings. CCS is generator-free, runs in $O(k^{2})$ in the embedding
+dimension, and can be computed at retrieval time with no additional
+forward pass.
 
-\paragraph{Why this matters in deployment.}
-The gap between retrieval quality and faithfulness is not a laboratory
-curiosity. In domain-specific deployments — biomedical QA, legal
-research, financial analysis — a general-purpose encoder routinely
-returns passages that are \emph{each} topical but \emph{together}
-inconsistent. Under those conditions, our experiments show, RAG produces
-more hallucination than the same model with no retrieval at all. The
-safety feature becomes the failure mode.
+\paragraph{The intervention.} If coherence is the active ingredient,
+a retriever that \emph{preserves} coherence should recover faithfulness
+without paying the latency cost of decoder-side reflection (e.g.,
+Self-RAG~\citep{asai2024selfrag}). We instantiate this idea as
+HCPC-v$2$, a coherence-gated refinement policy that declines to refine
+when refinement would shatter the top-ranked block. HCPC-v$2$ recovers
+SQuAD faithfulness to $0.7874$ with $0\%$ hallucination while
+intervening on only $16.7\%$ of queries. Restraint, not algorithmic
+sophistication, is the active ingredient.
 
-\paragraph{Why existing methods do not catch it.}
-The field has invested heavily in retrieval-side improvements:
-cross-encoder re-ranking~\citep{nogueira2019passage}, context
-compression~\citep{xu2023recomp}, self-reflective
-retrieval~\citep{asai2024selfrag}. All three optimize passage-level
-relevance or brevity. None measure — or preserve — the coherence of the
-context the generator finally sees. Post-retrieval refinement, the
-practice of splitting lower-scoring passages into higher-scoring
-sub-chunks, is the clearest illustration: it makes every passage look
-better while silently destroying the connective tissue between them.
-
-\input{figures/overview}
-
-\paragraph{What we claim, and what we do not.}
-\emph{Faithfulness in RAG is governed by set-level coherence, not
-passage-level relevance.} We name this mediating property \textbf{context
-coherence}, and the central empirical consequence \textbf{the refinement
-paradox}: aggressive post-retrieval refinement raises per-chunk
-similarity while reducing answer faithfulness by up to 15.9 percentage
-points and introducing hallucination where there was none. The
-contribution of this paper is \emph{the failure mode and its mediating
-variable}, not a new state-of-the-art system. HCPC-v2 and CCS
-(introduced below) are instruments we use to test the coherence account;
-if a better instrument replaces them tomorrow, the account stands or
-falls independently. Figure~\ref{fig:overview} summarizes the study
-design and the core finding.
-
-\paragraph{Key findings at a glance.}
-\begin{itemize}
-  \setlength{\itemsep}{1pt}
-  \item Retrieval similarity $\neq$ faithfulness — the two can move in
-        opposite directions.
-  \item Context coherence is the missing variable that mediates the
-        gap.
-  \item Naive post-retrieval refinement causes hallucination by
-        fragmenting otherwise coherent evidence.
-  \item RAG with a domain-mismatched encoder can be strictly worse than
-        zero-shot prompting.
-  \item A cheap retrieval-time coherence check (CCS) recovers the
-        expected behavior without retraining.
-\end{itemize}
-
-\paragraph{Contributions.}
-We make four contributions, each of which is hard to explain within the
-standard retrieval-quality framing of RAG and natural within the
-coherence framing we propose.
-
+\paragraph{Contributions.} We make four contributions.
 \begin{enumerate}
-  \item \textbf{Retrieval quality and answer faithfulness can move in
-        opposite directions, by a wide margin.}
-        On SQuAD, naive post-retrieval refinement improves per-chunk
-        similarity while dropping faithfulness from 0.7995 to 0.6407 and
-        introducing 10.0\% hallucination ($-$15.9~pp). Per-passage
-        similarity and faithfulness are nearly \emph{decoupled} across
-        the three refinement regimes we compare, falsifying the
-        assumption that drives most RAG optimization.
-
-  \item \textbf{RAG can be strictly worse than having no retrieval at
-        all.} On PubMedQA, RAG with a general-domain encoder raises
-        Mistral's hallucination rate from 8.0\% (zero-shot) to 20.0\%
-        and Llama-3's from 4.0\% to 10.0\%. The coherence account
-        predicts this inversion; standard retrieval framing does not.
-        This is the paper's strongest empirical consequence: when
-        retrieved evidence is topically adjacent but semantically
-        inconsistent, parametric memory — at least internally
-        consistent — is the safer input.
-
-  \item \textbf{Selective, coherence-aware refinement eliminates the
-        paradox with minimal intervention.}
-        HCPC-v2 recovers SQuAD faithfulness to 0.7874 with 0\%
-        hallucination by intervening on only 16.7\% of queries, and
-        remains stable across a $7\times$ range of refinement rates
-        (7\%--48\%). The design principle that does the work is
-        restraint, not cleverness.
-
-  \item \textbf{Chunk size dominates faithfulness variance by orders of
-        magnitude over prompt strategy.}
-        ANOVA marks chunk size as the only significant factor on SQuAD
-        ($F = 19.72$, $p < 0.001$, $\eta^2 = 0.100$, Cohen's $d = 1.41$),
-        accounting for 90.1\% of between-factor variance; prompt
-        strategy explains $<0.1\%$. This is consistent with the
-        coherence account — chunk size is the knob that most directly
-        controls how much connective evidence survives retrieval — and
-        it inverts the common engineering priority, which still has
-        teams tuning prompts before fixing their chunking.
+  \item \textbf{The refinement paradox} (\S\ref{sec:paradox}): we
+    document and characterize a failure mode in the standard RAG
+    pipeline that holds across $5$ datasets, $5$ generator families
+    ($7$B--$120$B), and $9$ ablation axes. To our knowledge this is
+    the first systematic demonstration that better per-passage
+    retrieval can make answer faithfulness \emph{worse} on standard
+    short-answer QA.
+  \item \textbf{Context Coherence Score (CCS)} (\S\ref{sec:method}): a
+    generator-free retrieval-time diagnostic that predicts the
+    paradox. CCS separates high-coherence sets ($0\%$ hallucination)
+    from low-coherence sets that precede generation failures; the
+    model's own self-reported confidence is significantly correlated
+    with CCS (Pearson $r{=}0.36$, Spearman $\rho{=}0.48$, both $p{<}0.01$),
+    cross-validating that the LLM internally tracks coherence.
+  \item \textbf{HCPC-v$2$ as a deployment policy} (\S\ref{sec:method}):
+    a coherence-gated retriever that recovers faithfulness with $0\%$
+    hallucination while intervening on $1$ in $6$ queries. Adds one
+    pairwise-similarity computation to the request path; no
+    fine-tuning, no labeled data, no decoder reflection.
+  \item \textbf{Robustness across $7$ axes} (\S\ref{sec:robustness}):
+    multi-seed variance, hierarchical retrieval (RAPTOR), prompt
+    templates, sub-chunk size, frontier scale ($70$B/$120$B), reranker
+    family, quantization, and sampling temperature. The paradox
+    persists where the coherence account predicts and is honestly
+    qualified where it does not.
 \end{enumerate}
 
-We distill the reframing into \textbf{CCS}, a retrieval-time diagnostic
-computed from pairwise chunk embedding similarities. CCS separates
-coherent retrieval sets (0\% hallucination, CCS~$= 1.00$ on SQuAD) from
-incoherent ones (20\% hallucination, CCS~$= 0.57$ on PubMedQA) without
-running the generator — a computationally cheap guard-rail with a
-clean scientific claim behind it: coherence, not relevance, is what
-the generator is sensitive to.
+\paragraph{Released artifacts.} To make the result fully usable: the
+benchmark is on Zenodo with permanent DOI
+\href{https://doi.org/10.5281/zenodo.19757291}{\texttt{10.5281/zenodo.19757291}};
+a HuggingFace Dataset
+(\href{https://huggingface.co/datasets/saketmgnt/context-coherence-bench}{\texttt{saketmgnt/context-coherence-bench}})
+provides \texttt{load\_dataset}-able access to $5$ configurations
+including the adversarial cases; an interactive Gradio demo lives at
+\href{https://huggingface.co/spaces/saketmgnt/sakkk}{huggingface.co/spaces/saketmgnt/sakkk};
+and the standalone CCS metric ships as a $\texttt{pip install}$-able
+package and as a drop-in LangChain
+\texttt{CoherenceGatedRetriever}.
 
-\FloatBarrier
+\paragraph{Roadmap.} \S\ref{sec:bg} positions the work against prior
+RAG literature. \S\ref{sec:setup} describes the experimental design.
+\S\ref{sec:paradox} presents the paradox itself.
+\S\ref{sec:theory} gives an information-theoretic account.
+\S\ref{sec:method} introduces CCS and HCPC-v$2$.
+\S\ref{sec:robustness} bundles seven robustness checks.
+\S\ref{sec:discussion} discusses limits, including three regimes
+where CCS is \emph{not} predictive. \S\ref{sec:conclusion}
+concludes.

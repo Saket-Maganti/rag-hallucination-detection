@@ -88,10 +88,33 @@ Context Coherence Drives Faithfulness in Retrieval-Augmented Generation}
 \input{sections/abstract}
 \end{abstract}
 
-\input{sections/introduction}\input{sections/background}\input{sections/related_work}\input{sections/methodology}\input{sections/theory}\input{sections/experimental_setup}\input{sections/results}\input{sections/multidataset}\input{sections/headtohead}\input{sections/robustness}\input{sections/human_validation}\input{sections/analysis}\input{sections/mechanistic}\input{sections/adversarial}\input{sections/benchmark}\input{sections/conclusion}
+% =====================================================================
+%  Main paper (target: ~9 pages NeurIPS-tight)
+% =====================================================================
+\input{sections/introduction}
+\input{sections/background}
+\input{sections/setup}
+\input{sections/paradox}
+\input{sections/theory}
+\input{sections/method}
+\input{sections/robustness}
+\input{sections/discussion}
+\input{sections/conclusion}
+
 \bibliographystyle{plainnat}
 \bibliography{references}
 
+% =====================================================================
+%  Appendix — all detail that does not fit in the 9-page main
+% =====================================================================
+\appendix
 \input{sections/appendix}
+\input{sections/multidataset}      % full per-(dataset, model) tables
+\input{sections/headtohead}        % Self-RAG / CRAG comparison
+\input{sections/mechanistic}       % attention probe + classifier
+\input{sections/adversarial}       % adversarial cases
+\input{sections/benchmark}         % ContextCoherenceBench packaging
+\input{sections/human_validation}  % deferred Prolific protocol
+\input{sections/analysis}          % CCS-as-policy long form, when-CCS-fails extended
 
 \end{document}

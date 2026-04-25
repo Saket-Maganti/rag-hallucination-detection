@@ -256,7 +256,7 @@ refine when refinement would shatter the coherence of the top-ranked
 chunks. Read this way, HCPC-v$2$ is not a separate algorithm so much
 as a decision policy with one knob (the protected rank cut-off) and
 two regimes (preserve vs refine). The recovery numbers in
-Section~\ref{sec:results} are therefore the recovery numbers
+Section~\ref{sec:paradox} are therefore the recovery numbers
 \emph{of the policy}, not just of an algorithm.
 
 \paragraph{A simpler ablation: the bare CCS gate.}
@@ -272,7 +272,7 @@ This deliberately drops the protected-neighbor rule. If the bare gate
 recovers most of HCPC-v$2$'s gain, the gate decision is the active
 ingredient; if HCPC-v$2$ still wins materially, the protection rule
 adds independent value. We report the comparison in the top-$k$
-sensitivity table (\S\ref{sec:rob:topk}, Table~\ref{tab:topk}).
+sensitivity table (\S\ref{sec:robustness}, Table~\ref{tab:robustness_summary}).
 
 \paragraph{Deployment translation.}
 Operationally, the policy is a single \texttt{if}:
@@ -308,7 +308,7 @@ If the generator's context window comfortably holds the entire
 relevant document and the retrieval step is reduced to "select this
 one document", coherence is trivially $1.0$. The paradox does not
 arise because there is no fragmentation to begin with --- consistent
-with our long-form non-result on QASPER (\S\ref{sec:rob:longform}).
+with our long-form non-result on QASPER (\S\ref{sec:robustness}).
 
 \paragraph{Domain-mismatched encoders.}
 When the encoder is general-purpose and the corpus is specialised
@@ -316,7 +316,7 @@ When the encoder is general-purpose and the corpus is specialised
 \emph{low} CCS because the encoder cannot resolve fine-grained
 in-domain similarity. This collapses the CCS distribution and is the
 mechanism behind the zero-shot-beats-RAG finding in
-Section~\ref{sec:results}. CCS still detects the failure (its
+Section~\ref{sec:paradox}. CCS still detects the failure (its
 distribution flags the regime) but cannot fix it.
 
 The common thread: CCS is a \emph{measurement}, not a remedy. It
@@ -332,7 +332,7 @@ To make the mechanism concrete, we describe three illustrative failure
 patterns observed during manual inspection of hallucinated responses.
 Each case is drawn from our evaluation logs and anonymized to its
 structural features; the first mirrors the Super Bowl 50 case in
-Section~\ref{sec:results}, the other two are representative of broader
+Section~\ref{sec:paradox}, the other two are representative of broader
 patterns.
 
 \paragraph{Case A: Evidence removed by fragment replacement (SQuAD).}
@@ -538,14 +538,14 @@ contiguous span. HCPC-v2 selective refinement remains a net win on
 long-form via a different metric (unsupported-claim rate, $-67\%$ on
 MS-MARCO), so we frame long-form as a complementary use case rather
 than as confirmation of the paradox itself
-(\S\ref{sec:rob:longform}).
+(\S\ref{sec:robustness}).
 
 \paragraph{Coherence vs generic noise.}
 \label{sec:limitations:noise}
 Our pre-registered prediction was that the paradox magnitude exceeds
 the noise sensitivity slope by at least a factor of two — the strongest
 form of the ``coherence is a distinct failure mode'' claim. The
-ablation in \S\ref{sec:rob:noise} does not support this strong form on
+ablation in \S\ref{sec:robustness} does not support this strong form on
 SQuAD, where the noise slope ($-0.154$) exceeds the paradox magnitude
 ($+0.100$). The coherence and noise mechanisms are sign-distinct on
 PubMedQA and HotpotQA (where noise has a small positive effect on
@@ -571,7 +571,7 @@ benchmark release but is not yet used in classifier training.
 \label{sec:limitations:frontier}
 We evaluate three open-weight $7$--$8$B generators in the main
 experiments, complemented by a frontier-scale check
-(\S\ref{sec:rob:frontier}) using Llama-$3.3$-$70$B and the $120$B
+(\S\ref{sec:robustness}) using Llama-$3.3$-$70$B and the $120$B
 GPT-OSS model via the Groq API. The paradox \emph{persists} at frontier
 scale on SQuAD: Llama-$3.3$-$70$B exactly reproduces the $7$B-Mistral
 magnitude ($0.100$ vs $0.100$), and the $120$B model still exhibits a
@@ -631,7 +631,7 @@ threshold selection---we searched until we found thresholds that made the
 paradox disappear. The Phase~5 sweep over 168 configurations refutes
 this: faithfulness remains stable across a $7\times$ range of refinement
 rates (7\%--48\%), degrading only when refinement exceeds ${\sim}50\%$
-of queries (Table~\ref{tab:threshold}). The recovery is a plateau, not a
+of queries (Table~\ref{tab:robustness_summary}). The recovery is a plateau, not a
 peak, meaning it does not depend on precise threshold values. Any
 threshold pair in the stable region produces the same qualitative
 result.

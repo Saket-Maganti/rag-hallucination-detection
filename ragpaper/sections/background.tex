@@ -1,131 +1,68 @@
-\section{Background}
-\label{sec:background}
+\section{Background and Related Work}
+\label{sec:bg}
 
-This section establishes the technical foundations on which the
-methodology builds. We define RAG pipeline components, chunking
-strategies, faithfulness measurement, and the Context Coherence Score.
+\paragraph{The standard RAG pipeline.}
+A modern RAG system~\citep{lewis2020rag,gao2024ragsurvey} threads four
+stages: a dense retriever (e.g.\ MiniLM, BGE, E5) returns the top-$k$
+passages by query--passage similarity; an optional cross-encoder
+reranker rescores them~\citep{nogueira2019passage}; an optional
+refinement module further filters or compresses each retained passage
+(e.g.\ extractive sentence selection, query-conditioned summarization,
+or learned compression~\citep{xu2024recomp}); and a generator
+produces the final answer conditioned on the assembled context. Each
+stage individually is reported to improve task performance on standard
+benchmarks~\citep{karpukhin2020dpr,izacard2022few,xiong2024embedder}.
 
-\subsection{Retrieval-Augmented Generation}
+\paragraph{Decoder-side correction.}
+Two influential lines move the correction \emph{into} the decoder.
+Self-RAG~\citep{asai2024selfrag} fine-tunes the generator to emit
+``reflection tokens'' that decide whether to retrieve, retrieve again,
+or stop, paying a fine-tune-time cost and a $2\text{--}3\times$
+inference latency cost. CRAG~\citep{yan2024crag} introduces a
+lightweight retrieval evaluator that triggers web search when document
+relevance is judged poor; it pays an external-call latency cost. Both
+take the position that the generator (or a learned auxiliary) is the
+right place to fix retrieval failures. We instead show that a simple
+retrieval-time signal (CCS) flags the same failures with no decoder
+work and no fine-tuning.
 
-RAG systems~\citep{lewis2020rag} augment language model generation with
-external documents retrieved at inference time. The standard pipeline
-operates in three stages: (1)~\emph{indexing}---documents are split into
-chunks and embedded in a vector store; (2)~\emph{retrieval}---the top-$k$
-chunks by similarity to the input query are selected; and
-(3)~\emph{generation}---the retrieved chunks are concatenated into a prompt,
-and the model generates an answer conditioned on both the query and the
-retrieved context.
+\paragraph{Hierarchical retrieval.}
+RAPTOR~\citep{raptor2024} clusters retrieved passages into a tree and
+retrieves from both leaves and LLM-summarised internal nodes,
+producing higher-coherence summary contexts at the cost of an offline
+LLM-summarisation pass. We compare against RAPTOR directly
+(\S\ref{sec:robustness}); HCPC-v$2$ matches or beats it on $2/3$
+datasets at roughly an order-of-magnitude lower indexing cost.
 
-Dense retrieval~\citep{karpukhin2020dpr} replaced lexical matching with
-learned embeddings, and cross-encoder re-ranking~\citep{nogueira2019passage,
-glass2022re2g} adds a second scoring stage that reorders an over-fetched
-candidate set. More recent work explores context
-compression~\citep{xu2023recomp} and self-reflective
-retrieval~\citep{asai2024selfrag}. All of these interventions target
-\emph{retrieval quality} — the relevance of individual chunks to the
-query. What they do not directly target, and what this paper studies,
-is the \emph{coherence} of the retrieved context as a whole.
+\paragraph{Faithfulness evaluation.}
+Faithfulness --- whether a generated answer is supported by the
+retrieved context --- is typically assessed via NLI scoring of the
+answer against the retrieved documents~\citep{honovich2022true,laban2022summac,
+es2024ragas}, occasionally complemented by human annotation. We
+follow this standard, using a DeBERTa-v$3$ NLI scorer
+(cross-encoder/nli-deberta-v$3$-base) released with
+SummaC~\citep{laban2022summac}, and report a hallucination rate at
+the conventional $0.5$ threshold.
 
-\subsection{Chunking and its downstream consequences}
+\paragraph{Coherence in NLP.}
+Discourse coherence has a long history in classical text
+generation~\citep{li2014coherence,mesgar2018neural,nguyen2021conditional}
+but has not, to our knowledge, been quantified as a deployment-time
+RAG signal. \citet{shi2023large} show that LLMs are distracted by
+irrelevant context but do not consider the case where each individual
+passage is relevant yet the \emph{set} is internally fragmented ---
+which is the regime our work targets. \citet{liu2024lostmiddle} document
+position-dependent context utilization in long contexts; coherence is
+orthogonal to position effects, and our results hold at top-$k$
+configurations small enough that position bias is negligible.
 
-How documents are split determines what the retriever can return.
-Fixed-length chunking with a sliding
-window~\citep{kamradt2024chunking} is the most common approach, splitting
-documents into segments of a fixed token count (e.g., 256, 512, or 1024)
-with small overlap. The choice of chunk size creates a fundamental
-trade-off: smaller chunks are more precisely matchable to queries but contain
-less surrounding context for the generator; larger chunks preserve
-intra-document coherence but may include irrelevant material that dilutes
-the signal.
-
-Despite its centrality, the faithfulness impact of chunk size has not
-been quantified in controlled settings. Most benchmarking work evaluates
-chunk size through retrieval accuracy rather than answer
-faithfulness~\citep{chen2024benchmarking}. We provide a controlled
-measurement of how chunk size affects faithfulness across datasets and
-models, and show that it dominates other configuration parameters by a
-wide margin.
-
-\subsection{Faithfulness and hallucination}
-
-A generated answer is \emph{faithful} if every claim it makes is supported by
-the provided context, regardless of whether those claims are factually
-correct~\citep{maynez2020faithfulness}. Hallucination occurs when the model
-generates content not grounded in the context, typically by drawing on its
-parametric memory~\citep{ji2023hallucination, xu2024hallucination}.
-
-NLI-based faithfulness scoring~\citep{es2024ragas, min2023factscore} treats
-the retrieved context as the premise and the generated answer as the
-hypothesis. A natural language inference model classifies each answer sentence
-as entailed, neutral, or contradicted. The proportion of entailed sentences
-yields a faithfulness score in $[0, 1]$. We use
-\texttt{cross-encoder/nli-deberta-v3-base}~\citep{he2021deberta} with a
-hallucination threshold of 0.50: any response scoring below this threshold
-is classified as hallucinated.
-
-\subsection{Context Coherence Score (CCS)}
-\label{sec:ccs_def}
-
-We introduce the Context Coherence Score as a retrieval-time diagnostic for
-the internal consistency of the retrieved context. The design is motivated by
-a specific observation about how generators fail: hallucination tends to
-occur not when every passage is poor, but when the retrieved set contains a
-mixture of closely related and loosely related passages that the model cannot
-reconcile into a single coherent narrative.
-
-\paragraph{Definition.}
-Given $n$ retrieved chunks with embeddings $\{e_1, \ldots, e_n\}$, let $S$
-denote the matrix of pairwise cosine similarities, where
-$S_{ij} = \cos(e_i, e_j)$ for $i \neq j$. We define:
-\begin{equation}
-  \text{CCS} = \bar{S} - \sigma(S),
-  \label{eq:ccs}
-\end{equation}
-where $\bar{S}$ is the mean of all off-diagonal pairwise similarities and
-$\sigma(S)$ is their standard deviation.
-
-\paragraph{Intuition.}
-CCS measures whether the retrieved passages tell the same story.
-A high CCS means the passages are tightly clustered and uniformly
-relevant; a low CCS means the generator is handed a patchwork of
-loosely related fragments that it must reconcile on its own.
-
-\paragraph{Design rationale.}
-The two terms in CCS capture complementary requirements for a usable
-evidence set. The mean $\bar{S}$ measures \emph{topical concentration}: a
-high value indicates that all retrieved passages occupy a similar region of
-the embedding space, suggesting they address the same subject matter. The
-standard deviation $\sigma(S)$ measures \emph{uniformity}: a high value
-indicates that some passage pairs are much more similar than others,
-signaling an uneven evidence set where strong and weak passages coexist.
-
-Both conditions are necessary. A high mean with high variance describes a
-context where one dominant passage is highly similar to the query while
-others drift---exactly the setting where generators are most prone to
-hallucination, because the model receives conflicting signals about what the
-evidence supports. The subtraction $\bar{S} - \sigma(S)$ rewards contexts
-that are both topically concentrated \emph{and} internally uniform.
-
-This formulation connects to two established principles. First, in
-clustering, cluster quality depends jointly on cohesion (average
-intra-cluster similarity) and uniformity of pairwise
-distances~\citep{reimers2019sbert}. A tight, uniform cluster of retrieved
-passages is analogous to a high-quality cluster whose members agree. A
-dispersed, uneven set is analogous to a poorly formed cluster that happens
-to contain a few well-placed points. Second, the subtraction of standard
-deviation from the mean is structurally analogous to the Sharpe ratio in
-portfolio theory, which penalizes high variance in returns even when the
-mean return is high. In our setting, high-variance similarity indicates
-that the generator receives unevenly grounded evidence, creating
-opportunities for hallucination even when the average relevance is adequate.
-
-\paragraph{Scope and limitations.}
-CCS is deliberately designed as a lightweight \emph{diagnostic}, not as a
-replacement for answer-level faithfulness evaluation. It captures a necessary
-condition for faithful generation (coherent evidence) but not a sufficient
-one (the answer must also correctly use that evidence). Its value is
-operational: CCS can be computed at retrieval time in $O(n^2)$ using only
-the embedding model, without running the generator or the NLI scorer. For
-typical $k \leq 10$, this adds negligible overhead. The metric serves as a
-pre-generation guard-rail---flagging contexts that are likely to cause
-problems before committing to expensive generation and evaluation.
+\paragraph{What we add.}
+The closest existing work flags retrieval failures via the
+\emph{generator's} downstream behavior (Self-RAG, CRAG) or via
+hierarchical context restructuring (RAPTOR). We make three additions:
+(i) we identify a specific failure mode --- the refinement paradox ---
+that the standard pipeline systematically produces; (ii) we provide a
+generator-free retrieval-time signal (CCS) that detects it; and
+(iii) we ship the diagnostic as a deployment policy (HCPC-v$2$) that
+recovers faithfulness at one pairwise-similarity computation per
+query, with no fine-tuning, labels, or auxiliary model calls.

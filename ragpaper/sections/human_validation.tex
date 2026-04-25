@@ -57,7 +57,7 @@ with NLI-faithfulness rates for \texttt{baseline}, \texttt{hcpc\_v1},
 \subsection{Does the paradox survive human evaluation?}
 
 The load-bearing question is whether HCPC-v1 — which raises NLI-measured
-faithfulness above baseline on parts of the §\ref{sec:results} table
+faithfulness above baseline on parts of the §\ref{sec:paradox} table
 while \emph{lowering} answer quality — also looks worse to humans, or
 whether the paradox is an artifact of the NLI scorer. The
 per-condition reporting block (human-faith rate, NLI-faith rate, and
@@ -65,7 +65,7 @@ mean correctness for each of the five conditions) is the one the
 preregistered plan above reads directly on this question. The paradox
 is considered to survive human evaluation if \texttt{hcpc\_v1}'s human
 faithfulness rate is lower than \texttt{baseline}'s on the same matched
-query set; otherwise the §\ref{sec:results} effect is treated as an NLI
+query set; otherwise the §\ref{sec:paradox} effect is treated as an NLI
 artifact.
 
 \subsection{Reporting commitments}
@@ -76,14 +76,14 @@ of direction:
 \begin{itemize}
   \item If $\rho_{\text{NLI},\text{human}} \geq 0.5$ \emph{and} the
         paradox replicates (HCPC-v1 human-faith $<$ baseline human-faith),
-        the §\ref{sec:results} story stands.
+        the §\ref{sec:paradox} story stands.
   \item If $\rho_{\text{NLI},\text{human}} < 0.3$, we narrow the
         faithfulness claims to ``NLI-measured faithfulness'' throughout
         and treat the human study as evidence that NLI is the wrong
         oracle.
   \item If the paradox does \emph{not} replicate under humans (HCPC-v1
         human-faith $\geq$ baseline human-faith), we report it as a
-        falsification: the §\ref{sec:results} effect was an NLI
+        falsification: the §\ref{sec:paradox} effect was an NLI
         artifact and HCPC-v2's recovery would need a different
         justification.
 \end{itemize}
