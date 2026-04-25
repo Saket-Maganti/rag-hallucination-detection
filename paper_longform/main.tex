@@ -1,0 +1,120 @@
+\documentclass[12pt]{article}
+
+\usepackage[margin=1.1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\theoremstyle{plain}
+\newtheorem{proposition}{Proposition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}
+\newtheorem{lemma}{Lemma}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\usepackage{graphicx}
+\graphicspath{{figures/}}
+\usepackage{tikz}
+\usepackage{subcaption}
+\usepackage{xcolor}
+\usepackage{natbib}
+\setlength{\bibsep}{6pt plus 6pt minus 2pt}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+
+\usepackage{placeins}
+\usepackage{float}
+
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, calc, fit, decorations.pathmorphing}
+\emergencystretch=2em
+\tolerance=400
+
+% description-list labels: upright smallcaps avoids the missing T1/lmr/bx/sc
+% shape that bold+smallcaps would trigger; visual weight is preserved via
+% letter-space. Wrap labels in \textsc{} as already done in the sources.
+\renewcommand{\descriptionlabel}[1]{%
+  \hspace\labelsep\normalfont #1}
+
+% --- Float control: keep text flowing, allow float-only pages when needed ---
+\setcounter{topnumber}{3}
+\setcounter{bottomnumber}{2}
+\setcounter{totalnumber}{4}
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\textfraction}{0.1}
+\renewcommand{\floatpagefraction}{0.7}
+\renewcommand{\dbltopfraction}{0.9}
+\renewcommand{\dblfloatpagefraction}{0.7}
+\setlength{\textfloatsep}{10pt plus 2pt minus 2pt}
+\setlength{\floatsep}{10pt plus 2pt minus 2pt}
+\setlength{\intextsep}{10pt plus 2pt minus 2pt}
+\raggedbottom
+
+\title{\LARGE\bfseries When Better Retrieval Hurts:\\[0.3em]
+Context Coherence Drives Faithfulness in Retrieval-Augmented Generation}
+
+% --------------------------------------------------------------------
+% Author block.  NeurIPS 2026 is double-blind for submission; toggle
+% \anonymoustrue before generating the camera-ready version.
+% --------------------------------------------------------------------
+\newif\ifanonymous
+\anonymousfalse       % set to \anonymoustrue for the OpenReview submission
+
+\ifanonymous
+  \author{Anonymous Authors\\\textit{Submission under double-blind review}}
+\else
+  \author{%
+    Saket Maganti\thanks{%
+      Independent researcher.  Correspondence:
+      \href{mailto:freeopenapex@gmail.com}{freeopenapex@gmail.com}.
+      Code, benchmark, and an interactive demo are released at
+      \href{https://github.com/Saket-Maganti/rag-hallucination-detection}{github.com/Saket-Maganti/rag-hallucination-detection}
+      (tag \texttt{v2.0.0}) and
+      \href{https://huggingface.co/spaces/saketmgnt/sakkk}{huggingface.co/spaces/saketmgnt/sakkk}.
+    }
+  }
+\fi
+
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\input{sections/abstract}
+\end{abstract}
+
+% =====================================================================
+%  Main paper (target: ~9 pages NeurIPS-tight)
+% =====================================================================
+\input{sections/introduction}
+\input{sections/background}
+\input{sections/setup}
+\input{sections/paradox}
+\input{sections/theory}
+\input{sections/method}
+\input{sections/robustness}
+\input{sections/discussion}
+\input{sections/conclusion}
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+% =====================================================================
+%  Appendix — all detail that does not fit in the 9-page main
+% =====================================================================
+\appendix
+\input{sections/appendix}
+\input{sections/multidataset}      % full per-(dataset, model) tables
+\input{sections/headtohead}        % Self-RAG / CRAG comparison
+\input{sections/mechanistic}       % attention probe + classifier
+\input{sections/adversarial}       % adversarial cases
+\input{sections/benchmark}         % ContextCoherenceBench packaging
+\input{sections/human_validation}  % deferred Prolific protocol
+\input{sections/analysis}          % CCS-as-policy long form, when-CCS-fails extended
+
+\end{document}

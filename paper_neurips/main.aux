@@ -1,0 +1,132 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{1}{section.1}\protected@file@percent }
+\newlabel{sec:intro}{{1}{1}{Introduction}{section.1}{}}
+\@writefile{toc}{\contentsline {paragraph}{The phenomenon.}{1}{section*.1}\protected@file@percent }
+\citation{asai2024selfrag}
+\citation{lewis2020rag,gao2024ragsurvey}
+\citation{nogueira2019passage}
+\citation{xu2024recomp}
+\citation{karpukhin2020dpr,izacard2022few,xiong2024embedder}
+\@writefile{toc}{\contentsline {paragraph}{The mechanism.}{2}{section*.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{The intervention.}{2}{section*.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Contributions.}{2}{section*.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Released artifacts.}{2}{section*.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Roadmap.}{2}{section*.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {2}Background and Related Work}{2}{section.2}\protected@file@percent }
+\newlabel{sec:bg}{{2}{2}{Background and Related Work}{section.2}{}}
+\@writefile{toc}{\contentsline {paragraph}{The standard RAG pipeline.}{2}{section*.7}\protected@file@percent }
+\citation{asai2024selfrag}
+\citation{yan2024crag}
+\citation{raptor2024}
+\citation{honovich2022true,laban2022summac,es2024ragas}
+\citation{laban2022summac}
+\citation{li2014coherence,mesgar2018neural,nguyen2021conditional}
+\citation{shi2023large}
+\citation{liu2024lostmiddle}
+\citation{rajpurkar2016squad}
+\citation{jin2019pubmedqa}
+\citation{yang2018hotpotqa}
+\citation{kwiatkowski2019nq}
+\@writefile{toc}{\contentsline {paragraph}{Decoder-side correction.}{3}{section*.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Hierarchical retrieval.}{3}{section*.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Faithfulness evaluation.}{3}{section*.10}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Coherence in NLP.}{3}{section*.11}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{What we add.}{3}{section*.12}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}Experimental Setup}{3}{section.3}\protected@file@percent }
+\newlabel{sec:setup}{{3}{3}{Experimental Setup}{section.3}{}}
+\@writefile{toc}{\contentsline {paragraph}{Datasets.}{3}{section*.13}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Generators.}{4}{section*.14}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Retrieval stack.}{4}{section*.15}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Conditions.}{4}{section*.16}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Metrics.}{4}{section*.17}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Statistical protocol.}{4}{section*.18}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Reproducibility.}{4}{section*.19}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4}The Refinement Paradox}{4}{section.4}\protected@file@percent }
+\newlabel{sec:paradox}{{4}{4}{The Refinement Paradox}{section.4}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces The refinement paradox at the canonical operating point. Mistral-$7$B, SQuAD, $k=3$, chunk $= 1024$, $n=30$ per condition. HCPC-v$1$ \emph  {maintains or improves} retrieval similarity while \emph  {degrading} faithfulness and introducing hallucination. HCPC-v$2$ recovers faithfulness while intervening on $16.7\%$ of queries.}}{4}{table.caption.21}\protected@file@percent }
+\newlabel{tab:hcpc_main}{{1}{4}{The refinement paradox at the canonical operating point. Mistral-$7$B, SQuAD, $k=3$, chunk $= 1024$, $n=30$ per condition. HCPC-v$1$ \emph {maintains or improves} retrieval similarity while \emph {degrading} faithfulness and introducing hallucination. HCPC-v$2$ recovers faithfulness while intervening on $16.7\%$ of queries}{table.caption.21}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}The mechanism: it is the \emph  {set}, not the passages}{4}{subsection.4.1}\protected@file@percent }
+\newlabel{sec:paradox:mechanism}{{4.1}{4}{The mechanism: it is the \emph {set}, not the passages}{subsection.4.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces \textbf  {The refinement paradox persists at frontier scale.} Per-passage refinement (HCPC-v1, red) drops faithfulness below the no-refinement baseline (blue) on SQuAD across a $17\times $ generator scale range (Mistral-$7$B $\to $ Llama-$3.3$-$70$B $\to $ GPT-OSS-$120$B). HCPC-v$2$ (green), which gates refinement on a coherence-loss check, recovers the lost faithfulness on every cell. Paradox magnitude $\Delta =\textrm  {faith}_{\textrm  {base}}-\textrm  {faith}_{\textrm  {v1}}$ annotated above each pair. PubMedQA paradox attenuates at scale --- a prediction the coherence account makes (stronger parametric priors are better substitutes for fragmented biomedical evidence) --- but does not invert. See \S  \ref {sec:robustness} for the full table.}}{5}{figure.caption.20}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{fig:headline_frontier}{{1}{5}{\textbf {The refinement paradox persists at frontier scale.} Per-passage refinement (HCPC-v1, red) drops faithfulness below the no-refinement baseline (blue) on SQuAD across a $17\times $ generator scale range (Mistral-$7$B $\to $ Llama-$3.3$-$70$B $\to $ GPT-OSS-$120$B). HCPC-v$2$ (green), which gates refinement on a coherence-loss check, recovers the lost faithfulness on every cell. Paradox magnitude $\Delta =\textrm {faith}_{\textrm {base}}-\textrm {faith}_{\textrm {v1}}$ annotated above each pair. PubMedQA paradox attenuates at scale --- a prediction the coherence account makes (stronger parametric priors are better substitutes for fragmented biomedical evidence) --- but does not invert. See \S \ref {sec:robustness} for the full table}{figure.caption.20}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Qualitative example of the refinement paradox on squad with mistral. Per-passage refinement raises retrieval similarity but strips the connective evidence the generator was relying on; the generator silently fills the gap with a plausible but unsupported claim.}}{5}{figure.caption.22}\protected@file@percent }
+\newlabel{fig:qualitative_paradox}{{2}{5}{Qualitative example of the refinement paradox on squad with mistral. Per-passage refinement raises retrieval similarity but strips the connective evidence the generator was relying on; the generator silently fills the gap with a plausible but unsupported claim}{figure.caption.22}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Disentangling coherence from relevance}{6}{subsection.4.2}\protected@file@percent }
+\newlabel{sec:paradox:disentangle}{{4.2}{6}{Disentangling coherence from relevance}{subsection.4.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces \textbf  {Coherence is causally distinct from relevance.} Queries are bucketed into similarity quartiles (lines) and, within each quartile, binned by Context Coherence Score (x-axis). Faithfulness varies meaningfully along the coherence axis \emph  {even at fixed similarity quartiles}: at high CCS the curves rise toward $0.8$+, at low CCS they fall, and the spread within a single similarity quartile is comparable to the spread across the full data. If coherence were a re-statement of relevance, the lines would be flat. Shaded bands are 95\% bootstrap CIs over $n \geq 3$ queries per cell.}}{6}{figure.caption.23}\protected@file@percent }
+\newlabel{fig:disentanglement}{{3}{6}{\textbf {Coherence is causally distinct from relevance.} Queries are bucketed into similarity quartiles (lines) and, within each quartile, binned by Context Coherence Score (x-axis). Faithfulness varies meaningfully along the coherence axis \emph {even at fixed similarity quartiles}: at high CCS the curves rise toward $0.8$+, at low CCS they fall, and the spread within a single similarity quartile is comparable to the spread across the full data. If coherence were a re-statement of relevance, the lines would be flat. Shaded bands are 95\% bootstrap CIs over $n \geq 3$ queries per cell}{figure.caption.23}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}What HCPC-v$2$ actually does}{6}{subsection.4.3}\protected@file@percent }
+\newlabel{sec:paradox:v2_intuition}{{4.3}{6}{What HCPC-v$2$ actually does}{subsection.4.3}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}An Information-Theoretic Account}{7}{section.5}\protected@file@percent }
+\newlabel{sec:theory}{{5}{7}{An Information-Theoretic Account}{section.5}{}}
+\newlabel{prop:paradox}{{1}{7}{Refinement Paradox}{proposition.1}{}}
+\newlabel{thm:paradox_free}{{1}{7}{Recovery Condition}{theorem.1}{}}
+\@writefile{toc}{\contentsline {paragraph}{Operationalisation.}{7}{section*.24}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}Context Coherence Score and HCPC-v$2$}{7}{section.6}\protected@file@percent }
+\newlabel{sec:method}{{6}{7}{Context Coherence Score and HCPC-v$2$}{section.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Context Coherence Score (CCS)}{7}{subsection.6.1}\protected@file@percent }
+\newlabel{sec:method:ccs}{{6.1}{7}{Context Coherence Score (CCS)}{subsection.6.1}{}}
+\@writefile{toc}{\contentsline {paragraph}{Decision policy.}{7}{section*.25}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}HCPC-v$2$: protected ranks $+$ sub-chunk merge-back}{8}{subsection.6.2}\protected@file@percent }
+\newlabel{sec:method:hcpc_v2}{{6.2}{8}{HCPC-v$2$: protected ranks $+$ sub-chunk merge-back}{subsection.6.2}{}}
+\@writefile{toc}{\contentsline {paragraph}{Rank-protected top-$k$.}{8}{section*.26}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Sub-chunk merge-back.}{8}{section*.27}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Hyperparameters.}{8}{section*.28}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Cost.}{8}{section*.29}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Bare-gate ablation.}{8}{section*.30}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7}Robustness}{8}{section.7}\protected@file@percent }
+\newlabel{sec:robustness}{{7}{8}{Robustness}{section.7}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Seven robustness checks. Each row reports the headline $\Delta _{\textrm  {paradox}} = \textrm  {faith}_{\textrm  {base}} - \textrm  {faith}_{\textrm  {v1}}$ and the HCPC-v$2$ recovery $\Delta _{\textrm  {recovery}} = \textrm  {faith}_{\textrm  {v2}} - \textrm  {faith}_{\textrm  {v1}}$. The check is whether the result holds in the direction the coherence account predicts.}}{9}{table.caption.31}\protected@file@percent }
+\newlabel{tab:robustness_summary}{{2}{9}{Seven robustness checks. Each row reports the headline $\Delta _{\textrm {paradox}} = \textrm {faith}_{\textrm {base}} - \textrm {faith}_{\textrm {v1}}$ and the HCPC-v$2$ recovery $\Delta _{\textrm {recovery}} = \textrm {faith}_{\textrm {v2}} - \textrm {faith}_{\textrm {v1}}$. The check is whether the result holds in the direction the coherence account predicts}{table.caption.31}{}}
+\@writefile{toc}{\contentsline {paragraph}{Top-$k$ amplification.}{9}{section*.32}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Frontier-scale persistence.}{9}{section*.33}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Temperature amplification.}{9}{section*.34}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Cross-validation: model self-confidence tracks CCS.}{9}{section*.35}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Honest qualifications.}{10}{section*.36}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {8}Discussion and Limitations}{10}{section.8}\protected@file@percent }
+\newlabel{sec:discussion}{{8}{10}{Discussion and Limitations}{section.8}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.1}What CCS is — and is not}{10}{subsection.8.1}\protected@file@percent }
+\newlabel{sec:discussion:what_ccs_is}{{8.1}{10}{What CCS is — and is not}{subsection.8.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.2}Three regimes where CCS does not predict faithfulness}{10}{subsection.8.2}\protected@file@percent }
+\newlabel{sec:discussion:where_ccs_fails}{{8.2}{10}{Three regimes where CCS does not predict faithfulness}{subsection.8.2}{}}
+\@writefile{toc}{\contentsline {paragraph}{(1) Highly redundant corpora.}{10}{section*.37}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{(2) Long-context generators with single-document inputs.}{10}{section*.38}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{(3) Domain-mismatched encoders.}{10}{section*.39}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.3}Limitations}{10}{subsection.8.3}\protected@file@percent }
+\newlabel{sec:discussion:limits}{{8.3}{10}{Limitations}{subsection.8.3}{}}
+\@writefile{toc}{\contentsline {paragraph}{Long-form generation.}{10}{section*.40}\protected@file@percent }
+\bibstyle{plainnat}
+\bibdata{references}
+\bibcite{asai2024selfrag}{{1}{2024}{{Asai et~al.}}{{Asai, Wu, Wang, Sil, and Hajishirzi}}}
+\bibcite{es2024ragas}{{2}{2024}{{Es et~al.}}{{Es, James, Espinosa-Anke, and Schockaert}}}
+\bibcite{gao2024ragsurvey}{{3}{2024}{{Gao et~al.}}{{Gao, Xiong, Gao, Jia, Pan, Bi, Dai, Sun, and Wang}}}
+\bibcite{honovich2022true}{{4}{2022}{{Honovich et~al.}}{{Honovich, Aharoni, Herzig, Taitelbaum, Kukliansy, Cohen, Scialom, Szpektor, Hassidim, and Matias}}}
+\bibcite{izacard2022few}{{5}{2022}{{Izacard et~al.}}{{Izacard, Lewis, Lomeli, Hosseini, Petroni, Schick, Dwivedi-Yu, Joulin, Riedel, and Grave}}}
+\bibcite{jin2019pubmedqa}{{6}{2019}{{Jin et~al.}}{{Jin, Dhingra, Liu, Cohen, and Lu}}}
+\bibcite{karpukhin2020dpr}{{7}{2020}{{Karpukhin et~al.}}{{Karpukhin, O{\u {g}}uz, Min, Lewis, Wu, Edunov, Chen, and Yih}}}
+\bibcite{kwiatkowski2019nq}{{8}{2019}{{Kwiatkowski et~al.}}{{Kwiatkowski, Palomaki, Redfield, Collins, Parikh, Alberti, Epstein, Polosukhin, Devlin, Lee, Toutanova, Jones, Kelcey, Chang, Dai, Uszkoreit, Le, and Petrov}}}
+\@writefile{toc}{\contentsline {paragraph}{Magnitude vs.\ generic noise.}{11}{section*.41}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Adversarial set yield.}{11}{section*.42}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Closed-model frontier.}{11}{section*.43}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {9}Conclusion}{11}{section.9}\protected@file@percent }
+\newlabel{sec:conclusion}{{9}{11}{Conclusion}{section.9}{}}
+\@writefile{toc}{\contentsline {paragraph}{Broader impact.}{11}{section*.44}\protected@file@percent }
+\bibcite{laban2022summac}{{9}{2022}{{Laban et~al.}}{{Laban, Schnabel, Bennett, and Hearst}}}
+\bibcite{lewis2020rag}{{10}{2020}{{Lewis et~al.}}{{Lewis, Perez, Piktus, Petroni, Karpukhin, Goyal, K{\"u}ttler, Lewis, Yih, Rockt{\"a}schel, Riedel, and Kiela}}}
+\bibcite{li2014coherence}{{11}{2014}{{Li and Hovy}}{{}}}
+\bibcite{liu2024lostmiddle}{{12}{2024}{{Liu et~al.}}{{Liu, Lin, Hewitt, Paranjape, Bevilacqua, Petroni, and Liang}}}
+\bibcite{mesgar2018neural}{{13}{2018}{{Mesgar and Strube}}{{}}}
+\bibcite{nguyen2021conditional}{{14}{2021}{{Nguyen and Karypis}}{{}}}
+\bibcite{nogueira2019passage}{{15}{2019}{{Nogueira and Cho}}{{}}}
+\bibcite{rajpurkar2016squad}{{16}{2016}{{Rajpurkar et~al.}}{{Rajpurkar, Zhang, Lopyrev, and Liang}}}
+\bibcite{raptor2024}{{17}{2024}{{Sarthi et~al.}}{{Sarthi, Abdullah, Tuli, Khanna, Goldie, and Manning}}}
+\bibcite{shi2023large}{{18}{2023}{{Shi et~al.}}{{Shi, Chen, Misra, Scales, Dohan, Chi, Sch{\"a}rli, and Zhou}}}
+\bibcite{xiong2024embedder}{{19}{2024}{{Wang et~al.}}{{Wang, Yang, Huang, Yang, Majumder, and Wei}}}
+\bibcite{xu2024recomp}{{20}{2024}{{Xu et~al.}}{{Xu, Shi, and Choi}}}
+\bibcite{yan2024crag}{{21}{2024}{{Yan et~al.}}{{Yan, Gu, Zhu, and Ling}}}
+\bibcite{yang2018hotpotqa}{{22}{2018}{{Yang et~al.}}{{Yang, Qi, Zhang, Bengio, Cohen, Salakhutdinov, and Manning}}}
+\gdef \@abspage@last{12}

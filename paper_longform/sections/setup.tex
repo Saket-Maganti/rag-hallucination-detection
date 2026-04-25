@@ -1,0 +1,62 @@
+\section{Experimental Setup}
+\label{sec:setup}
+
+We hold the entire pipeline fixed across experiments and vary only one
+factor at a time. This is intentional: the paradox is a property of the
+\emph{interaction} between the refinement step and the rest of the
+pipeline, not of any specific configuration.
+
+\paragraph{Datasets.}
+We evaluate on five public QA benchmarks: SQuAD~\citep{rajpurkar2016squad}
+(general-domain extractive), PubMedQA~\citep{jin2019pubmedqa}
+(biomedical), HotpotQA~\citep{yang2018hotpotqa} (multi-hop),
+NaturalQuestions~\citep{kwiatkowski2019nq}, and TriviaQA. Each provides
+a query, a ground-truth answer span, and a passage corpus. We
+randomly sample $30$ queries per (dataset, condition) cell unless
+otherwise noted, fixed across conditions to remove query-difficulty
+confound.
+
+\paragraph{Generators.}
+Five model families covering $7$B--$120$B parameter scale: Mistral-$7$B
+and Llama-$3$-$8$B (default open-weight tier); Qwen-$2.5$-$7$B
+(alternative family); Llama-$3.3$-$70$B (frontier comparison); and
+GPT-OSS-$120$B (largest open-weight model in Groq's catalog). All
+served either via Ollama (local) or via the Groq free-tier API.
+
+\paragraph{Retrieval stack.}
+Embeddings come from \texttt{sentence-transformers/all-MiniLM-L$6$-v$2$};
+indexing uses ChromaDB; refinement uses cross-encoder/ms-marco-MiniLM-L-$6$-v$2$.
+Default chunk size is $1024$ characters with $10\%$ overlap; default top-$k$
+is $3$ unless explicitly varied (\S\ref{sec:robustness}).
+
+\paragraph{Conditions.}
+Three retrieval configurations evaluated head-to-head per query:
+\textbf{baseline} (top-$k$ dense retrieval, no refinement);
+\textbf{HCPC-v$1$} (refine all retrieved passages via the cross-encoder
+pipeline --- the failure mode we attack); and
+\textbf{HCPC-v$2$} (coherence-gated refinement; described in
+\S\ref{sec:method}).
+
+\paragraph{Metrics.}
+Per-query \textbf{faithfulness} is the cross-encoder NLI entailment
+probability between the generated answer and the retrieved context;
+\textbf{hallucination} is the indicator that faithfulness $<0.5$;
+\textbf{retrieval similarity} is the mean cosine similarity between
+the query and each retained chunk; \textbf{Context Coherence Score
+(CCS)} is the mean minus standard deviation of off-diagonal
+pairwise cosine similarities between retained chunk embeddings.
+
+\paragraph{Statistical protocol.}
+Headline numbers are reported with $3$-seed cross-seed standard
+deviations (\S\ref{sec:robustness}). Cross-condition comparisons use
+paired Wilcoxon signed-rank tests at $\alpha=0.05$. ANOVA and
+Cohen's $d$ are reported in the appendix.
+
+\paragraph{Reproducibility.}
+Code, all per-query CSVs, the compiled benchmark, and a Docker image
+are released; the benchmark also lives at
+\href{https://huggingface.co/datasets/saketmgnt/context-coherence-bench}
+{\texttt{saketmgnt/context-coherence-bench}} and as a permanent DOI
+\href{https://doi.org/10.5281/zenodo.19757291}{\texttt{10.5281/zenodo.19757291}}.
+A standalone $\texttt{pip install context-coherence}$ package ships
+the metric and the deployment policy.
