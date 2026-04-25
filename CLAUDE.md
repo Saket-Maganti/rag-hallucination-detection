@@ -15,6 +15,7 @@ Default branch: `main`
 **Phase 1 (8-item) — COMPLETE.** All reviewer-facing experiments ran.
 **Phase 2 (10-item) — 9/10 RUN.** Only Groq frontier-scale deferred (no API key).
 **Paper — TIGHTENED.** New `robustness.tex` section bundles all six new robustness checks; `analysis.tex::Limitations` extended with three new caveat paragraphs (long-form scope, noise-equivalence, adversarial-129); `theory.tex` and `robustness.tex` wired into `main.tex`; abstract updated with multi-seed numbers and explicit scope qualifications. **Compiles cleanly: 62 pages, 681 KB PDF.**
+**Paths 2 & 3 — STAGED.** Frontier-scale runner (`experiments/run_frontier_scale.py`) + Groq wrapper (`src/groq_llm.py`) + smoke test (`scripts/smoke_test_groq.py`) + Kaggle notebook generator (`scripts/kaggle_frontier_scale.py`) all in place. HF Space staging (`scripts/prepare_hf_space.py`) + Gradio demo (`space/`) + leaderboard (`leaderboard/`) + release tagger (`scripts/release_v2.sh`) ready to ship. User just needs `GROQ_API_KEY` (free) and HF Space repo URL.
 
 **11/12 paper-tables filled** (`results/paper_tables/ALL_TABLES.md`); only `table_6_frontier` missing (waiting on Groq).
 
@@ -438,6 +439,76 @@ Wave 4 (paper + ops, no compute):
 - **Standalone classifier contribution** from mechanistic signals (Item 4, script ready)
 - **Scale validation**: 70B models show paradox magnitude vs 7B (Item 2, pending)
 - **Variance bands**: 3-seed error bars on Table 2 (Item 5, pending)
+
+## Path 2 — Groq frontier-scale runbook
+
+**Goal:** answer "does the paradox persist at 70B?" — fills `table_6_frontier`, the only paper table still missing.
+
+**Prerequisites (one-time):**
+1. Free Groq API key — create at https://console.groq.com/keys, copy the `gsk_...` token.
+2. `pip install groq` (already in `requirements.txt`).
+
+**Local execution (~45 min wall-clock):**
+```bash
+export GROQ_API_KEY=gsk_...
+python3 scripts/smoke_test_groq.py                    # 10 s sanity check
+python3 experiments/run_frontier_scale.py \
+    --datasets squad pubmedqa \
+    --models llama-3.3-70b mixtral-8x7b \
+    --n_questions 30
+```
+Outputs land in `results/frontier_scale/` (per_query.csv, summary.csv, paradox_by_scale.csv, summary.md). The paradox-by-scale CSV joins against `results/multidataset/summary.csv` to produce a `delta_vs_7b` column for the table.
+
+**Kaggle execution (~45 min, runs while laptop sleeps):**
+```bash
+python3 scripts/kaggle_frontier_scale.py
+# → notebooks/frontier_scale_kaggle.ipynb
+# Upload to kaggle.com → New Notebook → File → Import → select the .ipynb
+# Add Kaggle Secrets:
+#   GROQ_API_KEY  (required)
+#   GH_TOKEN      (optional — auto-pushes to kaggle-frontier-scale branch)
+# Settings: Accelerator=None (Groq does GPU), Internet=ON, Persistence=Files
+# Save & Run All
+```
+
+**Checkpointing:** `results/frontier_scale/completed_tuples.json` skips done (dataset, model) pairs, so re-running after a rate-limit pause picks up where it stopped. Pass `--force` to override.
+
+## Path 3 — HF Space + leaderboard + GitHub release runbook
+
+**Goal:** ship a public artifact bundle so reviewers (and grad students) can poke the system without cloning.
+
+**Prerequisites (one-time):**
+1. HuggingFace account (free — no Pro needed) at https://huggingface.co/join.
+2. `huggingface-cli login` with a write token from https://huggingface.co/settings/tokens.
+3. Create the Space at https://huggingface.co/new-space (SDK=Gradio, hardware=CPU basic, name e.g. `coherence-paradox-rag-demo`).
+4. (Optional) `gh auth login` for automated GitHub Release upload.
+
+**Stage + push the HF Space (~10 min):**
+```bash
+python3 scripts/prepare_hf_space.py --overwrite
+cd space_deploy
+git init -b main
+git lfs install
+git remote add hf git@hf.co:spaces/<your-user>/coherence-paradox-rag-demo
+git add .
+git commit -m "Initial demo push"
+git push -u hf main
+# Space auto-builds in ~3 min → live at https://huggingface.co/spaces/<your-user>/coherence-paradox-rag-demo
+```
+
+**Tag the v2 release:**
+```bash
+bash scripts/release_v2.sh --dry-run   # preview
+bash scripts/release_v2.sh             # tag + push + (optionally) gh release create
+```
+The script validates working tree is clean, asserts required artifacts exist, builds `/tmp/coherence-paradox-v2.0.0.tar.gz` (paper LaTeX + slim results + space + leaderboard + scripts), creates annotated tag `v2.0.0`, pushes to origin, and — if `gh` CLI is present — creates the GitHub Release with the tarball attached.
+
+**What ships in the v2 release tarball:**
+- `ragpaper/` — full LaTeX sources + figures + bib
+- `results/{multidataset,headtohead,robustness,deployment_figure,frontier_scale}/` — slim CSVs only (no chroma DBs)
+- `space/`, `leaderboard/` — Gradio apps
+- `scripts/`, `experiments/`, `src/` — reproducibility code
+- `CLAUDE.md`, `README.md` — operator notes
 
 ## Common operational gotchas
 
