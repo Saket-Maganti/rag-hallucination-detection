@@ -71,7 +71,13 @@ REQUIRED=(
   "ragpaper/main.tex"
   "results/multidataset/summary.csv"
   "results/headtohead/summary.csv"
-  "results/robustness"
+  "results/multiseed"
+  "results/raptor"
+  "results/longform"
+  "results/noise_injection"
+  "results/prompt_ablation"
+  "results/subchunk_sensitivity"
+  "results/frontier_scale/paradox_by_scale.csv"
   "space/app.py"
   "leaderboard/app.py"
 )
@@ -91,18 +97,26 @@ ARTIFACT="/tmp/coherence-paradox-${TAG}.tar.gz"
 echo "[release] building $ARTIFACT"
 if (( DRY_RUN == 0 )); then
   tar --exclude='chroma_db' \
+      --exclude='chroma_db_*' \
       --exclude='__pycache__' \
       --exclude='*.pyc' \
       --exclude='.DS_Store' \
       --exclude='ragpaper/build' \
+      --exclude='ragpaper/main.aux' \
+      --exclude='ragpaper/main.log' \
       -czf "$ARTIFACT" \
-      ragpaper/main.tex ragpaper/sections ragpaper/figures ragpaper/references.bib \
+      ragpaper/main.tex ragpaper/main.pdf ragpaper/sections ragpaper/figures ragpaper/references.bib \
       results/multidataset/summary.csv \
       results/multidataset/coherence_paradox.csv \
       results/headtohead/summary.csv \
-      results/robustness \
+      results/multiseed \
+      results/raptor \
+      results/longform \
+      results/noise_injection \
+      results/prompt_ablation \
+      results/subchunk_sensitivity \
+      results/frontier_scale \
       results/deployment_figure \
-      results/frontier_scale 2>/dev/null \
       space leaderboard scripts experiments src CLAUDE.md README.md \
       2>/dev/null || true
   ls -lh "$ARTIFACT"
