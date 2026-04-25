@@ -1,15 +1,29 @@
-# When Retrieval Improvements Hurt: A Failure Mode in Retrieval-Augmented Generation
+# When Better Retrieval Hurts: Context Coherence Drives Faithfulness in Retrieval-Augmented Generation
 
 <div align="center">
 
-![Python](https://img.shields.io/badge/Python-3.11-blue?style=flat-square&logo=python)
+![Python](https://img.shields.io/badge/Python-3.9--3.12-blue?style=flat-square&logo=python)
 ![LangChain](https://img.shields.io/badge/LangChain-0.2+-green?style=flat-square)
 ![Ollama](https://img.shields.io/badge/Ollama-Local_LLM-orange?style=flat-square)
-![Queries](https://img.shields.io/badge/Total_Queries-6050+-red?style=flat-square)
+![Tests](https://img.shields.io/badge/Tests-30%2F30%20passing-brightgreen?style=flat-square)
+![Queries](https://img.shields.io/badge/Total_Queries-7000+-red?style=flat-square)
+![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)
 
 **A behavioral study of how retrieval-augmented language models fail when retrieved evidence loses internal coherence.**
 
 </div>
+
+## 📦 Released artifacts
+
+| Resource | Where | What |
+|---|---|---|
+| 🐍 **Pip package** | `pip install context-coherence` | Standalone CCS metric + decision gate (pure-numpy core) |
+| 📚 **HF Dataset** | [`saketmgnt/context-coherence-bench`](https://huggingface.co/datasets/saketmgnt/context-coherence-bench) | `load_dataset(...)`-able benchmark with 5 configs |
+| 🎯 **Zenodo DOI** | [`10.5281/zenodo.19757291`](https://doi.org/10.5281/zenodo.19757291) | Permanent benchmark archive (citable) |
+| 🎮 **Live demo** | [`huggingface.co/spaces/saketmgnt/sakkk`](https://huggingface.co/spaces/saketmgnt/sakkk) | Gradio app: CCS calculator + paradox explorer |
+| 📓 **Colab tutorial** | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Saket-Maganti/rag-hallucination-detection/blob/main/notebooks/colab_tutorial.ipynb) | 6-cell walkthrough, < 5 min |
+| 📄 **Paper** | [`ragpaper/main.pdf`](ragpaper/main.pdf) | NeurIPS 2026 submission, 64 pages |
+| 🔌 **LangChain integration** | [`integrations/langchain/`](integrations/langchain/) | Drop-in `CoherenceGatedRetriever` |
 
 ---
 
