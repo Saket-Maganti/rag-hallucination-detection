@@ -513,6 +513,76 @@ The script validates working tree is clean, asserts required artifacts exist, bu
 - `scripts/`, `experiments/`, `src/` — reproducibility code
 - `CLAUDE.md`, `README.md` — operator notes
 
+## Phase 4 — top-tier polish (post-ChatGPT-review hardening)
+
+External reviewer (ChatGPT) flagged 5 + 3 suggestions on 2026-04-25.
+Triage and execution plan below. Key insight: 4 of the 8 are reframes
+of work we already have; 1 is genuinely missing (top-k ablation); 3 are
+cheap viz/code wins. Total budget: ~5 hr code + ~3 hr Ollama, $0 spend.
+
+### TIER 1 — must do for top-tier acceptance
+
+| # | Task | Status | File | Run time |
+|---|---|---|---|---|
+| 4.1 | Top-k ablation (k ∈ {2, 3, 5, 10}, SQuAD + PubMedQA) | ⚪ written, not run | `experiments/run_topk_sensitivity.py` | ~3 hr Ollama |
+| 4.2 | Disentanglement figure (fix similarity, vary CCS) | ⚪ written | `experiments/build_disentanglement_figure.py` | ~5 s |
+| 4.3 | Coherence heatmap (pairwise sim matrix, 2 examples) | ⚪ written | `experiments/build_coherence_heatmap.py` | ~10 s |
+| 4.4 | CCS-as-policy reframe (abstract + new §, +CCS-only gate baseline) | ⚪ pending | LaTeX edits | ~30 min |
+| 4.5 | Stronger positioning sentence (abstract opener) | ⚪ pending | abstract.tex | 5 min |
+| 4.6 | "When CCS fails" subsection (promote 3 negative results) | ⚪ pending | analysis.tex | 30 min |
+
+### TIER 2 — nice-to-have
+
+| # | Task | Status | File | Run time |
+|---|---|---|---|---|
+| 4.7 | Expand qualitative builder to 5 case studies (1 per dataset) | ⚪ pending | extend `build_qualitative_example.py` | ~10 s |
+| 4.8 | Embedding clustering plot (UMAP/t-SNE of retrieved chunks) | ⚪ written | `experiments/build_embedding_clusters.py` | ~30 s |
+
+### What ChatGPT got right vs already-addressed
+
+| ChatGPT suggestion | Our status |
+|---|---|
+| #1 Disentanglement (fix sim, vary CCS) | Partially done via §10.6 noise-injection + multi-retriever; clean focused plot still missing → **4.2** |
+| #2 Real-world case study | PubMedQA covers medical; expanding to 5 named cases via **4.7** |
+| #3 CCS as decision policy | HCPC-v2 already IS this; just framed weakly → **4.4 reframe** |
+| #4 Negative result | Have limitations but defensive; promote to dedicated subsection → **4.6** |
+| #5 Top-k ablation | **Genuinely missing** — primary new experiment → **4.1** |
+| A Visualization | Genuinely thin (no heatmaps); fixing via **4.3 + 4.8** |
+| B Positioning sentence | Easy LaTeX win → **4.5** |
+| C Theoretical framing | Already have `theory.tex` (proposition + theorem) — skip |
+
+### What we deliberately skip (per ChatGPT's own warning)
+
+- ❌ More datasets (no legal/financial — scope creep)
+- ❌ More models (no extra scale runs — Phase 2 already settled this)
+- ❌ Overcomplicating CCS (the simple def is the contribution)
+- ❌ Rewriting from scratch (we're past that stage)
+
+### Phase 4 execution order (suggested)
+
+```bash
+# Wave 1 — instant builds (~10 min total, no Ollama needed)
+python3 experiments/build_disentanglement_figure.py     #  5 s   (4.2)
+python3 experiments/build_coherence_heatmap.py          # 10 s   (4.3)
+python3 experiments/build_embedding_clusters.py         # 30 s   (4.8)
+python3 experiments/build_qualitative_example.py --top 5 # 5 s   (4.7, after extending)
+
+# Wave 2 — paper edits (~1 hr)
+# Edit ragpaper/sections/abstract.tex (4.5 positioning)
+# Edit ragpaper/sections/analysis.tex (4.4 CCS-policy + 4.6 "when CCS fails")
+# Edit ragpaper/sections/headtohead.tex (4.4 add CCS-only-gate row)
+
+# Wave 3 — long compute (~3 hr, Ollama must be running)
+ollama serve  # in dedicated terminal
+python3 experiments/run_topk_sensitivity.py --k 2 3 5 10 \
+    --datasets squad pubmedqa --model mistral --n_questions 30
+# After: paper edits to add Table tab:topk to robustness.tex
+
+# Wave 4 — final compile + lint
+python3 scripts/lint_paper.py    # must show 0 errors
+cd ragpaper && pdflatex main && bibtex main && pdflatex main && pdflatex main
+```
+
 ## Phase 3 — pre-submission runbook
 
 All scripts written, smoke-tested, and wired in. Run order with expected
