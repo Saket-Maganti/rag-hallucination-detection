@@ -304,20 +304,15 @@ HCPC-v$2$'s rank-protection mechanism.
 \begin{table}[!htb]
 \centering
 \caption{Top-$k$ sensitivity on Mistral-7B, $n=30$ per cell.
-Numbers populated automatically from
+Numbers auto-populated from
 \texttt{results/topk\_sensitivity/paradox\_by\_k.csv} by
-\texttt{experiments/run\_topk\_sensitivity.py} once the run completes.
+\texttt{experiments/build\_topk\_table.py}.
 \emph{$\Delta_{\textrm{paradox}}$} is faith$_{\textrm{base}}-$faith$_{\textrm{v1}}$;
-\emph{gate~rec.} is the bare CCS-gate's recovery vs HCPC-v$1$.}
+\emph{gate~rec.} is the bare CCS-gate's recovery vs HCPC-v$1$;
+\emph{v$2$~rec.} is HCPC-v$2$'s recovery vs HCPC-v$1$.}
 \label{tab:topk}
 \footnotesize
-\begin{tabular}{lcccccc}
-\toprule
-Dataset & $k$ & faith$_{\textrm{base}}$ & faith$_{\textrm{v1}}$ & $\Delta_{\textrm{paradox}}$ & gate~rec. & v$2$~rec. \\
-\midrule
-\multicolumn{7}{c}{\emph{(populated after \texttt{run\_topk\_sensitivity.py})}} \\
-\bottomrule
-\end{tabular}
+\input{figures/topk_table}
 \end{table}
 
 \subsection{Summary}
