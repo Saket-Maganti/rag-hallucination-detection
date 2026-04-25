@@ -13,7 +13,7 @@ Default branch: `main`
 ## Current status (2026-04-25, end-of-day)
 
 **Phase 1 (8-item) — COMPLETE.** All reviewer-facing experiments ran.
-**Phase 2 (10-item) — 9/10 RUN.** Only Groq frontier-scale deferred (no API key).
+**Phase 2 (10-item) — 10/10 RUN.** Frontier-scale landed 2026-04-25: SQuAD/Llama-3.3-70B paradox = +0.100 (exact match to 7B), GPT-OSS-120B = +0.030. **Kills "small-model artifact" critique.** All 12/12 paper tables now filled.
 **Paper — TIGHTENED.** New `robustness.tex` section bundles all six new robustness checks; `analysis.tex::Limitations` extended with three new caveat paragraphs (long-form scope, noise-equivalence, adversarial-129); `theory.tex` and `robustness.tex` wired into `main.tex`; abstract updated with multi-seed numbers and explicit scope qualifications. **Compiles cleanly: 62 pages, 681 KB PDF.**
 **Paths 2 & 3 — STAGED.** Frontier-scale runner (`experiments/run_frontier_scale.py`) + Groq wrapper (`src/groq_llm.py`) + smoke test (`scripts/smoke_test_groq.py`) + Kaggle notebook generator (`scripts/kaggle_frontier_scale.py`) all in place. HF Space staging (`scripts/prepare_hf_space.py`) + Gradio demo (`space/`) + leaderboard (`leaderboard/`) + release tagger (`scripts/release_v2.sh`) ready to ship. User just needs `GROQ_API_KEY` (free) and HF Space repo URL.
 
@@ -30,13 +30,15 @@ Default branch: `main`
 | Long-form: MS-MARCO unsupported-rate | baseline 22.4% → HCPC-v1 **7.5%** (-67%) | `results/longform/summary.csv` |
 | Sub-chunk sweet spot | 256 tokens; paradox attenuates at 512 | `results/subchunk_sensitivity/paradox_by_sub.csv` |
 | Adversarial validator yield | 129/200 cases (drift 50, disjoint 40, control 29, contradict 10) | `data/adversarial/*.jsonl` |
+| Frontier-scale: SQuAD paradox | **Llama-3.3-70B = +0.100** (exact match to 7B), GPT-OSS-120B = +0.030 | `results/frontier_scale/paradox_by_scale.csv` |
+| Frontier-scale: PubMedQA paradox | 70B = +0.005, 120B = +0.013 (attenuates as predicted) | same |
 
 ### Caveats now explicit in paper §Limitations
 
 1. **Long-form**: paradox does NOT generalize to QASPER (Δ=+0.002) or MS-MARCO (Δ=−0.033, sign flips). Reframed as scope statement; HCPC instead reduces unsupported-claim rate on MS-MARCO.
 2. **Noise vs coherence**: SQuAD noise slope (−0.154) > paradox magnitude (0.100). Original `ratio≥2` target NOT met. Reframed as "qualitatively distinct" not "magnitudinally larger".
 3. **Adversarial set**: validator rejected 71/200 generated cases. Set ships at 129; mech classifier still on n=20 pairs.
-4. **Frontier-scale**: 70B/Mixtral run scoped but not executed; flagged as priority for camera-ready.
+4. ~~**Frontier-scale**: 70B/Mixtral run scoped but not executed.~~ **DONE 2026-04-25**: Llama-3.3-70B + GPT-OSS-120B via Groq. 3/4 rows persist. SQuAD/70B exactly reproduces 7B magnitude. Mixtral was decommissioned by Groq mid-flight; replaced with gpt-oss-120b which is strictly larger anyway.
 
 ## Professor's feedback (2026-04-23)
 
