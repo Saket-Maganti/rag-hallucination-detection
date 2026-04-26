@@ -60,7 +60,8 @@ Here "GPU" means a hosted NVIDIA GPU such as free Kaggle/Colab T4, P100, L4,
 or any free A100 you can access. Your M4 Air can run many commands locally, but
 full generation-heavy runs will take much longer.
 
-Session 1 Kaggle notebook: `notebooks/revision_session1_kaggle.ipynb`.
+Session 1 fresh Kaggle notebook:
+`notebooks/revision_session1_kaggle_fresh.ipynb`.
 It runs Fix 1 generation/analyze, Fix 5, and Fix 11, then writes
 `/kaggle/working/revision_session1_outputs.zip`.
 
