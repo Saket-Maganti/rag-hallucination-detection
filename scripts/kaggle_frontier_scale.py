@@ -53,7 +53,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_OUT = ROOT / "notebooks" / "frontier_scale_kaggle.ipynb"
-DEFAULT_REPO = "saketmaganti/rag-hallucination-detection"
+DEFAULT_REPO = "Saket-Maganti/rag-hallucination-detection"
 
 
 def _cell(kind: str, source: str) -> dict:

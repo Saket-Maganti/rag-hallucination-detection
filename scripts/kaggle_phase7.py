@@ -65,7 +65,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_OUT = ROOT / "notebooks" / "phase7_kaggle.ipynb"
-DEFAULT_REPO = "saketmaganti/rag-hallucination-detection"
+DEFAULT_REPO = "Saket-Maganti/rag-hallucination-detection"
 ALL_SCRIPTS = ["synthetic_causal", "mmr_baseline", "crag_baseline"]
 
 
