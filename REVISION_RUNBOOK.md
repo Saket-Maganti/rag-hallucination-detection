@@ -5,6 +5,8 @@ Fix 1 is the gating experiment: run and interpret it before making any causal
 claim in the paper. The remaining scripts are ready, but their paper language
 should be wired only after Fix 1 is known.
 
+For the high-level checklist and handoff decisions, see `CODEX.md`.
+
 All commands assume:
 
 ```bash

@@ -4,6 +4,9 @@ This file tracks the senior reviewer's 10 weaknesses for the NeurIPS revision.
 Fix 1 is the active gating item; downstream fixes should not be framed until
 the causal intervention result is known.
 
+Operational handoff, zero-dollar execution plan, and session checklist live in
+`CODEX.md`.
+
 ## Current State
 
 | # | Weakness | Fix | Status | Assessment |
