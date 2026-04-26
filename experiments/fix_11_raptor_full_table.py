@@ -43,6 +43,11 @@ def dir_size_mb(path: str | Path) -> float:
 
 
 def run_dataset(args: argparse.Namespace, dataset: str, detector: HallucinationDetector) -> tuple[list[dict], dict]:
+    print(
+        f"[Fix11] starting dataset={dataset} n={args.n} "
+        f"max_contexts={args.max_contexts} backend={args.backend} model={args.model}",
+        flush=True,
+    )
     docs, qa_pairs = load_dataset_by_name(dataset, max_papers=args.max_contexts)
     persist = Path(f"./chroma_db_fix11/{dataset}")
     pipe = RAGPipeline(
@@ -62,7 +67,10 @@ def run_dataset(args: argparse.Namespace, dataset: str, detector: HallucinationD
     raptor_index_s = time.time() - t1
 
     rows: List[Dict[str, Any]] = []
-    for qa in qa_pairs[: min(args.n, len(qa_pairs))]:
+    qa_use = qa_pairs[: min(args.n, len(qa_pairs))]
+    for idx, qa in enumerate(qa_use, start=1):
+        if idx == 1 or idx % max(1, args.save_every) == 0:
+            print(f"[Fix11] {dataset} query {idx}/{len(qa_use)} rows={len(rows)}", flush=True)
         q0 = time.time()
         retrieved, log = raptor.retrieve(qa["question"])
         ret_ms = (time.time() - q0) * 1000
@@ -72,6 +80,7 @@ def run_dataset(args: argparse.Namespace, dataset: str, detector: HallucinationD
         nli = detector.detect(gen["answer"], gen["context"])
         rows.append({
             "dataset": dataset,
+            "query_index": idx - 1,
             "question": qa["question"],
             "ground_truth": qa.get("ground_truth", ""),
             "faithfulness_score": float(nli["faithfulness_score"]),
@@ -82,6 +91,9 @@ def run_dataset(args: argparse.Namespace, dataset: str, detector: HallucinationD
             "n_leaves_returned": log.get("n_leaves_returned", np.nan) if isinstance(log, dict) else np.nan,
             "n_summaries_returned": log.get("n_summaries_returned", np.nan) if isinstance(log, dict) else np.nan,
         })
+        if idx % max(1, args.save_every) == 0:
+            pd.DataFrame(rows).to_csv(OUT_DATA / f"per_query_{dataset}_partial.csv", index=False)
+            print(f"[Fix11] saved partial dataset={dataset} rows={len(rows)}", flush=True)
     meta = {
         "dataset": dataset,
         "dense_index_s": round(dense_index_s, 3),
@@ -115,6 +127,7 @@ def main() -> None:
     parser.add_argument("--backend", choices=["ollama", "together", "openai", "anthropic", "groq"], default="ollama")
     parser.add_argument("--model", default="mistral")
     parser.add_argument("--raptor_clusters", type=int, default=6)
+    parser.add_argument("--save_every", type=int, default=10)
     args = parser.parse_args()
 
     ensure_dirs(OUT_DATA, OUT_RESULTS)

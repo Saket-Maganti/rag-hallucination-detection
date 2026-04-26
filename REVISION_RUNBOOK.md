@@ -167,6 +167,53 @@ ollama list
 Then rerun only the failed experiment cell. The guard restarts an unresponsive
 Ollama process and verifies `/api/tags` before generation starts.
 
+### Split Kaggle T4 x2 Run: Fix 5 + Fix 11 Only
+
+Because the all-in-one notebook has been flaky in the Kaggle UI, the preferred
+next cloud run is now split into a dedicated Fix 5 + Fix 11 notebook:
+
+```text
+notebooks/revision_fix5_11_kaggle_t4x2.ipynb
+```
+
+Kaggle settings:
+
+- Internet: ON
+- Accelerator: GPU
+- GPU type: T4 x2
+
+The notebook runs four cells:
+
+1. clone/pull repo and show `nvidia-smi`
+2. setup dependencies and two Ollama servers
+3. run Fix 5 on GPU0 and Fix 11 on GPU1 in parallel
+4. status/package outputs
+
+The robust command used by the notebook is:
+
+```bash
+python -u scripts/kaggle_stream_fix5_11_t4x2.py --stage setup --heartbeat 15
+python -u scripts/kaggle_stream_fix5_11_t4x2.py --stage parallel --heartbeat 30
+python -u scripts/kaggle_stream_fix5_11_t4x2.py --stage status --heartbeat 15
+python -u scripts/kaggle_stream_fix5_11_t4x2.py --stage package --heartbeat 15
+```
+
+Outputs:
+
+```text
+/kaggle/working/fix5_11_t4x2_outputs.zip
+```
+
+Expected runtime after setup:
+
+- Fix 5: roughly 1.5-3h
+- Fix 11: roughly 45-90 min
+- parallel wall time: roughly 2.5-4.5h including overhead
+
+The wrapper prints a heartbeat even if Bash, downloads, Ollama, or generation
+are quiet. Heartbeats include row counts for Fix 5 final/partial CSVs and Fix
+11 final/per-dataset partial CSVs.
+
 ### Does Not Need Hosted GPU
 
 Run these on the M4 Air:

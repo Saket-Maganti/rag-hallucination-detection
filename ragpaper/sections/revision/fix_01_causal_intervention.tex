@@ -52,10 +52,10 @@ test on similarity deltas is reported only as a diagnostic, not as an
 equivalence proof.
 
 \paragraph{Result.}
-% TRACKED-CHANGES (revision): PENDING NUMERIC FILL.
-% Fill this table from results/revision/fix_01/paired_wilcoxon.csv after
-% the full generation/NLI run completes. Do not claim causal support
-% unless H1 is supported by the pre-registered thresholds.
+% TRACKED-CHANGES (revision): FILLED NULL RESULT.
+% Why: the preregistered intervention completed with 200 matched pairs
+% and did not support the causal HIGH-CCS > LOW-CCS hypothesis. This
+% requires downgrading causal/mechanistic language elsewhere.
 \begin{table}[t]
 \centering
 \caption{Fix~1 causal intervention. HIGH-CCS and LOW-CCS triples are
@@ -68,16 +68,25 @@ the bootstrap CI for $\bar{\Delta}$ excludes zero.}
 \toprule
 Dataset & $n$ & max $|\Delta \bar{s}|$ & CCS gap & $\bar{\Delta}_{faith}$ & $d_z$ & $p$ \\
 \midrule
-\textsc{SQuAD} & {[}pending{]} & {[}pending{]} & {[}pending{]} & {[}pending{]} & {[}pending{]} & {[}pending{]} \\
+\textsc{SQuAD} & 200 & 0.0185 & 0.5326 & -0.0024 & -0.0171 & 0.6283 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-% IF-SUPPORTED: If the pre-registered test supports H1, replace this
-% paragraph with: "At fixed mean query similarity, HIGH-CCS triples
-% produce significantly higher faithfulness than LOW-CCS triples..."
-% and include Figure~\ref{fig:fix01_pairs}.
-%
-% IF-NULL: If H1 is not supported, replace causal language in the title,
-% abstract, \S5 theory, and discussion. Use "predicts" rather than
-% "drives", and frame the theory as a consistency check.
+The intervention satisfies the matching constraint but does not support
+the preregistered causal hypothesis. HIGH-CCS triples have mean
+faithfulness $0.6362$, while LOW-CCS triples have mean faithfulness
+$0.6386$; the mean paired difference is $-0.0024$ with a bootstrap 95\%
+CI of $[-0.0217, 0.0168]$. The one-sided paired Wilcoxon test for
+HIGH-CCS $>$ LOW-CCS gives $p=0.6283$ and Cohen's $d_z=-0.0171$.
+Hallucination rates are also not directionally favorable to the causal
+claim: $0.165$ for HIGH-CCS and $0.090$ for LOW-CCS.
+
+% TRACKED-CHANGES (revision): HONEST DOWNGRADE.
+% Why: this null result directly answers the reviewer concern. We keep
+% CCS as a diagnostic/predictive signal, but no longer present this
+% experiment as evidence that coherence causally drives faithfulness.
+We therefore do not interpret CCS as an isolated causal mediator in this
+setting. The remaining revision frames CCS as a diagnostic and
+deployment-policy signal, and reframes the information-theoretic section
+as a consistency check rather than a mechanism proof.

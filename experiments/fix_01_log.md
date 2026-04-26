@@ -1,7 +1,7 @@
 # Fix 1 Log - Causal Coherence Intervention
 
 **Pre-registration date:** 2026-04-26  
-**Status:** designed; matched-pair construction complete; generation/NLI pending  
+**Status:** complete; causal H1 not supported in the preregistered SQuAD run
 **Reviewer weakness addressed:** W1, causal-vs-correlational concern  
 **Primary script:** `experiments/fix_01_causal_matched_pairs.py`
 
@@ -144,7 +144,7 @@ Key numbers are written to:
 
 - `results/revision/fix_01/construction_summary.csv`
 - `results/revision/fix_01/match_diagnostics.csv`
-- `results/revision/fix_01/paired_wilcoxon.csv` after generation/NLI
+- `results/revision/fix_01/paired_wilcoxon.csv`
 
 Construction execution completed on 2026-04-26:
 
@@ -171,9 +171,37 @@ Construction key numbers:
 - Minimum CCS gap: `0.264139`, above the preregistered `0.05` minimum.
 - Mean passage overlap: `0.395`; max overlap: `1`.
 
-These numbers establish that the controlled dataset construction is feasible
-at the required sample size. They do **not** establish the causal hypothesis;
-that requires the full Mistral generation and DeBERTa NLI pass.
+Full generation and NLI scoring completed locally on 2026-04-26 after hosted
+notebook output instability:
+
+```bash
+PYTHONUNBUFFERED=1 OLLAMA_HOST=http://127.0.0.1:11434 \
+python3 -u experiments/fix_01_causal_matched_pairs.py \
+  --stage generate \
+  --backend ollama \
+  --model mistral \
+  --resume \
+  --save_every 2 \
+  --progress_every 5
+
+PYTHONUNBUFFERED=1 python3 -u experiments/fix_01_causal_matched_pairs.py \
+  --stage analyze
+```
+
+Generation/analysis key numbers:
+
+- Generated rows: `400`.
+- Complete matched pairs: `200`.
+- Mean faithfulness, HIGH-CCS: `0.636195`.
+- Mean faithfulness, LOW-CCS: `0.638587`.
+- Mean paired difference, HIGH minus LOW: `-0.002392`.
+- One-sided paired Wilcoxon p-value for `HIGH > LOW`: `0.628268`.
+- Cohen's `d_z`: `-0.017086`.
+- 10000-resample bootstrap 95% CI: `[-0.021651, 0.016819]`.
+- Hallucination rate, HIGH-CCS: `0.165`.
+- Hallucination rate, LOW-CCS: `0.090`.
+- Maximum absolute similarity gap: `0.018512`.
+- Decision-rule field `h1_supported`: `False`.
 
 ## Interpretation Template
 
@@ -181,7 +209,7 @@ If H1 is supported, the paper can claim that CCS has causal evidence in the
 controlled SQuAD intervention, scoped to short-answer extractive QA and the
 tested generator/scorer.
 
-If H1 is not supported, the honest interpretation is that CCS remains a useful
-predictor/deployment diagnostic, but the paper has not shown that coherence is
-the causal mediator at fixed query similarity. In that case, the abstract,
+H1 was not supported. The honest interpretation is that CCS may remain a useful
+predictor/deployment diagnostic, but this experiment does not show that
+coherence is the causal mediator at fixed query similarity. The abstract,
 theory section, and discussion must be downgraded before any resubmission.

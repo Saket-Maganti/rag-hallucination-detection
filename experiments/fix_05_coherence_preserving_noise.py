@@ -71,6 +71,11 @@ def eval_docs(pipe: RAGPipeline, detector: HallucinationDetector, qa: dict,
 
 
 def run(args: argparse.Namespace) -> pd.DataFrame:
+    print(
+        f"[Fix05] starting n={args.n} seed={args.seed} "
+        f"max_contexts={args.max_contexts} backend={args.backend} model={args.model}",
+        flush=True,
+    )
     docs, qa_pairs = load_dataset_by_name("squad", max_papers=args.max_contexts)
     rng = random.Random(args.seed)
     qa_use = list(qa_pairs)
@@ -91,6 +96,8 @@ def run(args: argparse.Namespace) -> pd.DataFrame:
     rows: List[Dict[str, Any]] = []
 
     for i, qa in enumerate(qa_use, start=1):
+        if i == 1 or i % max(1, args.save_every) == 0:
+            print(f"[Fix05] query {i}/{len(qa_use)} rows={len(rows)}", flush=True)
         base_docs, _ = pipe.retrieve_with_scores(qa["question"])
         top20_old = pipe.top_k
         pipe.top_k = 20

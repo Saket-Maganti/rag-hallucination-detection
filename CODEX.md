@@ -17,6 +17,8 @@ Latest pushed revision notebook commit at the time this file was written:
 Main GPU notebook:
 
 - `notebooks/revision_session1_kaggle_fresh.ipynb`
+- `notebooks/revision_fix5_11_kaggle_t4x2.ipynb` for the split Fix 5 +
+  Fix 11 run on Kaggle T4 x2.
 
 Most robust Session 1 entry point:
 
@@ -26,6 +28,9 @@ Most robust Session 1 entry point:
   the rest of Session 1.
 - `scripts/kaggle_fix1_parallel_t4x2.sh` if Kaggle gives T4 x2; this shards
   Fix 1 across two Ollama servers and is the fastest zero-dollar gate run.
+- `scripts/kaggle_fix5_11_t4x2.sh` plus
+  `scripts/kaggle_stream_fix5_11_t4x2.py` run Fix 5 and Fix 11 only, with
+  two Ollama servers, visible wrapper heartbeats, and a final zip package.
 
 The Session 1 script prints timestamped sections and 60-second heartbeats for
 long jobs. Heartbeats include elapsed time, CSV row count, expected row count,
@@ -83,7 +88,7 @@ Shared helpers/wrappers added:
 The OpenAI/Anthropic/Together wrappers are present for reproducibility, but
 they are not part of the current zero-dollar plan.
 
-### Fix 1 Construction Result
+### Fix 1 Result
 
 Fix 1 matched-pair construction has already run successfully:
 
@@ -102,7 +107,19 @@ Files:
 - `results/revision/fix_01/construction_summary.csv`
 - `results/revision/fix_01/match_diagnostics.csv`
 
-This is construction only. It is not causal evidence yet.
+Fix 1 generation and analysis were completed locally after Kaggle/Colab output
+instability:
+
+- generated rows: `400`
+- complete matched pairs: `200`
+- HIGH-CCS mean faithfulness: `0.636195`
+- LOW-CCS mean faithfulness: `0.638587`
+- HIGH minus LOW: `-0.002392`
+- Wilcoxon one-sided greater p-value: `0.628268`
+- bootstrap 95% CI: `[-0.021651, 0.016819]`
+- `h1_supported`: `False`
+
+This means the paper must downgrade causal/mechanistic language around CCS.
 
 ### Validation
 
@@ -162,6 +179,16 @@ Can run on M4 Air, but use free Kaggle/Colab GPU when available:
 ## Session Plan
 
 ### Session 1 - Free Kaggle GPU
+
+Current split run for Kaggle T4 x2:
+
+- `notebooks/revision_fix5_11_kaggle_t4x2.ipynb`
+- runs only Fix 5 and Fix 11
+- starts two Ollama servers: GPU0 on port `11434`, GPU1 on port `11435`
+- writes `/kaggle/working/fix5_11_t4x2_outputs.zip`
+- expected runtime: roughly `2.5-4.5h` after setup on T4 x2
+
+Use this before trying another all-in-one session.
 
 Notebook:
 
@@ -348,30 +375,30 @@ Status meanings:
 
 | Fix | Weakness | Current Status | Next Action |
 | --- | --- | --- | --- |
-| 1 | Causal-vs-correlational CCS claim | Constructed | Run Session 1 Fix 1 generation + analysis. |
+| 1 | Causal-vs-correlational CCS claim | Done, H1 unsupported | Downgrade causal/mechanistic language. |
 | 2 | Headline-cell sample size | Code | Run Session 2. |
 | 3 | Single faithfulness metric | Code | Run after Fix 2; add human labels if possible. |
 | 4 | Tau-tuning leakage | Code | Run Session 3. |
-| 5 | SQuAD noise slope | Code | Run Session 1. |
+| 5 | SQuAD noise slope | Code | Run split Kaggle Fix 5 + Fix 11 notebook. |
 | 6 | Baseline head-to-head | Code | Run Session 3 without Self-RAG first. |
 | 7 | Independent 70B reproduction | Budget-blocked | Disclose zero-dollar limitation; do not fake it. |
 | 8 | Info-theory overclaim | Code | Integrate after Fix 1 result. |
 | 9 | Self-confidence partial correlation | Code | Run locally when input CSV exists. |
 | 10 | Deployment scope | Code | Integrate after Fix 1 and long-form framing are known. |
-| 11 | RAPTOR full table | Code | Run Session 1. |
+| 11 | RAPTOR full table | Code | Run split Kaggle Fix 5 + Fix 11 notebook. |
 
 ## Immediate Next Step
 
-Open this notebook in a fresh Kaggle GPU session:
+Open this notebook in a fresh Kaggle T4 x2 session:
 
 ```text
-notebooks/revision_session1_kaggle_fresh.ipynb
+notebooks/revision_fix5_11_kaggle_t4x2.ipynb
 ```
 
 Run all cells top to bottom. When complete, download:
 
 ```text
-/kaggle/working/revision_session1_outputs.zip
+/kaggle/working/fix5_11_t4x2_outputs.zip
 ```
 
 Then copy/unzip the outputs into the local repo and update:
