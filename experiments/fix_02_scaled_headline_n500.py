@@ -48,6 +48,14 @@ V1_SIM, V1_CE = 0.50, 0.00
 V2_SIM, V2_CE = 0.45, -0.20
 
 
+def tagged_path(path: Path, tag: str) -> Path:
+    """Return `foo_tag.csv` for worker shards, or `foo.csv` for final runs."""
+    clean = "".join(ch if ch.isalnum() or ch in ("-", "_") else "_" for ch in tag.strip())
+    if not clean:
+        return path
+    return path.with_name(f"{path.stem}_{clean}{path.suffix}")
+
+
 def build_pipeline(dataset: str, model: str, seed: int, max_contexts: int,
                    backend: str) -> tuple[RAGPipeline, list[dict]]:
     docs, qa_pairs = load_dataset_by_name(dataset, max_papers=max_contexts)
@@ -147,9 +155,9 @@ def run_seed(args: argparse.Namespace, dataset: str, seed: int,
                     "condition": label,
                     "error": f"{type(exc).__name__}:{exc}",
                 })
-        if i % args.save_every == 0:
+        if i == 1 or i % args.save_every == 0 or i == len(qa_use):
             pd.DataFrame(rows).to_csv(
-                OUT_DATA / f"{dataset}_seed{seed}_partial.csv",
+                tagged_path(OUT_DATA / f"{dataset}_seed{seed}_partial.csv", args.output_tag),
                 index=False,
             )
             print(f"[Fix02] {dataset}/seed{seed}: {i}/{len(qa_use)} queries")
@@ -249,10 +257,20 @@ def main() -> None:
     parser.add_argument("--model", default="mistral")
     parser.add_argument("--max_contexts", type=int, default=600)
     parser.add_argument("--save_every", type=int, default=25)
+    parser.add_argument(
+        "--output_tag",
+        default="",
+        help="Optional shard tag; writes per_query_<tag>.csv and summary_<tag>.md.",
+    )
     args = parser.parse_args()
 
     ensure_dirs(OUT_DATA, OUT_RESULTS)
     write_columns()
+    per_query_path = tagged_path(OUT_DATA / "per_query.csv", args.output_tag)
+    headline_path = tagged_path(OUT_RESULTS / "headline_table.csv", args.output_tag)
+    contrast_path = tagged_path(OUT_RESULTS / "paired_contrasts.csv", args.output_tag)
+    summary_path = tagged_path(OUT_RESULTS / "summary.md", args.output_tag)
+
     detector = HallucinationDetector()
     all_rows: List[Dict[str, Any]] = []
     for dataset in args.datasets:
@@ -262,19 +280,19 @@ def main() -> None:
         for seed in args.seeds:
             rows = run_seed(args, dataset, seed, detector)
             all_rows.extend(rows)
-            pd.DataFrame(all_rows).to_csv(OUT_DATA / "per_query.csv", index=False)
+            pd.DataFrame(all_rows).to_csv(per_query_path, index=False)
 
     df = pd.DataFrame(all_rows)
-    df.to_csv(OUT_DATA / "per_query.csv", index=False)
+    df.to_csv(per_query_path, index=False)
     summary, contrasts = aggregate(df)
-    summary.to_csv(OUT_RESULTS / "headline_table.csv", index=False)
-    contrasts.to_csv(OUT_RESULTS / "paired_contrasts.csv", index=False)
+    summary.to_csv(headline_path, index=False)
+    contrasts.to_csv(contrast_path, index=False)
     write_markdown_table(
-        OUT_RESULTS / "summary.md",
+        summary_path,
         "Fix 2 - scaled headline n=500 x 5 seeds",
         {"Headline Table": summary, "Paired Contrasts": contrasts},
     )
-    print(f"[Fix02] wrote {len(df)} rows to {OUT_DATA}/per_query.csv")
+    print(f"[Fix02] wrote {len(df)} rows to {per_query_path}")
 
 
 if __name__ == "__main__":
