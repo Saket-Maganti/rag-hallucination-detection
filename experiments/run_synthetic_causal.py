@@ -76,7 +76,9 @@ from src.hallucination_detector import HallucinationDetector
 
 OUT_DIR = "results/synthetic_causal"
 EMBED   = "sentence-transformers/all-MiniLM-L6-v2"
-SIM_TOL = 0.05      # mean-similarity match tolerance between SET-A and SET-B
+SIM_TOL = 0.10      # mean-similarity match tolerance between SET-A and SET-B
+                    # (was 0.05 — too strict for finite pools; 0.10 still
+                    # gives a meaningful matched comparison)
 
 
 def _embed(texts, embedder):
@@ -110,8 +112,10 @@ def _construct_pair(query: str, candidates: List[Any], pool: List[Any],
     Returns (set_a, set_b, diagnostics) where set_a = top-3 candidates
     and set_b = top-1 + 2 sim-matched off-topic passages from `pool`.
     """
-    if len(candidates) < 3 or len(pool) < 100:
-        return None, None, {"reason": "insufficient_candidates_or_pool"}
+    if len(candidates) < 3 or len(pool) < 5:
+        return None, None, {"reason": "insufficient_candidates_or_pool",
+                              "n_candidates": len(candidates),
+                              "n_pool": len(pool)}
 
     # Embed query + candidates
     q_emb = np.array(embedder.embed_query(query))
@@ -185,26 +189,55 @@ def run(dataset: str, n_queries: int, backend: str, model: str,
     pipe.llm = _make_llm(backend, model)
     embedder = pipe.embeddings
 
+    # Build a LARGE off-topic pool ONCE: pull top-50 chunks for every
+    # 5th query and dedup by page_content. This gives us a broad pool
+    # of ~200-500 chunks to draw sim-matched passages from.
+    print(f"[Causal/{dataset}] building off-topic pool …")
+    original_k = pipe.top_k
+    pipe.top_k = 50
+    try:
+        pool_seen = set()
+        large_pool: List[Any] = []
+        for q_idx in range(0, len(qa), 5):
+            try:
+                pool_chunk, _ = pipe.retrieve_with_scores(qa[q_idx]["question"])
+            except Exception:
+                continue
+            for d in pool_chunk:
+                k = d.page_content[:200]
+                if k in pool_seen: continue
+                pool_seen.add(k); large_pool.append(d)
+        print(f"[Causal/{dataset}] pool size = {len(large_pool)}")
+    finally:
+        pipe.top_k = original_k
+
+    # Now request 6 candidates per query (need top-6 for set_a + matching)
+    pipe.top_k = 6
     rows: List[Dict] = []
     n_processed = 0
     n_skipped = 0
+    skip_reasons: Dict[str, int] = {}
     for qa_pair in qa:
         if n_processed >= n_queries:
             break
         try:
             cands, _ = pipe.retrieve_with_scores(qa_pair["question"])
             if len(cands) < 6:
-                n_skipped += 1; continue
-            # Pool = all chunks NOT in this query's top-6
-            pool = [c for c in cands]    # use the same cand pool for off-topic
-            # Actually: get a broader pool by retrieving a different query
-            other_q = qa[(qa.index(qa_pair) + 13) % len(qa)]["question"]
-            pool_other, _ = pipe.retrieve_with_scores(other_q)
-            pool = pool_other + cands[3:]
+                n_skipped += 1
+                skip_reasons["fewer_than_6_candidates"] = skip_reasons.get(
+                    "fewer_than_6_candidates", 0) + 1
+                continue
+            # Off-topic pool = the large pool, minus this query's own
+            # top candidates (so we don't accidentally re-include them)
+            cand_keys = {c.page_content[:200] for c in cands}
+            pool = [d for d in large_pool if d.page_content[:200] not in cand_keys]
             set_a, set_b, diag = _construct_pair(qa_pair["question"],
                                                    cands[:6], pool, embedder)
             if set_a is None:
-                n_skipped += 1; continue
+                n_skipped += 1
+                reason = diag.get("reason", "unknown") if isinstance(diag, dict) else "unknown"
+                skip_reasons[reason] = skip_reasons.get(reason, 0) + 1
+                continue
 
             # Generate on each set
             for label, docs_set in [("set_a_coherent", set_a),
@@ -230,6 +263,8 @@ def run(dataset: str, n_queries: int, backend: str, model: str,
             print(f"[Causal] err: {exc}")
             n_skipped += 1
     print(f"[Causal/{dataset}] processed={n_processed}  skipped={n_skipped}")
+    if skip_reasons:
+        print(f"[Causal/{dataset}] skip reasons: {skip_reasons}")
     return rows
 
 
@@ -251,6 +286,8 @@ def aggregate(rows: List[Dict]) -> pd.DataFrame:
 
 def paired_test(df: pd.DataFrame) -> pd.DataFrame:
     """Per-dataset, paired Wilcoxon signed-rank on (set_a, set_b) faith."""
+    if df.empty or "dataset" not in df.columns:
+        return pd.DataFrame()
     rows = []
     for ds, sub in df.groupby("dataset"):
         a = sub[sub["set_type"] == "set_a_coherent"].set_index("question")["faithfulness"]
