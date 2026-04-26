@@ -7,6 +7,7 @@ REPO_DIR="${REPO_DIR:-/kaggle/working/rag-hallucination-detection}"
 LOG_DIR="${LOG_DIR:-/kaggle/working/fix5_11_t4x2_logs}"
 OLLAMA_MODELS_DIR="${OLLAMA_MODELS_DIR:-/kaggle/working/ollama_models}"
 HEARTBEAT_SECONDS="${HEARTBEAT_SECONDS:-30}"
+export PATH="/usr/local/bin:/usr/bin:/bin:${PATH}"
 
 FIX5_N="${FIX5_N:-200}"
 FIX5_MAX_CONTEXTS="${FIX5_MAX_CONTEXTS:-300}"
@@ -91,7 +92,7 @@ start_server() {
     OLLAMA_MODELS="${OLLAMA_MODELS_DIR}" \
     OLLAMA_KEEP_ALIVE=-1 \
     OLLAMA_NUM_PARALLEL=1 \
-    ollama serve >"${log_file}" 2>&1 &
+    "${OLLAMA_BIN}" serve >"${log_file}" 2>&1 &
   echo "$!" >"${LOG_DIR}/ollama_gpu${gpu}.pid"
 
   for _ in $(seq 1 90); do
@@ -107,6 +108,25 @@ start_server() {
   exit 1
 }
 
+ensure_ollama_binary() {
+  section "Ollama binary"
+  if ! command -v ollama >/dev/null 2>&1; then
+    log "installing ollama"
+    curl -fsSL https://ollama.com/install.sh | sh
+  fi
+
+  if ! command -v ollama >/dev/null 2>&1; then
+    log "ERROR: ollama is still not on PATH after install"
+    log "PATH=${PATH}"
+    ls -lh /usr/local/bin/ollama /usr/bin/ollama 2>/dev/null || true
+    exit 1
+  fi
+
+  OLLAMA_BIN="$(command -v ollama)"
+  export OLLAMA_BIN
+  log "ollama binary: ${OLLAMA_BIN}"
+}
+
 stop_ollama() {
   section "Reset Ollama"
   pkill -x ollama >/dev/null 2>&1 || true
@@ -115,12 +135,9 @@ stop_ollama() {
 
 pull_model() {
   section "Model"
-  if ! command -v ollama >/dev/null 2>&1; then
-    curl -fsSL https://ollama.com/install.sh | sh
-  fi
-  OLLAMA_HOST="127.0.0.1:11434" OLLAMA_MODELS="${OLLAMA_MODELS_DIR}" ollama pull "${MODEL}"
-  OLLAMA_HOST="127.0.0.1:11434" OLLAMA_MODELS="${OLLAMA_MODELS_DIR}" ollama list
-  OLLAMA_HOST="127.0.0.1:11435" OLLAMA_MODELS="${OLLAMA_MODELS_DIR}" ollama list || true
+  OLLAMA_HOST="127.0.0.1:11434" OLLAMA_MODELS="${OLLAMA_MODELS_DIR}" "${OLLAMA_BIN}" pull "${MODEL}"
+  OLLAMA_HOST="127.0.0.1:11434" OLLAMA_MODELS="${OLLAMA_MODELS_DIR}" "${OLLAMA_BIN}" list
+  OLLAMA_HOST="127.0.0.1:11435" OLLAMA_MODELS="${OLLAMA_MODELS_DIR}" "${OLLAMA_BIN}" list || true
 }
 
 watch_server() {
@@ -163,6 +180,7 @@ preflight() {
 setup_stage() {
   repo_setup
   install_deps
+  ensure_ollama_binary
   stop_ollama
   mkdir -p "${OLLAMA_MODELS_DIR}"
   start_server 0 11434
@@ -210,6 +228,7 @@ run_fix11() {
 
 parallel_stage() {
   repo_setup
+  ensure_ollama_binary
   start_server 0 11434
   start_server 1 11435
   preflight
