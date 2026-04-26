@@ -70,6 +70,18 @@ import numpy as np
 import pandas as pd
 from scipy.stats import wilcoxon
 
+# When running with --backend groq we never call Ollama, but
+# RAGPipeline.__init__ instantiates OllamaLLM which can hang on Kaggle
+# (no local daemon to connect to). Monkey-patch OllamaLLM with a stub
+# BEFORE importing RAGPipeline so the constructor returns instantly.
+if "--backend" in sys.argv and "groq" in sys.argv:
+    import langchain_ollama
+    class _StubOllama:
+        def __init__(self, *args, **kwargs): pass
+        def invoke(self, *args, **kwargs):
+            raise RuntimeError("Stub OllamaLLM called — backend should be groq")
+    langchain_ollama.OllamaLLM = _StubOllama
+
 from src.dataset_loaders        import DATASET_REGISTRY, load_dataset_by_name
 from src.rag_pipeline           import RAGPipeline
 from src.hallucination_detector import HallucinationDetector

@@ -41,6 +41,15 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import pandas as pd
 
+# Monkey-patch OllamaLLM so groq-backend runs don't hang on Kaggle.
+if "--backend" in sys.argv and "groq" in sys.argv:
+    import langchain_ollama
+    class _StubOllama:
+        def __init__(self, *args, **kwargs): pass
+        def invoke(self, *args, **kwargs):
+            raise RuntimeError("Stub OllamaLLM called — backend should be groq")
+    langchain_ollama.OllamaLLM = _StubOllama
+
 from src.dataset_loaders        import DATASET_REGISTRY, load_dataset_by_name
 from src.rag_pipeline           import RAGPipeline
 from src.hallucination_detector import HallucinationDetector
