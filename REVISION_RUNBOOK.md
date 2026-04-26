@@ -173,7 +173,7 @@ Because the all-in-one notebook has been flaky in the Kaggle UI, the preferred
 next cloud run is now split into a dedicated Fix 5 + Fix 11 notebook:
 
 ```text
-notebooks/revision_fix5_11_kaggle_t4x2.ipynb
+notebooks/revision_fix5_11_kaggle_t4x2_fresh.ipynb
 ```
 
 Kaggle settings:
@@ -184,10 +184,11 @@ Kaggle settings:
 
 The notebook runs four cells:
 
-1. clone/pull repo and show `nvidia-smi`
-2. setup dependencies and two Ollama servers
+1. kill stale Ollama/revision processes, clone/pull repo, and show `nvidia-smi`
+2. setup dependencies, install/verify Ollama, and start two Ollama servers
 3. run Fix 5 on GPU0 and Fix 11 on GPU1 in parallel
 4. status/package outputs
+5. optional debug cell if setup fails
 
 The robust command used by the notebook is:
 

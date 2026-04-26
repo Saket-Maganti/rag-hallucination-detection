@@ -1,8 +1,9 @@
 # Revision Summary
 
 This file tracks the senior reviewer's 10 weaknesses for the NeurIPS revision.
-Fix 1 is the active gating item; downstream fixes should not be framed until
-the causal intervention result is known.
+Fix 1 was the active gating item. Its preregistered causal intervention has now
+completed and did not support the causal H1, so downstream paper language must
+downgrade mechanistic/causal claims to diagnostic or predictive claims.
 
 Operational handoff, zero-dollar execution plan, and session checklist live in
 `CODEX.md`.
@@ -11,7 +12,7 @@ Operational handoff, zero-dollar execution plan, and session checklist live in
 
 | # | Weakness | Fix | Status | Assessment |
 | --- | --- | --- | --- | --- |
-| 1 | Causal-vs-correlational CCS claim | Matched-similarity HIGH/LOW CCS intervention on SQuAD | Partial | Protocol and harness added; required 200 matched pairs constructed with zero skips and max similarity gap 0.018512. Full generation/NLI run still required before the paper can claim causal evidence. |
+| 1 | Causal-vs-correlational CCS claim | Matched-similarity HIGH/LOW CCS intervention on SQuAD | Done | 200 matched pairs generated/scored. H1 not supported: HIGH-CCS mean faithfulness 0.636195 vs LOW-CCS 0.638587, HIGH-LOW -0.002392, Wilcoxon p=0.628268, bootstrap CI [-0.021651, 0.016819]. Causal language must be downgraded. |
 | 2 | Headline cell sample size too small | SQuAD/Mistral n=500 x 5 seeds | Code | Script/log/LaTeX written; execution pending. |
 | 3 | Single faithfulness metric | Add local RAGAS-style judge + second NLI + optional human eval | Code | Script/log/LaTeX plus scorer wrappers written; execution pending after Fix 2. Under zero-dollar mode, GPT-4o-mini/Claude judging is replaced by local judging plus human eval. |
 | 4 | Tau-tuning leakage | 5x5 tune-on/eval-on matrix | Code | Script/log/LaTeX written; execution pending. |
@@ -62,9 +63,9 @@ matched pairs and satisfies all preregistered criteria:
 If not, the central claim is downgraded from causal/mechanistic to predictive
 and diagnostic throughout the paper.
 
-## Fix 1 Construction Result
+## Fix 1 Result
 
-The construction stage has completed for the preregistered primary SQuAD cell:
+The construction stage completed for the preregistered primary SQuAD cell:
 
 | metric | value |
 | --- | ---: |
@@ -76,6 +77,25 @@ The construction stage has completed for the preregistered primary SQuAD cell:
 | minimum CCS gap | 0.264139 |
 | maximum HIGH/LOW passage overlap | 1 |
 
-Interpretation: the dataset construction routine satisfies the matching
-constraints and is ready for the expensive Mistral/DeBERTa run. This is not
-yet evidence for or against the causal hypothesis.
+The full Mistral/DeBERTa generation and analysis stage then completed:
+
+| metric | value |
+| --- | ---: |
+| generated rows | 400 |
+| complete matched pairs | 200 |
+| mean faithfulness, HIGH-CCS | 0.636195 |
+| mean faithfulness, LOW-CCS | 0.638587 |
+| HIGH minus LOW | -0.002392 |
+| Wilcoxon p-value, HIGH > LOW | 0.628268 |
+| Cohen's dz | -0.017086 |
+| bootstrap 95% CI lower | -0.021651 |
+| bootstrap 95% CI upper | 0.016819 |
+| hallucination rate, HIGH-CCS | 0.165 |
+| hallucination rate, LOW-CCS | 0.090 |
+| H1 supported | false |
+
+Interpretation: the construction constraints were satisfied, but the
+intervention did not show that higher CCS causally improves faithfulness at
+fixed mean query similarity. The paper should preserve CCS as a diagnostic or
+predictive signal only unless a later, preregistered replication changes this
+result.

@@ -19,6 +19,8 @@ Main GPU notebook:
 - `notebooks/revision_session1_kaggle_fresh.ipynb`
 - `notebooks/revision_fix5_11_kaggle_t4x2.ipynb` for the split Fix 5 +
   Fix 11 run on Kaggle T4 x2.
+- `notebooks/revision_fix5_11_kaggle_t4x2_fresh.ipynb` is the cleanest
+  restart notebook after the Ollama install-order fix.
 
 Most robust Session 1 entry point:
 
@@ -182,7 +184,7 @@ Can run on M4 Air, but use free Kaggle/Colab GPU when available:
 
 Current split run for Kaggle T4 x2:
 
-- `notebooks/revision_fix5_11_kaggle_t4x2.ipynb`
+- `notebooks/revision_fix5_11_kaggle_t4x2_fresh.ipynb`
 - runs only Fix 5 and Fix 11
 - starts two Ollama servers: GPU0 on port `11434`, GPU1 on port `11435`
 - writes `/kaggle/working/fix5_11_t4x2_outputs.zip`
