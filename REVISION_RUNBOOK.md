@@ -87,6 +87,71 @@ for long jobs, including elapsed time, current CSV row count, expected row
 count, and the last few Ollama log lines. If there is no heartbeat for several
 minutes, the Kaggle kernel itself is likely stalled.
 
+If you want the highest-impact result first, run only Fix 1:
+
+```bash
+%%bash
+set -euo pipefail
+cd /kaggle/working
+if [ ! -d rag-hallucination-detection/.git ]; then
+  git clone --branch main https://github.com/Saket-Maganti/rag-hallucination-detection.git
+else
+  git -C rag-hallucination-detection pull --ff-only origin main
+fi
+cd rag-hallucination-detection
+bash scripts/kaggle_fix1_only.sh
+```
+
+This writes `/kaggle/working/fix1_outputs.zip` and should take roughly
+45-120 minutes on a free T4 session after setup. Run the full Session 1 script
+later for Fix 5 and Fix 11.
+
+If Kaggle gives you **T4 x2**, use the two-GPU Fix 1 sharded runner instead:
+
+```bash
+%%bash
+set -euo pipefail
+cd /kaggle/working
+if [ ! -d rag-hallucination-detection/.git ]; then
+  git clone --branch main https://github.com/Saket-Maganti/rag-hallucination-detection.git
+else
+  git -C rag-hallucination-detection pull --ff-only origin main
+fi
+cd rag-hallucination-detection
+bash scripts/kaggle_fix1_parallel_t4x2.sh
+```
+
+This starts two Ollama servers on ports `11434` and `11435`, pins one shard to
+each T4 with `CUDA_VISIBLE_DEVICES`, merges the shard CSVs, analyzes Fix 1, and
+writes `/kaggle/working/fix1_parallel_outputs.zip`. This is the fastest
+zero-dollar path for the causal gate.
+
+If Kaggle shows no live output, run Session 1 in the background and monitor the
+log from a separate cell:
+
+```bash
+%%bash
+set -euo pipefail
+cd /kaggle/working
+if [ ! -d rag-hallucination-detection/.git ]; then
+  git clone --branch main https://github.com/Saket-Maganti/rag-hallucination-detection.git
+else
+  git -C rag-hallucination-detection pull --ff-only origin main
+fi
+cd rag-hallucination-detection
+bash scripts/kaggle_session1_background.sh
+```
+
+Monitor cell:
+
+```bash
+%%bash
+set -euo pipefail
+cd /kaggle/working/rag-hallucination-detection
+git pull --ff-only origin main || true
+bash scripts/kaggle_tail_session1.sh
+```
+
 If Ollama fails with `Connection refused`, run:
 
 ```bash

@@ -442,6 +442,11 @@ def _make_llm(backend: str, model: str):
         return GroqLLM(model=model, temperature=0.0)
     from langchain_ollama import OllamaLLM
 
+    base_url = os.environ.get("OLLAMA_BASE_URL") or os.environ.get("OLLAMA_HOST")
+    if base_url:
+        if not base_url.startswith(("http://", "https://")):
+            base_url = f"http://{base_url}"
+        return OllamaLLM(model=model, temperature=0.0, base_url=base_url)
     return OllamaLLM(model=model, temperature=0.0)
 
 
@@ -473,12 +478,19 @@ def generate_from_pairs(args: argparse.Namespace,
 
     if pairs_df.empty:
         raise RuntimeError("No matched pairs available for generation")
+    if args.pair_start is not None or args.pair_end is not None:
+        start = 0 if args.pair_start is None else int(args.pair_start)
+        end = len(pairs_df) if args.pair_end is None else int(args.pair_end)
+        pairs_df = pairs_df.iloc[start:end].copy()
+        if pairs_df.empty:
+            raise RuntimeError(f"No matched pairs in requested slice [{start}:{end}]")
 
     llm = _make_llm(args.backend, args.model)
     detector = HallucinationDetector()
 
     existing = pd.DataFrame()
-    out_path = OUT_DATA / "per_query.csv"
+    out_path = Path(args.per_query_out) if args.per_query_out else OUT_DATA / "per_query.csv"
+    out_path.parent.mkdir(parents=True, exist_ok=True)
     completed: set[Tuple[str, str]] = set()
     if args.resume and out_path.exists():
         existing = pd.read_csv(out_path)
@@ -909,6 +921,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--backend", choices=["ollama", "together", "openai", "anthropic", "groq"], default="ollama")
     parser.add_argument("--model", default="mistral")
     parser.add_argument("--matched_pairs", default=str(OUT_DATA / "matched_pairs.csv"))
+    parser.add_argument("--per_query_out", default=None,
+                        help="Optional output CSV for generation/analyze; useful for sharded runs.")
+    parser.add_argument("--pair_start", type=int, default=None,
+                        help="Optional zero-based matched-pair slice start for generation.")
+    parser.add_argument("--pair_end", type=int, default=None,
+                        help="Optional zero-based matched-pair slice end for generation.")
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--save_every", type=int, default=10)
     parser.add_argument("--progress_every", type=int, default=10)

@@ -77,6 +77,11 @@ def make_llm(backend: str, model: str, temperature: float = 0.0):
         return TogetherLLM(model=model, temperature=temperature)
     from langchain_ollama import OllamaLLM
 
+    base_url = os.environ.get("OLLAMA_BASE_URL") or os.environ.get("OLLAMA_HOST")
+    if base_url:
+        if not base_url.startswith(("http://", "https://")):
+            base_url = f"http://{base_url}"
+        return OllamaLLM(model=model, temperature=temperature, base_url=base_url)
     return OllamaLLM(model=model, temperature=temperature)
 
 

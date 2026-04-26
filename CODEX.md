@@ -22,6 +22,10 @@ Most robust Session 1 entry point:
 
 - `scripts/kaggle_session1_fresh.sh`
 - `scripts/kaggle_ollama_guard.sh`
+- `scripts/kaggle_fix1_only.sh` if you want the causal gate before running
+  the rest of Session 1.
+- `scripts/kaggle_fix1_parallel_t4x2.sh` if Kaggle gives T4 x2; this shards
+  Fix 1 across two Ollama servers and is the fastest zero-dollar gate run.
 
 The Session 1 script prints timestamped sections and 60-second heartbeats for
 long jobs. Heartbeats include elapsed time, CSV row count, expected row count,
@@ -201,6 +205,40 @@ fi
 cd rag-hallucination-detection
 bash scripts/kaggle_session1_fresh.sh
 ```
+
+Faster gate-only run:
+
+```bash
+%%bash
+set -euo pipefail
+cd /kaggle/working
+if [ ! -d rag-hallucination-detection/.git ]; then
+  git clone --branch main https://github.com/Saket-Maganti/rag-hallucination-detection.git
+else
+  git -C rag-hallucination-detection pull --ff-only origin main
+fi
+cd rag-hallucination-detection
+bash scripts/kaggle_fix1_only.sh
+```
+
+This writes `/kaggle/working/fix1_outputs.zip`.
+
+Fastest T4 x2 gate-only run:
+
+```bash
+%%bash
+set -euo pipefail
+cd /kaggle/working
+if [ ! -d rag-hallucination-detection/.git ]; then
+  git clone --branch main https://github.com/Saket-Maganti/rag-hallucination-detection.git
+else
+  git -C rag-hallucination-detection pull --ff-only origin main
+fi
+cd rag-hallucination-detection
+bash scripts/kaggle_fix1_parallel_t4x2.sh
+```
+
+This writes `/kaggle/working/fix1_parallel_outputs.zip`.
 
 Ollama recovery command:
 
