@@ -1,0 +1,1 @@
+pair_id,dataset,query_index,question,ground_truth,model,backend,seed,set_type,passage_idxs,mean_query_sim,ccs,sim_gap,ccs_gap,overlap,answer,faithfulness_score,is_hallucination,nli_label,latency_s,error

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "context-coherence"
-version = "0.1.0"
+version = "0.2.0"
 description = "Context Coherence Score (CCS) — a generator-free retrieval-time diagnostic for RAG hallucination, with a coherence-gated retriever policy."
 readme = "README.md"
 license = { text = "MIT" }

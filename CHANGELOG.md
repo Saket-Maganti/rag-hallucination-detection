@@ -10,6 +10,18 @@ fixes / docs.
 - Temperature sensitivity (Ollama backend) — running in background
 - Confidence calibration — pending temperature
 - Tag `v2.1.0` to be cut once temperature + confidence land
+- NeurIPS senior-review revision started with Fix 1 causal intervention:
+  `experiments/fix_01_causal_matched_pairs.py`,
+  `experiments/fix_01_log.md`, `REVISION_SUMMARY.md`, and
+  `ragpaper/sections/revision/fix_01_causal_intervention.tex`.
+- `context-coherence` package version bumped to `0.2.0` for the revision
+  artifact line while leaving the released API intact.
+- Added runnable senior-review revision scaffolds for Fixes 2-11, including
+  optional provider wrappers, a zero-cost RAGAS-style judge path, and
+  second-NLI scoring wrappers.
+- Added `REVISION_RUNBOOK.md` with execution commands, sequencing, zero-dollar
+  platform guidance, and runtime estimates for M4 Air and free hosted GPU
+  notebooks.
 
 ## [2.0.0] — 2026-04-25
 

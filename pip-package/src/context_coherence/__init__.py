@@ -27,7 +27,7 @@ embedders are pluggable. Install with `pip install context-coherence`.
 from .core import ccs, ccs_from_embeddings, ccs_from_texts
 from .gate import CCSGate
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __all__ = [
     "ccs",
     "ccs_from_embeddings",
