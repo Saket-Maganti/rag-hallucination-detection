@@ -201,25 +201,37 @@ def run(dataset: str, n_queries: int, backend: str, model: str,
     pipe.llm = _make_llm(backend, model)
     embedder = pipe.embeddings
 
-    # Build a LARGE off-topic pool ONCE: pull top-50 chunks for every
-    # 5th query and dedup by page_content. This gives us a broad pool
-    # of ~200-500 chunks to draw sim-matched passages from.
-    print(f"[Causal/{dataset}] building off-topic pool …")
+    # Build an off-topic pool ONCE: pull top-20 chunks for ~30 sample
+    # queries and dedup by content. This typically yields 100-400 unique
+    # chunks. Reduced from top_k=50 × 100 queries (which was way overkill
+    # and slow on Kaggle).
+    pool_query_step = max(1, len(qa) // 30)
+    pool_query_indices = list(range(0, len(qa), pool_query_step))[:30]
+    print(f"[Causal/{dataset}] building off-topic pool from "
+          f"{len(pool_query_indices)} queries × top-20 …", flush=True)
     original_k = pipe.top_k
-    pipe.top_k = 50
+    pipe.top_k = 20
     try:
         pool_seen = set()
         large_pool: List[Any] = []
-        for q_idx in range(0, len(qa), 5):
+        for i, q_idx in enumerate(pool_query_indices):
             try:
                 pool_chunk, _ = pipe.retrieve_with_scores(qa[q_idx]["question"])
-            except Exception:
+            except Exception as exc:
+                print(f"[Causal/{dataset}]   pool query {i} err: {exc}",
+                      flush=True)
                 continue
+            new = 0
             for d in pool_chunk:
                 k = d.page_content[:200]
                 if k in pool_seen: continue
-                pool_seen.add(k); large_pool.append(d)
-        print(f"[Causal/{dataset}] pool size = {len(large_pool)}")
+                pool_seen.add(k); large_pool.append(d); new += 1
+            if (i + 1) % 5 == 0:
+                print(f"[Causal/{dataset}]   pool: {i+1}/{len(pool_query_indices)} "
+                      f"queries, {len(large_pool)} unique chunks so far",
+                      flush=True)
+        print(f"[Causal/{dataset}] FINAL pool size = {len(large_pool)} "
+              "unique chunks", flush=True)
     finally:
         pipe.top_k = original_k
 
@@ -269,8 +281,9 @@ def run(dataset: str, n_queries: int, backend: str, model: str,
                     "match_diff":       diag["match_diff"],
                 })
             n_processed += 1
-            if n_processed % 10 == 0:
-                print(f"  [Causal/{dataset}] {n_processed}/{n_queries} done")
+            if n_processed % 5 == 0 or n_processed <= 3:
+                print(f"  [Causal/{dataset}] {n_processed}/{n_queries} done",
+                      flush=True)
         except Exception as exc:
             print(f"[Causal] err: {exc}")
             n_skipped += 1
