@@ -254,14 +254,19 @@ notebook already includes this fix.
 Python environment:
 
 ```bash
+cd /Users/saketmaganti/claudeprojs/rag-hallucination-detection
 python3 -m venv .venv-revision
 source .venv-revision/bin/activate
 python3 -m pip install -U pip
-python3 -m pip install -r requirements.txt
+if [ -f requirements.txt ]; then python3 -m pip install -r requirements.txt; fi
 python3 -m pip install -e pip-package
 python3 -m pip install scipy pandas numpy scikit-learn matplotlib seaborn
 python3 -m pip install sentence-transformers transformers torch datasets
 ```
+
+On Kaggle, always `cd /kaggle/working/rag-hallucination-detection` before
+running dependency or experiment cells. The Session 1 notebook does this
+explicitly after the latest patch.
 
 API keys:
 
