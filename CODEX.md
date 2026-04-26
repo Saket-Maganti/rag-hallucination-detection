@@ -23,6 +23,10 @@ Most robust Session 1 entry point:
 - `scripts/kaggle_session1_fresh.sh`
 - `scripts/kaggle_ollama_guard.sh`
 
+The Session 1 script prints timestamped sections and 60-second heartbeats for
+long jobs. Heartbeats include elapsed time, CSV row count, expected row count,
+and the last few Ollama log lines.
+
 Primary trackers:
 
 - `REVISION_SUMMARY.md`

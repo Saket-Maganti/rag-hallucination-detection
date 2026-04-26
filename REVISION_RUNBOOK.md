@@ -82,6 +82,11 @@ cd rag-hallucination-detection
 bash scripts/kaggle_session1_fresh.sh
 ```
 
+This runner prints timestamped section headers and a heartbeat every 60 seconds
+for long jobs, including elapsed time, current CSV row count, expected row
+count, and the last few Ollama log lines. If there is no heartbeat for several
+minutes, the Kaggle kernel itself is likely stalled.
+
 If Ollama fails with `Connection refused`, run:
 
 ```bash

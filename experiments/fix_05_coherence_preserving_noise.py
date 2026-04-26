@@ -133,7 +133,7 @@ def run(args: argparse.Namespace) -> pd.DataFrame:
 
         if i % args.save_every == 0:
             pd.DataFrame(rows).to_csv(OUT_DATA / "per_query_partial.csv", index=False)
-            print(f"[Fix05] {i}/{len(qa_use)} queries")
+            print(f"[Fix05] {i}/{len(qa_use)} queries rows={len(rows)}", flush=True)
     return pd.DataFrame(rows)
 
 
