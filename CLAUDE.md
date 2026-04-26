@@ -15,7 +15,8 @@ Default branch: `main`
 **Phase 1 (8-item) — COMPLETE.** All reviewer-facing experiments ran.
 **Phase 2 (10-item) — 10/10 RUN.** Frontier-scale landed 2026-04-25: SQuAD/Llama-3.3-70B paradox = +0.100 (exact match to 7B), GPT-OSS-120B = +0.030. **Kills "small-model artifact" critique.** All 12/12 paper tables now filled.
 **Phase 3 (pre-submission polish) — DONE except OpenReview click.** All scripts shipped, all figures built, lint clean, Zenodo DOI **`10.5281/zenodo.19757291`** minted and wired into paper + CITATION.bib + submission YAML. Only remaining Phase 3 item: the user manually clicking through the OpenReview submission form (script-friendly checklist at `submission/openreview_checklist.md`).
-**Phase 5 (project hardening) — FULLY COMPLETE (all 6 lanes).** All TIER 1 + TIER 2 + TIER 2.5 done. Released artifacts: HF Dataset live at `saketmgnt/context-coherence-bench`, Zenodo DOI `10.5281/zenodo.19757291`, pip wheel built, Colab tutorial, LangChain integration, Docker + CI + Makefile + 30 tests passing.
+**Phase 7 (NeurIPS rigor upgrades) — CODE SHIPPED, RUNS PENDING.** All 9 scripts addressing the 6 reviewer-style critiques are written, syntax-clean, and on origin/main. User runs them on preferred hardware (local Mac / Groq / Kaggle). See "Phase 7" runbook below.
+**Phase 5 (project hardening) — FULLY COMPLETE.** All TIER 1 + TIER 2 + TIER 2.5 done. Released artifacts: HF Dataset live at `saketmgnt/context-coherence-bench`, Zenodo DOI `10.5281/zenodo.19757291`, pip wheel built, Colab tutorial, LangChain integration, Docker + CI + Makefile + 30 tests passing.
 
 **Phase 5 ablation findings (committed to results/):**
 - Cross-encoder: paradox reranker-agnostic across MiniLM-L-6 / L-12 / BAAI bge (SQuAD: 0.071-0.113; PubMedQA: 0.046-0.052)
@@ -522,6 +523,132 @@ The script validates working tree is clean, asserts required artifacts exist, bu
 - `space/`, `leaderboard/` — Gradio apps
 - `scripts/`, `experiments/`, `src/` — reproducibility code
 - `CLAUDE.md`, `README.md` — operator notes
+
+## Phase 7 — NeurIPS rigor upgrades (post-review hardening)
+
+External reviewer-style critique flagged 6 weaknesses for top-tier
+acceptance. Phase 7 ships code for all 6 (no runs yet — user runs them
+on their preferred hardware).
+
+| # | Reviewer concern | Phase 7 response | Script |
+|---|---|---|---|
+| 7.1 | Causality not established (correlational only) | Synthetic causal experiment: matched-similarity sets that vary only in coherence | `experiments/run_synthetic_causal.py` |
+| 7.2a | Missing baseline: MMR diversification | MMR head-to-head (5 conditions: baseline / v1 / v2 / mmr_05 / mmr_07) | `experiments/run_mmr_baseline.py` + `src/mmr_retriever.py` |
+| 7.2b | Missing baseline: CRAG | CRAG head-to-head (4 conditions: baseline / v1 / v2 / crag) | `experiments/run_crag_baseline.py` (uses existing `src/crag_retriever.py`) |
+| 7.3 | n=30 too small | Scale to n=300 on headline cells with 95% CIs + paired Wilcoxon | `experiments/run_scaled_headline.py` |
+| 7.4 | CCS heuristic, why mean−std? | Validate CCS vs 5 alternative metrics (entropy, MMR diversity, graph connectivity, etc.) — pure analysis, no LLM calls | `experiments/run_ccs_alternatives.py` |
+| 7.6 | NLI-only | Single-author validation: stratified 100-sample JSONL + agreement analyser (Cohen's kappa vs NLI) | `experiments/build_human_eval_samples.py` + `experiments/analyze_human_eval.py` |
+| 7.7 | No failure analysis | Typology of HCPC-v2 misses (type-A/B/C, top-20 ranked by faith drop) | `experiments/build_failure_typology.py` |
+
+### Phase 7 execution runbook (~3 days, $0)
+
+```bash
+# ─── Wave 1: instant analyses (~5 min, no LLM calls) ───────────────
+python3 experiments/run_ccs_alternatives.py             # ~30 s, pure pandas
+python3 experiments/build_failure_typology.py --top 20  # ~10 s, pure pandas
+python3 experiments/build_human_eval_samples.py --n 100 # ~5 s, sampling only
+
+# ─── Wave 2: medium experiments (~2-3 hr local Mac OR ~30 min Groq) ──
+# Synthetic causal — the biggest reviewer fix
+nohup python3 -u experiments/run_synthetic_causal.py \
+    --datasets squad pubmedqa --n 100 --backend ollama --model mistral \
+    > logs/synthetic_causal.log 2>&1 &
+# OR via Groq (~10 min if budget available):
+#   GROQ_API_KEY=... python3 experiments/run_synthetic_causal.py \
+#       --backend groq --model llama-3.3-70b --n 100
+
+# MMR head-to-head
+nohup python3 -u experiments/run_mmr_baseline.py \
+    --datasets squad pubmedqa --n 30 --backend ollama --model mistral \
+    > logs/mmr_baseline.log 2>&1 &
+
+# CRAG head-to-head
+nohup python3 -u experiments/run_crag_baseline.py \
+    --datasets squad pubmedqa --n 30 --backend ollama --model mistral \
+    > logs/crag_baseline.log 2>&1 &
+
+# Or run all three serially overnight on Mac:
+#   for s in synthetic_causal mmr_baseline crag_baseline; do
+#     python3 experiments/run_${s}.py --datasets squad pubmedqa
+#   done
+
+# ─── Wave 3: long compute (~6-8 hr local Mac, OVERNIGHT) ───────────
+# Scale n=30 → n=300 — addresses the most damaging reviewer critique
+nohup python3 -u experiments/run_scaled_headline.py \
+    --datasets squad pubmedqa --n 300 --backend ollama --model mistral \
+    > logs/scaled_headline.log 2>&1 &
+# Survives terminal close (nohup); does NOT survive sleep — keep Mac awake
+# (System Settings → Battery → Prevent automatic sleeping when display off)
+
+# ─── Wave 4: human eval (single-rater, ~3 hr manual) ──────────────
+# After Wave 1 has produced samples.jsonl:
+# 1. Open results/human_eval/samples.csv in a spreadsheet
+# 2. For each row, fill in human_label (faithful / hallucinated)
+#    and human_faith (1 / 0)
+# 3. Save as samples_rated.csv → convert back to JSONL or update samples.jsonl
+# 4. Compute agreement:
+python3 experiments/analyze_human_eval.py \
+    --rated_jsonl results/human_eval/samples_rated.jsonl
+# Output: results/human_eval/agreement.csv + agreement_report.md
+
+# ─── Wave 5: aggregate + paper updates (~1 day, manual) ────────────
+# After all Wave 1-4 complete:
+python3 scripts/build_results_summary.py  # refresh results/all_results_summary.csv
+# Update paper sections with new numbers/tables (~1 day writing)
+```
+
+### Kaggle fast-path (for 7.1 / 7.2a / 7.2b)
+
+If Groq daily budget is fresh, run via Groq for 10× speedup:
+
+```bash
+export GROQ_API_KEY=<rotated-token>
+# 7.1 synthetic causal — ~10 min on Groq
+python3 experiments/run_synthetic_causal.py --backend groq \
+    --model llama-3.3-70b --datasets squad pubmedqa --n 100
+
+# 7.2a MMR baseline — ~10 min on Groq
+python3 experiments/run_mmr_baseline.py --backend groq \
+    --model llama-3.3-70b --datasets squad pubmedqa --n 30
+
+# 7.2b CRAG baseline — ~10 min on Groq
+python3 experiments/run_crag_baseline.py --backend groq \
+    --model llama-3.3-70b --datasets squad pubmedqa --n 30
+
+# 7.3 scaled headline — possible but burns daily budget; better local
+```
+
+For Kaggle: same `kaggle_frontier_scale.py` template adapted to call
+each script. The Groq daily token budget is the bottleneck (100k/day);
+each Phase-7 run uses ~30k-50k tokens, so 1-2 runs per day on free tier.
+
+### Files added in Phase 7
+
+| File | Purpose |
+|---|---|
+| `experiments/run_synthetic_causal.py` | Causal experiment (7.1) |
+| `experiments/run_ccs_alternatives.py` | CCS metric validation (7.4) |
+| `experiments/run_mmr_baseline.py` | MMR head-to-head (7.2a) |
+| `experiments/run_crag_baseline.py` | CRAG head-to-head (7.2b) |
+| `experiments/run_scaled_headline.py` | n=300 scaling (7.3) |
+| `experiments/build_human_eval_samples.py` | Human-eval sampling (7.6) |
+| `experiments/analyze_human_eval.py` | Human-eval agreement analyser (7.6) |
+| `experiments/build_failure_typology.py` | HCPC-v2 failure typology (7.7) |
+| `src/mmr_retriever.py` | MMRRetriever (LangChain-compatible) |
+
+### Expected outcome after running all 7
+
+| Reviewer concern | Before Phase 7 | After Phase 7 |
+|---|---|---|
+| Causality | correlational only | paired Wilcoxon p-value on matched-sim/varying-coherence pairs |
+| Baselines | RAPTOR only | RAPTOR + MMR (×2 λ) + CRAG (+ optional Self-RAG) |
+| n=30 too small | 30 per cell | 300 per headline cell with 95% CI |
+| CCS heuristic | unjustified | ranked among 6 alternatives by Spearman ρ |
+| Limited generalisation | already in limitations | strengthen with synthetic-result framing |
+| NLI-only | NLI-only | NLI + single-rater agreement (Cohen's kappa) |
+
+Reviewer score projection: **7.8/10 → 8.5-9.0/10** if Wave 1+2+3 land
+with the predicted directions.
 
 ## Phase 5 — final-mile project hardening (post-paper)
 
