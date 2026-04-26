@@ -67,6 +67,36 @@ Session 1 fresh Kaggle notebook:
 It runs Fix 1 generation/analyze, Fix 5, and Fix 11, then writes
 `/kaggle/working/revision_session1_outputs.zip`.
 
+Most robust Session 1 path: run the all-in-one script from one Kaggle cell:
+
+```bash
+%%bash
+set -euo pipefail
+cd /kaggle/working
+if [ ! -d rag-hallucination-detection/.git ]; then
+  git clone --branch main https://github.com/Saket-Maganti/rag-hallucination-detection.git
+else
+  git -C rag-hallucination-detection pull --ff-only origin main
+fi
+cd rag-hallucination-detection
+bash scripts/kaggle_session1_fresh.sh
+```
+
+If Ollama fails with `Connection refused`, run:
+
+```bash
+%%bash
+set -euo pipefail
+cd /kaggle/working/rag-hallucination-detection
+git pull --ff-only origin main
+bash scripts/kaggle_ollama_guard.sh mistral
+tail -n 80 /kaggle/working/ollama.log || true
+ollama list
+```
+
+Then rerun only the failed experiment cell. The guard restarts an unresponsive
+Ollama process and verifies `/api/tags` before generation starts.
+
 ### Does Not Need Hosted GPU
 
 Run these on the M4 Air:
@@ -249,10 +279,10 @@ ollama pull mistral
 ollama serve
 ```
 
-Kaggle Ollama setup note: if the Ollama install cell fails with
-`requires zstd for extraction`, run `apt-get update -y && apt-get install -y
-zstd` before `curl -fsSL https://ollama.com/install.sh | sh`. The Session 1
-notebook already includes this fix.
+Kaggle Ollama setup note: use `bash scripts/kaggle_ollama_guard.sh mistral`.
+It installs `zstd` if needed, starts or restarts Ollama, verifies the local
+API, and pulls Mistral. If the install cell fails with `requires zstd for
+extraction`, the guard handles it.
 
 Python environment:
 

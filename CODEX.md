@@ -18,6 +18,11 @@ Main GPU notebook:
 
 - `notebooks/revision_session1_kaggle_fresh.ipynb`
 
+Most robust Session 1 entry point:
+
+- `scripts/kaggle_session1_fresh.sh`
+- `scripts/kaggle_ollama_guard.sh`
+
 Primary trackers:
 
 - `REVISION_SUMMARY.md`
@@ -178,6 +183,33 @@ Kaggle settings:
 - Accelerator: GPU
 - Use the fresh notebook, not the older patched notebook.
 
+Best current run command in a fresh Kaggle cell:
+
+```bash
+%%bash
+set -euo pipefail
+cd /kaggle/working
+if [ ! -d rag-hallucination-detection/.git ]; then
+  git clone --branch main https://github.com/Saket-Maganti/rag-hallucination-detection.git
+else
+  git -C rag-hallucination-detection pull --ff-only origin main
+fi
+cd rag-hallucination-detection
+bash scripts/kaggle_session1_fresh.sh
+```
+
+Ollama recovery command:
+
+```bash
+%%bash
+set -euo pipefail
+cd /kaggle/working/rag-hallucination-detection
+git pull --ff-only origin main
+bash scripts/kaggle_ollama_guard.sh mistral
+tail -n 80 /kaggle/working/ollama.log || true
+ollama list
+```
+
 ### Session 2 - Free GPU
 
 Run Fix 2 headline cell:
@@ -312,4 +344,3 @@ Then copy/unzip the outputs into the local repo and update:
 
 Do not report smoke-test outputs in the paper. Only report preregistered full
 runs or explicitly label smaller runs as smoke/debug runs.
-
