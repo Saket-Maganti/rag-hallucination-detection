@@ -95,8 +95,8 @@ def _cell_run_script(name: str, datasets: str, n: int, model: str) -> dict:
         f"'--backend', 'groq', '--model', '{model}', "
         f"'--datasets'] + {datasets!r}.split() + ["
         f"'--n', '{n}'])\n"
-        "print(f'=== {} done in {{:.1f}} min ==='.format("
-        f"'{name}', (time.time() - t0) / 60))\n"
+        f"print('=== {name} done in {{:.1f}} min ==='.format("
+        "(time.time() - t0) / 60))\n"
     ))
 
 
