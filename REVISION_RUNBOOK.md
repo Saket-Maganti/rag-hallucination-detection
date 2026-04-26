@@ -246,6 +246,11 @@ ollama pull mistral
 ollama serve
 ```
 
+Kaggle Ollama setup note: if the Ollama install cell fails with
+`requires zstd for extraction`, run `apt-get update -y && apt-get install -y
+zstd` before `curl -fsSL https://ollama.com/install.sh | sh`. The Session 1
+notebook already includes this fix.
+
 Python environment:
 
 ```bash
