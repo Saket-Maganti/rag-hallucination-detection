@@ -212,7 +212,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", default="data/revision/fix_02/per_query.csv")
     parser.add_argument("--limit", type=int, default=None)
-    parser.add_argument("--second_nli_model", default="vectara/hallucination_evaluation_model")
+    parser.add_argument("--second_nli_model", default="roberta-large-mnli")
     parser.add_argument("--judge_backend", choices=["ollama", "together", "openai", "anthropic", "groq"], default="ollama")
     parser.add_argument("--judge_model", default="mistral")
     parser.add_argument("--skip_second_nli", action="store_true")

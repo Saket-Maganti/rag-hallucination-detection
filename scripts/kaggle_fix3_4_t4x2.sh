@@ -12,7 +12,7 @@ export PATH="/usr/local/bin:/usr/bin:/bin:${PATH}"
 FIX3_INPUT="${FIX3_INPUT:-data/revision/fix_02/per_query.csv}"
 FIX2_EXPECTED_ROWS="${FIX2_EXPECTED_ROWS:-7500}"
 FIX3_SAVE_EVERY="${FIX3_SAVE_EVERY:-25}"
-FIX3_SECOND_NLI_MODEL="${FIX3_SECOND_NLI_MODEL:-vectara/hallucination_evaluation_model}"
+FIX3_SECOND_NLI_MODEL="${FIX3_SECOND_NLI_MODEL:-roberta-large-mnli}"
 FIX3_LIMIT="${FIX3_LIMIT:-}"
 
 FIX4_DATASETS="${FIX4_DATASETS:-squad pubmedqa hotpotqa naturalqs triviaqa}"

@@ -1,9 +1,9 @@
 """
 Second automated faithfulness scorer for the revision.
 
-Primary model: `vectara/hallucination_evaluation_model`.  If that model is
-unavailable in the local environment, pass `--model roberta-large-mnli` to the
-Fix 3 script and this wrapper will use an MNLI zero-shot entailment proxy.
+Default model: `roberta-large-mnli`, used as an MNLI zero-shot entailment
+proxy. `vectara/hallucination_evaluation_model` is also supported when the
+runtime can load it without custom remote code.
 """
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ from transformers import pipeline
 
 
 class VectaraHEMScorer:
-    def __init__(self, model_name: str = "vectara/hallucination_evaluation_model"):
+    def __init__(self, model_name: str = "roberta-large-mnli"):
         self.model_name = model_name
         if torch.cuda.is_available():
             device: int | str = 0
@@ -33,13 +33,28 @@ class VectaraHEMScorer:
             )
         else:
             self.mode = "hem"
-            self.pipe = pipeline(
-                "text-classification",
-                model=model_name,
-                device=device,
-                truncation=True,
-                max_length=512,
-            )
+            try:
+                self.pipe = pipeline(
+                    "text-classification",
+                    model=model_name,
+                    device=device,
+                    truncation=True,
+                    max_length=512,
+                )
+            except Exception as exc:
+                fallback = "roberta-large-mnli"
+                print(
+                    "[HEM] Falling back to roberta-large-mnli because "
+                    f"{model_name} could not be loaded: {type(exc).__name__}: {exc}",
+                    flush=True,
+                )
+                self.model_name = fallback
+                self.mode = "mnli"
+                self.pipe = pipeline(
+                    "zero-shot-classification",
+                    model=fallback,
+                    device=device,
+                )
 
     def detect(self, answer: str, context: str, question: str = "") -> Dict[str, Any]:
         answer = (answer or "").strip()
