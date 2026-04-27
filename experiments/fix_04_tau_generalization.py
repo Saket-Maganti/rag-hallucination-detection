@@ -87,8 +87,9 @@ def run_dataset_tau(args: argparse.Namespace, dataset: str, tau: float,
                     "question": qa.get("question", ""),
                     "error": f"{type(exc).__name__}:{exc}",
                 })
-        if i % args.save_every == 0:
+        if i == 1 or i % args.save_every == 0 or i == len(qa_use):
             pd.DataFrame(rows).to_csv(OUT_DATA / f"{dataset}_tau{tau}_partial.csv", index=False)
+            print(f"[Fix04] {dataset} tau={tau}: {i}/{len(qa_use)} queries rows={len(rows)}")
     return rows
 
 

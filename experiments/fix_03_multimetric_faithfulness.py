@@ -77,7 +77,8 @@ def score_metrics(args: argparse.Namespace, df: pd.DataFrame) -> pd.DataFrame:
         df["faith_ragas"] = np.nan
         df["ragas_reason"] = ""
 
-    for i, row in df.iterrows():
+    total = len(df)
+    for pos, (i, row) in enumerate(df.iterrows(), start=1):
         if not args.skip_second_nli and pd.isna(row.get("faith_second_nli")):
             try:
                 out = scorer_nli.detect(row["answer"], row["context"], row.get("question", ""))
@@ -98,9 +99,9 @@ def score_metrics(args: argparse.Namespace, df: pd.DataFrame) -> pd.DataFrame:
             except Exception as exc:
                 df.at[i, "ragas_reason"] = f"err:{type(exc).__name__}:{exc}"
 
-        if (i + 1) % args.save_every == 0:
+        if pos == 1 or pos % args.save_every == 0 or pos == total:
             df.to_csv(OUT_DATA / "per_query_partial.csv", index=False)
-            print(f"[Fix03] scored {i + 1}/{len(df)} rows")
+            print(f"[Fix03] scored {pos}/{total} rows")
     return df
 
 

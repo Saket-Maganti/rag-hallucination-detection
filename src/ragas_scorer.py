@@ -11,6 +11,7 @@ this repo.
 from __future__ import annotations
 
 import json
+import os
 import re
 from typing import Any, Dict
 
@@ -68,6 +69,15 @@ class RagasScorer:
             return TogetherLLM(model=self.judge_model, temperature=self.temperature)
         from langchain_ollama import OllamaLLM
 
+        base_url = os.environ.get("OLLAMA_BASE_URL") or os.environ.get("OLLAMA_HOST")
+        if base_url and not base_url.startswith(("http://", "https://")):
+            base_url = f"http://{base_url}"
+        if base_url:
+            return OllamaLLM(
+                model=self.judge_model,
+                temperature=self.temperature,
+                base_url=base_url,
+            )
         return OllamaLLM(model=self.judge_model, temperature=self.temperature)
 
     def score(self, answer: str, context: str, question: str = "") -> Dict[str, Any]:
