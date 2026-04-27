@@ -242,6 +242,7 @@ import_fix2_outputs() {
   cd "${REPO_DIR}"
   section "Import partial Fix 2 outputs"
   local zip_path=""
+  local extracted_root=""
   local candidates=()
   if [ -n "${FIX2_REPAIR_ZIP:-}" ]; then
     candidates+=("${FIX2_REPAIR_ZIP}")
@@ -262,17 +263,37 @@ import_fix2_outputs() {
   done
 
   if [ -z "${zip_path}" ] && [ -d /kaggle/input ]; then
-    zip_path="$(find /kaggle/input /kaggle/working -maxdepth 4 -type f \( -iname '*fix2*.zip' -o -iname '*FIX2*.zip' \) | sort | head -n 1 || true)"
+    zip_path="$(find /kaggle/input /kaggle/working -maxdepth 10 -type f \( -iname '*fix2*.zip' -o -iname '*FIX2*.zip' \) | sort | head -n 1 || true)"
   fi
 
-  if [ -z "${zip_path}" ] || [ ! -f "${zip_path}" ]; then
-    log "ERROR: no partial Fix 2 zip found."
-    log "Upload or attach fix2_t4x2_outputs.zip, or set FIX2_REPAIR_ZIP=/path/to/zip."
-    exit 1
+  if [ -n "${zip_path}" ] && [ -f "${zip_path}" ]; then
+    log "importing ${zip_path}"
+    unzip -o -q "${zip_path}" -d "${REPO_DIR}"
+  else
+    extracted_root="$(find /kaggle/input /kaggle/working -maxdepth 12 -type d -path '*/data/revision/fix_02' | sort | head -n 1 || true)"
+    if [ -z "${extracted_root}" ] || [ ! -d "${extracted_root}" ]; then
+      log "ERROR: no partial Fix 2 zip or extracted data/revision/fix_02 folder found."
+      log "Upload or attach fix2_t4x2_outputs.zip, or set FIX2_REPAIR_ZIP=/path/to/zip."
+      exit 1
+    fi
+
+    log "importing extracted dataset from ${extracted_root}"
+    mkdir -p data/revision/fix_02 results/revision/fix_02 logs/revision "${LOG_DIR}"
+    cp -av "${extracted_root}/." data/revision/fix_02/
+
+    local extracted_base
+    extracted_base="$(cd "${extracted_root}/../../.." && pwd)"
+    if [ -d "${extracted_base}/results/revision/fix_02" ]; then
+      cp -av "${extracted_base}/results/revision/fix_02/." results/revision/fix_02/ || true
+    fi
+    if [ -d "${extracted_base}/logs/revision" ]; then
+      cp -av "${extracted_base}/logs/revision/." logs/revision/ || true
+    fi
+    if [ -d "${extracted_base}/kaggle/working/fix2_t4x2_logs" ]; then
+      cp -av "${extracted_base}/kaggle/working/fix2_t4x2_logs/." "${LOG_DIR}/" || true
+    fi
   fi
 
-  log "importing ${zip_path}"
-  unzip -o -q "${zip_path}" -d "${REPO_DIR}"
   find data/revision/fix_02 -maxdepth 1 -type f -name '*.csv' -print | sort
 }
 
