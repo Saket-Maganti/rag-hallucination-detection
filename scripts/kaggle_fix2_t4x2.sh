@@ -334,7 +334,9 @@ for path in paths:
     frames.append(df)
 
 merged = pd.concat(frames, ignore_index=True)
-dedupe_cols = ["dataset", "seed", "question", "condition"]
+dedupe_cols = ["dataset", "seed", "question", "ground_truth", "condition"]
+if "ground_truth" not in merged.columns:
+    dedupe_cols = ["dataset", "seed", "question", "condition"]
 before = len(merged)
 if set(dedupe_cols).issubset(merged.columns):
     merged = merged.drop_duplicates(dedupe_cols, keep="last").reset_index(drop=True)
