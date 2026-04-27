@@ -270,9 +270,18 @@ import_fix2_outputs() {
     log "importing ${zip_path}"
     unzip -o -q "${zip_path}" -d "${REPO_DIR}"
   else
-    extracted_root="$(find /kaggle/input /kaggle/working -maxdepth 12 -type d -path '*/data/revision/fix_02' | sort | head -n 1 || true)"
+    extracted_root="$(find /kaggle/input /kaggle/working -maxdepth 20 -type d -path '*/data/revision/fix_02' | sort | head -n 1 || true)"
+    if [ -z "${extracted_root}" ]; then
+      local partial_csv
+      partial_csv="$(find /kaggle/input /kaggle/working -maxdepth 20 -type f \( -name 'squad_seed43_partial_gpu0.csv' -o -name '*_partial_gpu*.csv' \) | sort | head -n 1 || true)"
+      if [ -n "${partial_csv}" ] && [ -f "${partial_csv}" ]; then
+        extracted_root="$(dirname "${partial_csv}")"
+      fi
+    fi
     if [ -z "${extracted_root}" ] || [ ! -d "${extracted_root}" ]; then
       log "ERROR: no partial Fix 2 zip or extracted data/revision/fix_02 folder found."
+      log "Nearby files under /kaggle/input:"
+      find /kaggle/input -maxdepth 12 -type f \( -iname '*.csv' -o -iname '*.zip' -o -iname '*.log' \) | head -n 80 || true
       log "Upload or attach fix2_t4x2_outputs.zip, or set FIX2_REPAIR_ZIP=/path/to/zip."
       exit 1
     fi
