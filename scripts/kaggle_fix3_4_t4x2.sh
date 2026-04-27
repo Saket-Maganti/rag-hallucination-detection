@@ -10,6 +10,7 @@ HEARTBEAT_SECONDS="${HEARTBEAT_SECONDS:-30}"
 export PATH="/usr/local/bin:/usr/bin:/bin:${PATH}"
 
 FIX3_INPUT="${FIX3_INPUT:-data/revision/fix_02/per_query.csv}"
+FIX2_EXPECTED_ROWS="${FIX2_EXPECTED_ROWS:-7500}"
 FIX3_SAVE_EVERY="${FIX3_SAVE_EVERY:-25}"
 FIX3_SECOND_NLI_MODEL="${FIX3_SECOND_NLI_MODEL:-vectara/hallucination_evaluation_model}"
 FIX3_LIMIT="${FIX3_LIMIT:-}"
@@ -188,41 +189,110 @@ watch_server() {
 
 import_fix2_if_needed() {
   cd "${REPO_DIR}"
+  section "Import Fix 2 outputs"
+  mkdir -p data/revision/fix_02 results/revision/fix_02
   if [ -s data/revision/fix_02/per_query.csv ]; then
     log "Fix 2 input already present: $(row_count data/revision/fix_02/per_query.csv) rows"
-    return
-  fi
+  else
+    local candidates=(
+      "/kaggle/working/AAA_FIX2_T4X2_OUTPUTS.zip"
+      "/kaggle/working/fix2_t4x2_outputs_FIXED.zip"
+      "/kaggle/working/fix2_t4x2_outputs.zip"
+      "/kaggle/working/rag-hallucination-detection/AAA_FIX2_T4X2_OUTPUTS.zip"
+      "/kaggle/working/rag-hallucination-detection/fix2_t4x2_outputs_FIXED.zip"
+      "/kaggle/working/rag-hallucination-detection/fix2_t4x2_outputs.zip"
+    )
 
-  section "Import Fix 2 outputs"
-  local candidates=(
-    "/kaggle/working/AAA_FIX2_T4X2_OUTPUTS.zip"
-    "/kaggle/working/fix2_t4x2_outputs.zip"
-    "/kaggle/working/rag-hallucination-detection/AAA_FIX2_T4X2_OUTPUTS.zip"
-    "/kaggle/working/rag-hallucination-detection/fix2_t4x2_outputs.zip"
-  )
-
-  local zip_path=""
-  for path in "${candidates[@]}"; do
-    if [ -s "${path}" ]; then
-      zip_path="${path}"
-      break
+    local zip_path=""
+    for path in "${candidates[@]}"; do
+      if [ -s "${path}" ]; then
+        zip_path="${path}"
+        break
+      fi
+    done
+    if [ -z "${zip_path}" ]; then
+      zip_path="$(
+        find /kaggle/input /kaggle/working -maxdepth 20 -type f \
+          \( -iname '*fix2*fixed*.zip' -o -iname '*fix2*.zip' -o -iname '*FIX2*.zip' \) \
+          2>/dev/null | sort | head -n 1 || true
+      )"
     fi
-  done
-  if [ -z "${zip_path}" ]; then
-    zip_path="$(find /kaggle/input /kaggle/working -maxdepth 5 \( -name '*FIX2*.zip' -o -name '*fix2*.zip' \) 2>/dev/null | head -n 1 || true)"
+
+    if [ -n "${zip_path}" ] && [ -s "${zip_path}" ]; then
+      log "using Fix 2 zip: ${zip_path}"
+      unzip -o -q "${zip_path}" 'data/revision/fix_02/*' 'results/revision/fix_02/*' || true
+    else
+      local extracted_root=""
+      extracted_root="$(find /kaggle/input /kaggle/working -maxdepth 20 -type d -path '*/data/revision/fix_02' | sort | head -n 1 || true)"
+      if [ -z "${extracted_root}" ]; then
+        local csv_hit
+        csv_hit="$(find /kaggle/input /kaggle/working -maxdepth 20 -type f \( -name 'per_query.csv' -o -name '*_partial_gpu*.csv' \) | grep '/fix_02/' | sort | head -n 1 || true)"
+        if [ -n "${csv_hit}" ] && [ -f "${csv_hit}" ]; then
+          extracted_root="$(dirname "${csv_hit}")"
+        fi
+      fi
+      if [ -z "${extracted_root}" ] || [ ! -d "${extracted_root}" ]; then
+        log "ERROR: Fix 2 output not found as a zip or extracted fix_02 folder."
+        log "Nearby /kaggle/input files:"
+        find /kaggle/input -maxdepth 12 -type f \( -iname '*.zip' -o -iname '*.csv' \) | head -n 100 || true
+        exit 1
+      fi
+      log "using extracted Fix 2 folder: ${extracted_root}"
+      cp -av "${extracted_root}/." data/revision/fix_02/
+      local extracted_base
+      extracted_base="$(cd "${extracted_root}/../../.." && pwd)"
+      if [ -d "${extracted_base}/results/revision/fix_02" ]; then
+        cp -av "${extracted_base}/results/revision/fix_02/." results/revision/fix_02/ || true
+      fi
+    fi
   fi
 
-  if [ -z "${zip_path}" ] || [ ! -s "${zip_path}" ]; then
-    log "ERROR: Fix 2 zip not found. Upload/attach fix2_t4x2_outputs.zip or run Fix 2 first."
-    exit 1
-  fi
+  python - "${FIX2_EXPECTED_ROWS}" <<'PYFIX2'
+from pathlib import Path
+import sys
 
-  log "using Fix 2 zip: ${zip_path}"
-  unzip -o "${zip_path}" 'data/revision/fix_02/*' 'results/revision/fix_02/*'
-  if [ ! -s data/revision/fix_02/per_query.csv ]; then
-    log "ERROR: Fix 2 zip did not contain data/revision/fix_02/per_query.csv"
-    exit 1
-  fi
+import pandas as pd
+
+from experiments.fix_02_scaled_headline_n500 import aggregate, write_columns
+from experiments.revision_utils import write_markdown_table
+
+expected = int(sys.argv[1])
+out_data = Path("data/revision/fix_02")
+out_results = Path("results/revision/fix_02")
+per_query = out_data / "per_query.csv"
+
+def count(path: Path) -> int:
+    if not path.exists() or path.stat().st_size == 0:
+        return 0
+    return len(pd.read_csv(path))
+
+rows = count(per_query)
+partials = sorted(out_data.glob("*_partial_gpu*.csv"))
+partial_rows = sum(count(path) for path in partials)
+if rows != expected and partial_rows == expected:
+    frames = [pd.read_csv(path) for path in partials]
+    merged = pd.concat(frames, ignore_index=True).drop(columns=["source_shard"], errors="ignore")
+    merged.to_csv(per_query, index=False)
+    write_columns()
+    summary, contrasts = aggregate(merged)
+    out_results.mkdir(parents=True, exist_ok=True)
+    summary.to_csv(out_results / "headline_table.csv", index=False)
+    contrasts.to_csv(out_results / "paired_contrasts.csv", index=False)
+    write_markdown_table(
+        out_results / "summary.md",
+        "Fix 2 - scaled headline n=500 x 5 seeds",
+        {"Headline Table": summary, "Paired Contrasts": contrasts},
+    )
+    rows = len(merged)
+    print(f"[Fix2 import] rebuilt per_query.csv from partials rows={rows}")
+
+if rows != expected:
+    raise SystemExit(
+        f"Fix 2 input has {rows} rows; expected {expected}. "
+        f"Partial rows={partial_rows}; files={[str(p) for p in partials]}"
+    )
+print(f"[Fix2 import] OK rows={rows}")
+PYFIX2
   log "Fix 2 imported: $(row_count data/revision/fix_02/per_query.csv) rows"
 }
 
@@ -305,6 +375,7 @@ run_fix4() {
       --model "${MODEL}" \
       --max_contexts "${FIX4_MAX_CONTEXTS}" \
       --save_every "${FIX4_SAVE_EVERY}" \
+      --resume_partial \
       2>&1 | tee logs/revision/fix_04_kaggle_t4x2.log
 }
 

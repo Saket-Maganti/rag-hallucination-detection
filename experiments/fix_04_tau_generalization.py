@@ -57,9 +57,26 @@ def run_dataset_tau(args: argparse.Namespace, dataset: str, tau: float,
     v1 = HCPCRetriever(pipeline=pipe, sim_threshold=0.50, ce_threshold=0.00, top_k=3)
     gate = CCSGateRetriever(pipeline=pipe, ccs_threshold=tau, top_k=3, fallback="hcpc_v1")
 
+    conditions = [("baseline", None), ("hcpc_v1", v1), ("ccs_gate", gate)]
+    partial_path = OUT_DATA / f"{dataset}_tau{tau}_partial.csv"
     rows: List[Dict[str, Any]] = []
+    completed_count = 0
+    if args.resume_partial and partial_path.exists() and partial_path.stat().st_size > 0:
+        partial = pd.read_csv(partial_path)
+        if not partial.empty:
+            rows = partial.to_dict("records")
+            completed_count = min(len(partial) // len(conditions), len(qa_use))
+            print(
+                f"[Fix04] resumed {dataset} tau={tau}: "
+                f"{completed_count}/{len(qa_use)} queries from {partial_path}"
+            )
+            if completed_count >= len(qa_use):
+                return rows
+
     for i, qa in enumerate(qa_use, start=1):
-        for condition, retriever in [("baseline", None), ("hcpc_v1", v1), ("ccs_gate", gate)]:
+        if i <= completed_count:
+            continue
+        for condition, retriever in conditions:
             try:
                 if retriever is None:
                     docs_set, _ = pipe.retrieve_with_scores(qa["question"])
@@ -88,7 +105,7 @@ def run_dataset_tau(args: argparse.Namespace, dataset: str, tau: float,
                     "error": f"{type(exc).__name__}:{exc}",
                 })
         if i == 1 or i % args.save_every == 0 or i == len(qa_use):
-            pd.DataFrame(rows).to_csv(OUT_DATA / f"{dataset}_tau{tau}_partial.csv", index=False)
+            pd.DataFrame(rows).to_csv(partial_path, index=False)
             print(f"[Fix04] {dataset} tau={tau}: {i}/{len(qa_use)} queries rows={len(rows)}")
     return rows
 
@@ -145,6 +162,7 @@ def main() -> None:
     parser.add_argument("--backend", choices=["ollama", "together", "openai", "anthropic", "groq"], default="ollama")
     parser.add_argument("--model", default="mistral")
     parser.add_argument("--save_every", type=int, default=25)
+    parser.add_argument("--resume_partial", action="store_true")
     args = parser.parse_args()
 
     ensure_dirs(OUT_DATA, OUT_RESULTS)
