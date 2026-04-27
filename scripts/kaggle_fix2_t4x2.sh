@@ -334,12 +334,6 @@ for path in paths:
     frames.append(df)
 
 merged = pd.concat(frames, ignore_index=True)
-dedupe_cols = ["dataset", "seed", "question", "ground_truth", "condition"]
-if "ground_truth" not in merged.columns:
-    dedupe_cols = ["dataset", "seed", "question", "condition"]
-before = len(merged)
-if set(dedupe_cols).issubset(merged.columns):
-    merged = merged.drop_duplicates(dedupe_cols, keep="last").reset_index(drop=True)
 merged = merged.drop(columns=["source_shard"], errors="ignore")
 merged.to_csv(out_data / "per_query.csv", index=False)
 write_columns()
@@ -352,7 +346,7 @@ write_markdown_table(
     "Fix 2 - scaled headline n=500 x 5 seeds",
     {"Headline Table": summary, "Paired Contrasts": contrasts},
 )
-print(f"[Fix02 merge] inputs={len(paths)} rows={len(merged)} dropped_duplicates={before - len(merged)}")
+print(f"[Fix02 merge] inputs={len(paths)} rows={len(merged)}")
 for path in paths:
     print(f"[Fix02 merge] {path} rows={len(pd.read_csv(path))}")
 PYMERGE
