@@ -238,6 +238,12 @@ None of the scientific claims depend on these specific choices.
 
 ## Paper-revision infrastructure 
 
+Current NeurIPS reviewer-fix status is tracked in [`fixes`](fixes),
+[`CODEX.md`](CODEX.md), and [`REVISION_SUMMARY.md`](REVISION_SUMMARY.md).
+As of the latest local handoff, Fixes 1, 2, 3, 4, 5, 9 (limited/no-control),
+and 11 have result artifacts; Fix 6 is the next GPU run; Fix 7 remains
+budget-blocked.
+
 The following experimental harnesses are built and committed. Items
 1-7 are the original revision plan; **item 8 was added in response to
 the Apr-2026 review** (multi-retriever ablation, the single critique

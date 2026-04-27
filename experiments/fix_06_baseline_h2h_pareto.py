@@ -82,6 +82,7 @@ def eval_selfrag(pipe: RAGPipeline, detector: HallucinationDetector, qa: dict,
 def run_dataset(args: argparse.Namespace, dataset: str, detector: HallucinationDetector) -> List[Dict[str, Any]]:
     docs, qa_pairs = load_dataset_by_name(dataset, max_papers=args.max_contexts)
     qa_use = qa_pairs[: min(args.n, len(qa_pairs))]
+    partial_path = OUT_DATA / f"per_query_{dataset}_partial.csv"
     pipe = RAGPipeline(
         chunk_size=1024,
         chunk_overlap=100,
@@ -116,7 +117,7 @@ def run_dataset(args: argparse.Namespace, dataset: str, detector: HallucinationD
         )
 
     rows: List[Dict[str, Any]] = []
-    for qa in qa_use:
+    for q_idx, qa in enumerate(qa_use, start=1):
         for name, retr in h2h.items():
             try:
                 row = eval_retriever(pipe, detector, qa, name, retr)
@@ -141,6 +142,9 @@ def run_dataset(args: argparse.Namespace, dataset: str, detector: HallucinationD
                 rows.append(row)
             except Exception as exc:
                 rows.append({"dataset": dataset, "condition": "selfrag", "question": qa.get("question", ""), "error": str(exc)})
+        if q_idx == 1 or q_idx % args.save_every == 0 or q_idx == len(qa_use):
+            pd.DataFrame(rows).to_csv(partial_path, index=False)
+            print(f"[Fix06] {dataset}: {q_idx}/{len(qa_use)} queries rows={len(rows)}")
     return rows
 
 
@@ -188,6 +192,7 @@ def main() -> None:
     parser.add_argument("--selfrag_model", default="selfrag/selfrag_llama2_7b")
     parser.add_argument("--selfrag_8bit", action="store_true")
     parser.add_argument("--selfrag_4bit", action="store_true")
+    parser.add_argument("--save_every", type=int, default=10)
     args = parser.parse_args()
 
     ensure_dirs(OUT_DATA, OUT_RESULTS)

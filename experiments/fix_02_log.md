@@ -1,6 +1,6 @@
 # Fix 2 Log - Headline-Cell Rigor Upgrade
 
-**Status:** code written, execution pending.  
+**Status:** complete; result generated and locally available.  
 **Weakness addressed:** W2, the original headline cell used only `n=30`.
 
 ## Hypothesis
@@ -45,6 +45,17 @@ python3 experiments/fix_02_scaled_headline_n500.py \
 - `results/revision/fix_02/headline_table.csv`
 - `results/revision/fix_02/paired_contrasts.csv`
 - `results/revision/fix_02/summary.md`
+
+## Result
+
+- Total rows: `7500`.
+- Baseline mean faithfulness: `0.660947`.
+- HCPC-v1 mean faithfulness: `0.650271`.
+- HCPC-v2 mean faithfulness: `0.661196`.
+- HCPC-v2 refine rate: `0.7048`.
+- Interpretation: HCPC-v1 is below baseline in the scaled headline run, while
+  HCPC-v2 recovers most of that loss and remains close to baseline. The old
+  `n=30` headline cell should be described as a pilot.
 
 ## Honest Interpretation Template
 

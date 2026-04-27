@@ -7,6 +7,20 @@ should be wired only after Fix 1 is known.
 
 For the high-level checklist and handoff decisions, see `CODEX.md`.
 
+Current result state:
+
+- Fix 1 is complete and H1 is unsupported.
+- Fix 2 is complete (`7500` rows).
+- Fix 3 is complete (`7500` rows), imported from the verified Kaggle T4 x2
+  package.
+- Fix 4 is complete (`7500` rows), imported from the same verified package.
+- Fix 5 is complete (`1591` rows).
+- Fix 9 has a limited local run: the no-control confidence association
+  survives, but the available CSV lacks the similarity/redundancy controls.
+- Fix 11 is complete (`300` rows).
+- Fix 6 is the next compute run. Use
+  `notebooks/revision_fix6_kaggle_t4x2_fresh.ipynb` on Kaggle T4 x2.
+
 All commands assume:
 
 ```bash
@@ -777,14 +791,16 @@ Estimated runtime:
 
 ## Suggested Execution Order
 
-1. Finish Fix 1 generation and analysis.
-2. If Fix 1 supports the causal claim, run Fix 2 and Fix 3 for the headline cell.
-3. Run Fix 4 and Fix 5 before rewriting the main results/discussion.
-4. Run Fix 6 for P1 reviewer confidence.
-5. Run Fix 9 when the confidence CSV is available.
-6. Integrate Fix 8 and Fix 10 language only after the empirical branch is known.
-7. Run Fix 11 if time remains or if RAPTOR criticism is still prominent.
-8. Mark Fix 7 as budget-blocked unless free 70B compute becomes available.
+1. Run Fix 6 no-Self-RAG on Kaggle T4 x2 and download/package immediately.
+2. Optionally run Fix 6 Self-RAG only after the smoke test passes.
+3. Decide whether to regenerate the confidence-calibration CSV with
+   `mean_retrieval_similarity` and `passage_redundancy`; otherwise report Fix 9
+   as suggestive only.
+4. Wire Fix 8 and Fix 10 into the paper because Fix 1's null result requires
+   scoped predictive/diagnostic language.
+5. Update paper tables and narrative for completed Fixes 1-5, 9, and 11, then
+   add Fix 6 when its package is downloaded and verified.
+6. Keep Fix 7 budget-blocked unless genuinely free 70B-capable compute appears.
 
 ## Fast Smoke Tests
 

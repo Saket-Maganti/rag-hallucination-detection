@@ -123,6 +123,74 @@ instability:
 
 This means the paper must downgrade causal/mechanistic language around CCS.
 
+### Completed Revision Outputs After Fix 1
+
+Fix 2 scaled headline run is complete locally:
+
+- `data/revision/fix_02/per_query.csv`
+- rows: `7500`
+- headline means: baseline `0.660947`, HCPC-v1 `0.650271`,
+  HCPC-v2 `0.661196`
+- `results/revision/fix_02/headline_table.csv`
+- `results/revision/fix_02/paired_contrasts.csv`
+
+Fix 3 multi-metric faithfulness is complete and was imported from the verified
+Kaggle T4 x2 package:
+
+- source package: `/Users/saketmaganti/Downloads/fix3_4_t4x2_outputs.zip`
+- `data/revision/fix_03/per_query.csv`
+- rows: `7500`
+- no missing metric scores and no scorer errors
+- `results/revision/fix_03/table1_multimetric.csv`
+- `results/revision/fix_03/metric_correlations.csv`
+- human-eval template rows: `99`
+- key result: DeBERTa agrees weakly with the alternate metrics; second NLI and
+  RAGAS agree more strongly (`Pearson r=0.674177`, `Spearman rho=0.651497`).
+
+Fix 4 tau-generalization matrix is complete and was imported from the same
+verified Kaggle package:
+
+- `data/revision/fix_04/per_query.csv`
+- rows: `7500`
+- `results/revision/fix_04/tau_summary.csv`
+- `results/revision/fix_04/tau_transfer_matrix.csv`
+- `results/revision/fix_04/generalization_flags.csv`
+- key limitation: diagonal-vs-offdiagonal generalization gaps must be flagged
+  for PubMedQA, NaturalQS, and SQuAD.
+
+Fix 5 coherence-preserving noise is complete locally/imported:
+
+- `data/revision/fix_05/per_query.csv`
+- rows: `1591`
+- `results/revision/fix_05/noise_summary.csv`
+- `results/revision/fix_05/slope_response.csv`
+
+Fix 9 partial correlation script has been run locally:
+
+- `data/revision/fix_09/input_copy.csv`
+- rows: `60`
+- `results/revision/fix_09/partial_correlations.csv`
+- result: no-control association survives (`Pearson r=0.360029`,
+  `p=0.004720`, `Spearman rho=0.481454`)
+- limitation: the available confidence CSV lacks `mean_retrieval_similarity`
+  and `passage_redundancy`, so this does not fully resolve the confounding
+  weakness. Treat the confidence result as suggestive unless a later input
+  includes the required controls.
+
+Fix 11 RAPTOR full table is complete locally/imported:
+
+- `data/revision/fix_11/per_query.csv`
+- rows: `300`
+- `results/revision/fix_11/raptor_full_table.csv`
+- `results/revision/fix_11/raptor_indexing_costs.csv`
+
+Fix 6 is now the main remaining compute run. A fresh Kaggle T4 x2 notebook and
+runner have been added:
+
+- `notebooks/revision_fix6_kaggle_t4x2_fresh.ipynb`
+- `scripts/kaggle_fix6_t4x2.sh`
+- `scripts/kaggle_stream_fix6_t4x2.py`
+
 ### Validation
 
 Last local validation passed:
@@ -378,37 +446,37 @@ Status meanings:
 | Fix | Weakness | Current Status | Next Action |
 | --- | --- | --- | --- |
 | 1 | Causal-vs-correlational CCS claim | Done, H1 unsupported | Downgrade causal/mechanistic language. |
-| 2 | Headline-cell sample size | Code | Run Session 2. |
-| 3 | Single faithfulness metric | Code | Run after Fix 2; add human labels if possible. |
-| 4 | Tau-tuning leakage | Code | Run Session 3. |
-| 5 | SQuAD noise slope | Code | Run split Kaggle Fix 5 + Fix 11 notebook. |
-| 6 | Baseline head-to-head | Code | Run Session 3 without Self-RAG first. |
+| 2 | Headline-cell sample size | Done | Report scaled n=500 x 5 result; replace n=30 pilot wording. |
+| 3 | Single faithfulness metric | Done, auto metrics | Optional: add human labels for the 99-item template. |
+| 4 | Tau-tuning leakage | Done | Flag diagonal-vs-offdiagonal gaps for PubMedQA, NaturalQS, and SQuAD. |
+| 5 | SQuAD noise slope | Done | Integrate noise-slope result into robustness discussion. |
+| 6 | Baseline head-to-head | Code + Kaggle notebook ready | Run no-Self-RAG on Kaggle T4 x2; package/download immediately. |
 | 7 | Independent 70B reproduction | Budget-blocked | Disclose zero-dollar limitation; do not fake it. |
-| 8 | Info-theory overclaim | Code | Integrate after Fix 1 result. |
-| 9 | Self-confidence partial correlation | Code | Run locally when input CSV exists. |
-| 10 | Deployment scope | Code | Integrate after Fix 1 and long-form framing are known. |
-| 11 | RAPTOR full table | Code | Run split Kaggle Fix 5 + Fix 11 notebook. |
+| 8 | Info-theory overclaim | Paper patch pending integration | Integrate now; Fix 1 null makes this mandatory. |
+| 9 | Self-confidence partial correlation | Limited run complete | Report as suggestive unless controls are regenerated. |
+| 10 | Deployment scope | Paper patch pending integration | Integrate now; scope claims to short-answer extractive QA. |
+| 11 | RAPTOR full table | Done | Integrate RAPTOR full table and cost metrics. |
 
 ## Immediate Next Step
 
 Open this notebook in a fresh Kaggle T4 x2 session:
 
 ```text
-notebooks/revision_fix5_11_kaggle_t4x2.ipynb
+notebooks/revision_fix6_kaggle_t4x2_fresh.ipynb
 ```
 
-Run all cells top to bottom. When complete, download:
+Run setup, then the recommended no-Self-RAG Fix 6 path. It packages
+automatically after success. When complete, download:
 
 ```text
-/kaggle/working/fix5_11_t4x2_outputs.zip
+/kaggle/working/fix6_t4x2_outputs.zip
 ```
 
-Then copy/unzip the outputs into the local repo and update:
+After Fix 6, decide whether to attempt the optional Self-RAG smoke/full run.
+Then update:
 
 - `REVISION_SUMMARY.md`
-- `experiments/fix_01_log.md`
-- `experiments/fix_05_log.md`
-- `experiments/fix_11_log.md`
+- `experiments/fix_06_log.md`
 - the corresponding `ragpaper/sections/revision/*.tex` files
 
 ## Caution

@@ -22,6 +22,11 @@ fixes / docs.
 - Added `REVISION_RUNBOOK.md` with execution commands, sequencing, zero-dollar
   platform guidance, and runtime estimates for M4 Air and free hosted GPU
   notebooks.
+- Imported/verified senior-review results for Fixes 2, 3, 4, 5, 9, and 11;
+  added root-level `fixes` status ledger. Fix 9 is a limited no-control run
+  because the available confidence CSV lacks similarity/redundancy controls.
+- Added Fix 6 Kaggle T4 x2 notebook and runner scripts with no-Self-RAG,
+  Self-RAG smoke-test, optional full Self-RAG, and package stages.
 
 ## [2.0.0] — 2026-04-25
 

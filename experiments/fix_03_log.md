@@ -1,6 +1,6 @@
 # Fix 3 Log - Multi-Metric Faithfulness
 
-**Status:** code written, execution pending.  
+**Status:** complete for automated metrics; optional human annotation pending.  
 **Weakness addressed:** W3, reliance on a single DeBERTa NLI scorer.
 
 ## Protocol
@@ -54,3 +54,36 @@ python3 experiments/fix_03_multimetric_faithfulness.py \
 - `results/revision/fix_03/table1_multimetric.csv`
 - `results/revision/fix_03/metric_correlations.csv`
 - `results/revision/fix_03/human_eval_agreement.csv` after annotation
+
+## Result
+
+Source package:
+
+- `/Users/saketmaganti/Downloads/fix3_4_t4x2_outputs.zip`
+
+Verified output:
+
+- Total rows: `7500`.
+- Missing metric scores: `0`.
+- Scorer error rows: `0`.
+- Human-eval template size: `99`.
+
+Condition means:
+
+| condition | n | DeBERTa | second NLI | RAGAS |
+| --- | ---: | ---: | ---: | ---: |
+| baseline | 2500 | 0.660947 | 0.350109 | 0.729640 |
+| hcpc_v1 | 2500 | 0.650271 | 0.318418 | 0.590434 |
+| hcpc_v2 | 2500 | 0.661196 | 0.350878 | 0.727948 |
+
+Metric correlations:
+
+| metric pair | Pearson r | Spearman rho |
+| --- | ---: | ---: |
+| DeBERTa vs second NLI | 0.258666 | 0.265295 |
+| DeBERTa vs RAGAS | 0.181871 | 0.212055 |
+| second NLI vs RAGAS | 0.674177 | 0.651497 |
+
+Interpretation: DeBERTa has weak agreement with the alternate metrics, while
+second NLI and RAGAS agree more strongly. HCPC-v2 is close to baseline across
+all automated metrics; HCPC-v1 drops most sharply under RAGAS.

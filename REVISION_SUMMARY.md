@@ -13,16 +13,16 @@ Operational handoff, zero-dollar execution plan, and session checklist live in
 | # | Weakness | Fix | Status | Assessment |
 | --- | --- | --- | --- | --- |
 | 1 | Causal-vs-correlational CCS claim | Matched-similarity HIGH/LOW CCS intervention on SQuAD | Done | 200 matched pairs generated/scored. H1 not supported: HIGH-CCS mean faithfulness 0.636195 vs LOW-CCS 0.638587, HIGH-LOW -0.002392, Wilcoxon p=0.628268, bootstrap CI [-0.021651, 0.016819]. Causal language must be downgraded. |
-| 2 | Headline cell sample size too small | SQuAD/Mistral n=500 x 5 seeds | Code | Script/log/LaTeX written; execution pending. |
-| 3 | Single faithfulness metric | Add local RAGAS-style judge + second NLI + optional human eval | Code | Script/log/LaTeX plus scorer wrappers written; execution pending after Fix 2. Under zero-dollar mode, GPT-4o-mini/Claude judging is replaced by local judging plus human eval. |
-| 4 | Tau-tuning leakage | 5x5 tune-on/eval-on matrix | Code | Script/log/LaTeX written; execution pending. |
-| 5 | SQuAD noise-slope disclosure | Coherence-preserving same-topic noise injection | Code | Script/log/LaTeX written; execution pending. |
-| 6 | Baseline head-to-head weak | Self-RAG/CRAG/RAPTOR/HCPC table | Code | Script/log/LaTeX written; Self-RAG optional CUDA path included. |
+| 2 | Headline cell sample size too small | SQuAD/Mistral n=500 x 5 seeds | Done | 7500 rows. Baseline faithfulness 0.660947, HCPC-v1 0.650271, HCPC-v2 0.661196. The old n=30 headline should be treated as a pilot. |
+| 3 | Single faithfulness metric | Add local RAGAS-style judge + second NLI + optional human eval | Done | 7500 rows from verified Kaggle T4 x2 package. DeBERTa weakly agrees with alternate metrics; second NLI vs RAGAS has Pearson r=0.674177 and Spearman rho=0.651497. Human-eval template has 99 items. |
+| 4 | Tau-tuning leakage | 5x5 tune-on/eval-on matrix | Done | 7500 rows. Tau generalization is uneven; diagonal-vs-offdiagonal gaps must be flagged for PubMedQA, NaturalQS, and SQuAD. |
+| 5 | SQuAD noise-slope disclosure | Coherence-preserving same-topic noise injection | Done | 1591 rows. Coherent uninformative noise has smaller similarity slope than random noise, but still lowers faithfulness. |
+| 6 | Baseline head-to-head weak | Self-RAG/CRAG/RAPTOR/HCPC table | Pending compute | Fresh Kaggle T4 x2 notebook and runner are built for no-Self-RAG first, with optional Self-RAG smoke/full run. |
 | 7 | Single-backend 70B reliance | Together.ai Llama-3.3-70B reproduction | Budget-blocked | Script/log/LaTeX and Together wrapper written, but true 70B reproduction is not feasible under zero-dollar mode unless free 70B compute appears. |
-| 8 | Information-theory overclaim | Rename/reframe as consistency check | Code | Paper patch/log written; should be wired after Fix 1 result. |
-| 9 | Self-confidence confounding | Partial correlations controlling similarity/redundancy | Code | Script/log/LaTeX written; execution pending. |
-| 10 | Deployment scope oversold | Scope abstract and promote long-form non-result | Code | Paper patch/log written; wire after Fix 1 result. |
-| 11 | RAPTOR full table | Per-dataset/per-metric RAPTOR table | Code | Script/log/LaTeX written; execution pending. |
+| 8 | Information-theory overclaim | Rename/reframe as consistency check | Pending paper integration | Paper patch/log written. Fix 1 null result makes this mandatory. |
+| 9 | Self-confidence confounding | Partial correlations controlling similarity/redundancy | Limited run complete | Available CSV lacks similarity/redundancy controls, so only no-control association was computed: Pearson r=0.360029, p=0.004720; Spearman rho=0.481454. Treat confidence as suggestive unless controls are regenerated. |
+| 10 | Deployment scope oversold | Scope abstract and promote long-form non-result | Pending paper integration | Paper patch/log written; wire now and scope claims to short-answer extractive QA. |
+| 11 | RAPTOR full table | Per-dataset/per-metric RAPTOR table | Done | 300 rows. Full table includes faithfulness, hallucination rate, p50/p99 latency, dense indexing cost, RAPTOR tree cost, and index size. |
 
 ## Fix 1 Artifacts
 
@@ -35,7 +35,7 @@ Operational handoff, zero-dollar execution plan, and session checklist live in
 | `results/revision/fix_01/` | Construction diagnostics, paired Wilcoxon, bootstrap CIs, and summary once generated. |
 | `ragpaper/sections/revision/fix_01_causal_intervention.tex` | Paper-ready subsection with track-changes comments and pending result placeholders. |
 
-## Code Artifacts For Remaining Fixes
+## Code And Result Artifacts
 
 | Fix | Script / Patch | Log | Paper section |
 | --- | --- | --- | --- |
@@ -49,6 +49,17 @@ Operational handoff, zero-dollar execution plan, and session checklist live in
 | 9 | `experiments/fix_09_partial_correlations.py` | `experiments/fix_09_log.md` | `ragpaper/sections/revision/fix_09_partial_confidence.tex` |
 | 10 | paper-only | `experiments/fix_10_log.md` | `ragpaper/sections/revision/fix_10_scope_deployment.tex` |
 | 11 | `experiments/fix_11_raptor_full_table.py` | `experiments/fix_11_log.md` | `ragpaper/sections/revision/fix_11_raptor_full_table.tex` |
+
+Key completed result paths:
+
+| Fix | Main result files |
+| --- | --- |
+| 2 | `data/revision/fix_02/per_query.csv`; `results/revision/fix_02/headline_table.csv`; `results/revision/fix_02/paired_contrasts.csv` |
+| 3 | `data/revision/fix_03/per_query.csv`; `results/revision/fix_03/table1_multimetric.csv`; `results/revision/fix_03/metric_correlations.csv` |
+| 4 | `data/revision/fix_04/per_query.csv`; `results/revision/fix_04/tau_summary.csv`; `results/revision/fix_04/tau_transfer_matrix.csv`; `results/revision/fix_04/generalization_flags.csv` |
+| 5 | `data/revision/fix_05/per_query.csv`; `results/revision/fix_05/noise_summary.csv`; `results/revision/fix_05/slope_response.csv` |
+| 9 | `data/revision/fix_09/input_copy.csv`; `results/revision/fix_09/partial_correlations.csv` |
+| 11 | `data/revision/fix_11/per_query.csv`; `results/revision/fix_11/raptor_full_table.csv`; `results/revision/fix_11/raptor_indexing_costs.csv` |
 
 ## Decision Rule
 

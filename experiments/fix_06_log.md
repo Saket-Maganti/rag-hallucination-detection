@@ -1,6 +1,6 @@
 # Fix 6 Log - Proper Baseline Head-To-Head
 
-**Status:** code written, execution pending.  
+**Status:** runner/notebook ready; full result pending.  
 **Weakness addressed:** W6, RAPTOR/Self-RAG/CRAG comparison too thin.
 
 ## Protocol
@@ -41,3 +41,15 @@ python3 experiments/fix_06_baseline_h2h_pareto.py \
 - `data/revision/fix_06/per_query.csv`
 - `results/revision/fix_06/h2h_summary.csv`
 - `results/revision/fix_06/pareto_faithfulness_latency.pdf`
+
+## Current Execution Plan
+
+Fresh Kaggle T4 x2 notebook and wrappers have been added:
+
+- `notebooks/revision_fix6_kaggle_t4x2_fresh.ipynb`
+- `scripts/kaggle_fix6_t4x2.sh`
+- `scripts/kaggle_stream_fix6_t4x2.py`
+
+Run the no-Self-RAG path first and package/download immediately. Then attempt
+the Self-RAG smoke test and full Self-RAG run only if the smoke test passes.
+The experiment script now writes periodic partial CSVs via `--save_every`.
