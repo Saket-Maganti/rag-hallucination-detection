@@ -212,6 +212,10 @@ run_shard() {
   local tag="$3"
   shift 3
   local seeds=("$@")
+  local resume_args=()
+  if [ "${FIX2_RESUME_PARTIAL:-0}" = "1" ]; then
+    resume_args=(--resume_partial)
+  fi
 
   cd "${REPO_DIR}"
   section "Run Fix 2 ${tag} on GPU${gpu}: seeds ${seeds[*]}"
@@ -230,7 +234,46 @@ run_shard() {
       --max_contexts "${FIX2_MAX_CONTEXTS}" \
       --save_every "${FIX2_SAVE_EVERY}" \
       --output_tag "${tag}" \
+      "${resume_args[@]}" \
       2>&1 | tee "logs/revision/fix_02_${tag}_kaggle_t4x2.log"
+}
+
+import_fix2_outputs() {
+  cd "${REPO_DIR}"
+  section "Import partial Fix 2 outputs"
+  local zip_path=""
+  local candidates=()
+  if [ -n "${FIX2_REPAIR_ZIP:-}" ]; then
+    candidates+=("${FIX2_REPAIR_ZIP}")
+  fi
+  candidates+=(
+    "/kaggle/working/AAA_FIX2_T4X2_OUTPUTS.zip"
+    "/kaggle/working/fix2_t4x2_outputs.zip"
+    "/kaggle/working/OUTPUT_FIX2.zip"
+    "${REPO_DIR}/OUTPUT_FIX2.zip"
+    "${REPO_DIR}/fix2_t4x2_outputs.zip"
+  )
+
+  for candidate in "${candidates[@]}"; do
+    if [ -f "${candidate}" ]; then
+      zip_path="${candidate}"
+      break
+    fi
+  done
+
+  if [ -z "${zip_path}" ] && [ -d /kaggle/input ]; then
+    zip_path="$(find /kaggle/input /kaggle/working -maxdepth 4 -type f \( -iname '*fix2*.zip' -o -iname '*FIX2*.zip' \) | sort | head -n 1 || true)"
+  fi
+
+  if [ -z "${zip_path}" ] || [ ! -f "${zip_path}" ]; then
+    log "ERROR: no partial Fix 2 zip found."
+    log "Upload or attach fix2_t4x2_outputs.zip, or set FIX2_REPAIR_ZIP=/path/to/zip."
+    exit 1
+  fi
+
+  log "importing ${zip_path}"
+  unzip -o -q "${zip_path}" -d "${REPO_DIR}"
+  find data/revision/fix_02 -maxdepth 1 -type f -name '*.csv' -print | sort
 }
 
 merge_stage() {
@@ -249,17 +292,23 @@ out_results = Path("results/revision/fix_02")
 out_data.mkdir(parents=True, exist_ok=True)
 out_results.mkdir(parents=True, exist_ok=True)
 
-paths = sorted(out_data.glob("per_query_gpu*.csv"))
+partial_paths = sorted(out_data.glob("*_partial_gpu*.csv"))
+shard_paths = sorted(out_data.glob("per_query_gpu*.csv"))
+paths = partial_paths if partial_paths else shard_paths
 if not paths:
-    raise SystemExit("No Fix 2 shard CSVs found")
+    raise SystemExit("No Fix 2 shard or partial CSVs found")
 
 frames = []
 for path in paths:
     df = pd.read_csv(path)
-    df["source_shard"] = path.stem.replace("per_query_", "")
     frames.append(df)
 
 merged = pd.concat(frames, ignore_index=True)
+dedupe_cols = ["dataset", "seed", "question", "condition"]
+before = len(merged)
+if set(dedupe_cols).issubset(merged.columns):
+    merged = merged.drop_duplicates(dedupe_cols, keep="last").reset_index(drop=True)
+merged = merged.drop(columns=["source_shard"], errors="ignore")
 merged.to_csv(out_data / "per_query.csv", index=False)
 write_columns()
 
@@ -271,9 +320,9 @@ write_markdown_table(
     "Fix 2 - scaled headline n=500 x 5 seeds",
     {"Headline Table": summary, "Paired Contrasts": contrasts},
 )
-print(f"[Fix02 merge] shards={len(paths)} rows={len(merged)}")
+print(f"[Fix02 merge] inputs={len(paths)} rows={len(merged)} dropped_duplicates={before - len(merged)}")
 for path in paths:
-    print(f"[Fix02 merge] {path}")
+    print(f"[Fix02 merge] {path} rows={len(pd.read_csv(path))}")
 PYMERGE
 }
 
@@ -355,6 +404,23 @@ parallel_stage() {
   log "Fix 2 completed with ${final_rows} rows"
 }
 
+repair_stage() {
+  setup_stage
+  import_fix2_outputs
+
+  FIX2_RESUME_PARTIAL=1 run_shard 0 11434 gpu0 43
+  merge_stage
+
+  local final_rows
+  final_rows=$(row_count data/revision/fix_02/per_query.csv)
+  if [ "${final_rows}" -lt "${FIX2_EXPECTED_ROWS}" ]; then
+    log "ERROR: repaired final row count ${final_rows} below expected ${FIX2_EXPECTED_ROWS}"
+    exit 1
+  fi
+  log "Fix 2 repaired with ${final_rows} rows"
+  package_stage
+}
+
 status_stage() {
   repo_setup
   section "Status"
@@ -387,6 +453,9 @@ case "${STAGE}" in
     repo_setup
     merge_stage
     ;;
+  repair)
+    repair_stage
+    ;;
   status)
     status_stage
     ;;
@@ -399,7 +468,7 @@ case "${STAGE}" in
     package_stage
     ;;
   *)
-    echo "Usage: $0 {setup|parallel|merge|status|package|full}" >&2
+    echo "Usage: $0 {setup|parallel|merge|repair|status|package|full}" >&2
     exit 2
     ;;
 esac

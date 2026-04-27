@@ -133,7 +133,35 @@ def run_seed(args: argparse.Namespace, dataset: str, seed: int,
     ]
 
     rows: List[Dict[str, Any]] = []
+    completed_items: set[tuple[str, str]] = set()
+    partial_path = tagged_path(OUT_DATA / f"{dataset}_seed{seed}_partial.csv", args.output_tag)
+    if args.resume_partial and partial_path.exists() and partial_path.stat().st_size > 0:
+        partial = pd.read_csv(partial_path)
+        if not partial.empty:
+            rows = partial.to_dict("records")
+            partial_for_resume = partial.copy()
+            partial_for_resume["_resume_question"] = partial_for_resume["question"].fillna("").astype(str)
+            if "ground_truth" in partial_for_resume.columns:
+                partial_for_resume["_resume_ground_truth"] = (
+                    partial_for_resume["ground_truth"].fillna("").astype(str)
+                )
+            else:
+                partial_for_resume["_resume_ground_truth"] = ""
+            complete = (
+                partial_for_resume.groupby(["_resume_question", "_resume_ground_truth"])["condition"]
+                .nunique()
+                .loc[lambda s: s >= len(conditions)]
+            )
+            completed_items = set(complete.index)
+            print(
+                f"[Fix02] resumed {dataset}/seed{seed}: "
+                f"{len(completed_items)}/{len(qa_use)} complete queries from {partial_path}"
+            )
+
     for i, qa in enumerate(qa_use, start=1):
+        qa_identity = (str(qa.get("question", "")), str(qa.get("ground_truth", "")))
+        if qa_identity in completed_items:
+            continue
         for label, retriever in conditions:
             try:
                 row = evaluate_condition(pipe, detector, qa, label, retriever)
@@ -157,7 +185,7 @@ def run_seed(args: argparse.Namespace, dataset: str, seed: int,
                 })
         if i == 1 or i % args.save_every == 0 or i == len(qa_use):
             pd.DataFrame(rows).to_csv(
-                tagged_path(OUT_DATA / f"{dataset}_seed{seed}_partial.csv", args.output_tag),
+                partial_path,
                 index=False,
             )
             print(f"[Fix02] {dataset}/seed{seed}: {i}/{len(qa_use)} queries")
@@ -261,6 +289,11 @@ def main() -> None:
         "--output_tag",
         default="",
         help="Optional shard tag; writes per_query_<tag>.csv and summary_<tag>.md.",
+    )
+    parser.add_argument(
+        "--resume_partial",
+        action="store_true",
+        help="Resume from the tagged per-seed partial CSV when it exists.",
     )
     args = parser.parse_args()
 

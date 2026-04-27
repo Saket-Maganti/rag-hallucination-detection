@@ -69,7 +69,7 @@ def main() -> int:
     parser.add_argument(
         "--stage",
         default="parallel",
-        choices=["setup", "parallel", "merge", "status", "package", "full"],
+        choices=["setup", "parallel", "merge", "repair", "status", "package", "full"],
     )
     parser.add_argument("--heartbeat", type=int, default=30)
     args = parser.parse_args()
