@@ -40,9 +40,10 @@ and the last few Ollama log lines.
 
 Primary trackers:
 
-- `REVISION_SUMMARY.md`
-- `REVISION_RUNBOOK.md`
-- `experiments/fix_01_log.md`
+- [`README.md`](README.md) — the canonical revision book (single source of truth)
+- [`status.md`](status.md) — per-fix scoreboard (was `REVISION_SUMMARY.md`)
+- [`runbook.md`](runbook.md) — execution commands (was `REVISION_RUNBOOK.md`)
+- [`../../experiments/fix_01_log.md`](../../experiments/fix_01_log.md) — Fix 1 pre-registration + result
 
 ## Hard Constraints We Decided
 
@@ -475,8 +476,8 @@ automatically after success. When complete, download:
 After Fix 6, decide whether to attempt the optional Self-RAG smoke/full run.
 Then update:
 
-- `REVISION_SUMMARY.md`
-- `experiments/fix_06_log.md`
+- [`status.md`](status.md)
+- [`../../experiments/fix_06_log.md`](../../experiments/fix_06_log.md)
 - the corresponding `ragpaper/sections/revision/*.tex` files
 
 ## Caution

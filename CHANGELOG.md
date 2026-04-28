@@ -27,6 +27,15 @@ fixes / docs.
   because the available confidence CSV lacks similarity/redundancy controls.
 - Added Fix 6 Kaggle T4 x2 notebook and runner scripts with no-Self-RAG,
   Self-RAG smoke-test, optional full Self-RAG, and package stages.
+- Consolidated revision documentation into `docs/revision/`:
+  `CODEX.md` -> `docs/revision/codex.md`,
+  `REVISION_SUMMARY.md` -> `docs/revision/status.md`,
+  `REVISION_RUNBOOK.md` -> `docs/revision/runbook.md`,
+  and the working-notes file `fixes` -> `docs/revision/snapshot.md`.
+  Added `docs/revision/README.md` as the comprehensive single-source
+  revision book (overview, scoreboard, per-fix deep dives, paper
+  implications, what's remaining, file map). README.md updated to point
+  at the new entry point.
 
 ## [2.0.0] — 2026-04-25
 

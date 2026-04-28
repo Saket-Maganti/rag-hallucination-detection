@@ -5,8 +5,10 @@ Fix 1 was the active gating item. Its preregistered causal intervention has now
 completed and did not support the causal H1, so downstream paper language must
 downgrade mechanistic/causal claims to diagnostic or predictive claims.
 
-Operational handoff, zero-dollar execution plan, and session checklist live in
-`CODEX.md`.
+The canonical revision book is [`README.md`](README.md) (full info in
+one document). Operational handoff, zero-dollar execution plan, and
+session checklist live in [`codex.md`](codex.md). Exact execution
+commands and runtime estimates live in [`runbook.md`](runbook.md).
 
 ## Current State
 
@@ -28,7 +30,7 @@ Operational handoff, zero-dollar execution plan, and session checklist live in
 
 | Path | Purpose |
 | --- | --- |
-| `REVISION_RUNBOOK.md` | Exact execution commands, sequencing, zero-dollar platform guidance, and runtime estimates for local/free-GPU runs. |
+| [`runbook.md`](runbook.md) | Exact execution commands, sequencing, zero-dollar platform guidance, and runtime estimates for local/free-GPU runs. |
 | `experiments/fix_01_log.md` | Pre-registration, Claude handoff audit, protocol, and honest-reporting commitment. |
 | `experiments/fix_01_causal_matched_pairs.py` | Construction, generation, and analysis harness for matched-similarity HIGH/LOW CCS triples. |
 | `data/revision/fix_01/` | Per-query and matched-pair CSV outputs with column documentation. |

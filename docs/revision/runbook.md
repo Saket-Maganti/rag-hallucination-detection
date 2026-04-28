@@ -5,7 +5,9 @@ Fix 1 is the gating experiment: run and interpret it before making any causal
 claim in the paper. The remaining scripts are ready, but their paper language
 should be wired only after Fix 1 is known.
 
-For the high-level checklist and handoff decisions, see `CODEX.md`.
+For the high-level checklist and handoff decisions, see
+[`codex.md`](codex.md). For the comprehensive revision book see
+[`README.md`](README.md).
 
 Current result state:
 
@@ -513,7 +515,7 @@ Estimated runtime:
 | Free A100, if you happen to get one | 20-45 minutes |
 
 Decision rule: keep causal/mechanistic framing only if Wilcoxon, bootstrap CI,
-and effect-size criteria in `REVISION_SUMMARY.md` pass. If not, downgrade.
+and effect-size criteria in [`status.md`](status.md) pass. If not, downgrade.
 
 ## Fix 2: Headline-Cell Rigor Upgrade
 

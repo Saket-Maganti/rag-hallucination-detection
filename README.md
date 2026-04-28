@@ -236,13 +236,22 @@ None of the scientific claims depend on these specific choices.
 
 ---
 
-## Paper-revision infrastructure 
+## Paper-revision infrastructure
 
-Current NeurIPS reviewer-fix status is tracked in [`fixes`](fixes),
-[`CODEX.md`](CODEX.md), and [`REVISION_SUMMARY.md`](REVISION_SUMMARY.md).
-As of the latest local handoff, Fixes 1, 2, 3, 4, 5, 9 (limited/no-control),
-and 11 have result artifacts; Fix 6 is the next GPU run; Fix 7 remains
-budget-blocked.
+The full NeurIPS senior-reviewer revision is documented in a single
+navigable book at [`docs/revision/README.md`](docs/revision/README.md).
+That file consolidates the original reviewer prompt, the operating
+constraints, per-fix deep dives with results, paper implications,
+what's remaining, and the file map.
+
+Status snapshot: Fixes 1, 2, 3, 4, 5, 9 (limited / no-control), and 11
+have result artifacts on origin/main; Fix 6 is scaffolded for Kaggle
+T4 x 2 with execution pending; Fix 7 remains budget-blocked under the
+zero-dollar constraint; Fix 8 and Fix 10 are paper-only edits pending
+integration. Operational deep links: [`docs/revision/codex.md`](docs/revision/codex.md),
+[`docs/revision/status.md`](docs/revision/status.md),
+[`docs/revision/runbook.md`](docs/revision/runbook.md),
+[`docs/revision/snapshot.md`](docs/revision/snapshot.md).
 
 The following experimental harnesses are built and committed. Items
 1-7 are the original revision plan; **item 8 was added in response to
