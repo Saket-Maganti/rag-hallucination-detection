@@ -10,7 +10,162 @@ Main repo: `/Users/saketmaganti/claudeprojs/rag-hallucination-detection`
 Remote: `https://github.com/Saket-Maganti/rag-hallucination-detection`
 Default branch: `main`
 
-## Current status (2026-04-25, end-of-day)
+## Current status (2026-04-28) — senior-reviewer revision complete, paper revamp pending
+
+### Read this first
+
+The single source of truth for the senior-reviewer revision is now
+[`docs/revision/README.md`](docs/revision/README.md). That book
+consolidates the 10-weakness reviewer prompt, operating constraints,
+per-fix deep dives with results, paper implications, what's remaining,
+hardware recipes, and the file map. **Read it before doing anything
+revision-adjacent.**
+
+Sibling operational docs (moved from repo root into `docs/revision/`):
+
+- [`docs/revision/status.md`](docs/revision/status.md) — per-fix scoreboard (was `REVISION_SUMMARY.md`)
+- [`docs/revision/codex.md`](docs/revision/codex.md) — operational handoff (was `CODEX.md`)
+- [`docs/revision/runbook.md`](docs/revision/runbook.md) — exact execution commands (was `REVISION_RUNBOOK.md`)
+- [`docs/revision/snapshot.md`](docs/revision/snapshot.md) — reviewer-fix snapshot (was `fixes`)
+
+### Recent commits on origin/main
+
+- `7f1aca5e` — Consolidate revision docs into docs/revision/ and add comprehensive book
+- `0fb01489` — Import Fix 2/3/4/5/9/11 outputs and stage Fix 6 Kaggle scaffolding
+
+### Senior-reviewer revision (Fix 1 through Fix 11)
+
+A pre-registered revision cycle scoping 11 fixes (W1–W10 plus an extra
+W11 RAPTOR-row spinoff) into runnable scripts, paper sections, and
+zero-dollar execution paths.
+
+| Fix | Weakness | Status | Headline result |
+| --- | --- | --- | --- |
+| 1   | W1 causal vs correlational | **Done — null** | H1 unsupported. n=200 matched pairs, paired Wilcoxon p=0.628, Cohen's d_z=−0.017, 95% CI [−0.022, +0.017]. HIGH-CCS hallucinates more (16.5%) than LOW-CCS (9.0%). Causal/mechanistic language must be downgraded throughout. |
+| 2   | W2 n=30 too small | **Done — paradox collapsed at scale** | n=500 × 5 seeds. Per-seed paradox (baseline−v1) magnitudes 0.006–0.020; only seed 44 (1/5) reaches p<0.05. v2−v1 recovery 3/5 seeds significant. Pooled bootstrap CI on paradox includes zero. |
+| 3   | W3 single metric | **Done — DeBERTa is outlier** | n=7500 rescored across DeBERTa + roberta-large-mnli + RAGAS-judge (Mistral). Paradox magnitudes: 0.011 / 0.032 / 0.140. Pairwise Pearson r=0.18 (DeBERTa↔RAGAS), 0.26 (DeBERTa↔mnli), 0.67 (mnli↔RAGAS). 99-item human-eval template staged. |
+| 4   | W4 τ leakage | **Done — flag SQuAD/PubMedQA/NaturalQS** | 5×5 τ matrix, n=7500. Diagonal-vs-offdiagonal recovery gap > 0.03 for SQuAD, PubMedQA, NaturalQS. TriviaQA/HotpotQA do not flag. |
+| 5   | W5 noise slope | **Done — coherence carries signal beyond similarity** | n=1591. Random-noise faith slope −0.069; coherence-preserving slope −0.043 at matched rate. Coherence is not equivalent to similarity loss. |
+| 6   | W6 baselines | **Code, Kaggle scaffolding ready** | `notebooks/revision_fix6_kaggle_t4x2_fresh.ipynb`. Estimated 6.5–8.5 h on Kaggle T4×2 for all 3 stages (no-Self-RAG / Self-RAG smoke / full Self-RAG). |
+| 7   | W7 70B reproduction | **Budget-blocked** | No genuinely free 70B-capable endpoint under zero-dollar mode. Disclose, do not fake. |
+| 8   | W8 theory overclaim | **Paper-pending** | Mandatory rewrite because Fix 1 was null. Retitle §5 "Information-Theoretic Consistency Check"; rewrite Proposition 1 + Theorem 1 as sufficient/structural. |
+| 9   | W9 confidence confounding | **Done — limited, suggestive only** | n=60, no-control Pearson r=0.36 p=0.005. Mean retrieval similarity + passage redundancy controls absent in input CSV; partial-correlation question unanswered. |
+| 10  | W10 deployment scope | **Paper-pending** | Mandatory rewrite because Fix 1 + Fix 2 collapsed the headline. Abstract verb downgrade ("drives" → "predicts"), explicit scope to short-answer extractive QA. |
+| 11  | W6 spinoff RAPTOR | **Done** | n=300 (3 datasets × 100). SQuAD 0.789 faith / 5% halluc / 1.19 s p50; PubMedQA 0.560 / 29% / 3.90 s; HotpotQA 0.617 / 21% / 1.97 s. RAPTOR tree-build 100–161 s. |
+
+### What this means for the paper (post-revision)
+
+The original v2.0 paper's three-pillar pitch — phenomenon, mechanism,
+intervention — has serious problems after the revision:
+
+1. **Phenomenon (Fix 2):** SQuAD/Mistral paradox magnitude collapsed
+   from 0.069 (n=30) to per-seed magnitudes 0.006–0.020 (n=500 × 5),
+   with only 1/5 seeds reaching p<0.05.
+2. **Mechanism (Fix 1):** at fixed mean per-passage similarity, CCS
+   does **not** predict faithfulness. The matched-similarity
+   intervention designed to test the causal claim returned a null with
+   the *wrong* sign on hallucination rate.
+3. **Intervention (Fix 3):** HCPC-v2 recovery is metric-dependent.
+   Under DeBERTa it is small (0.011); under RAGAS it is large (0.140);
+   under mnli it is intermediate (0.032). The metrics correlate weakly
+   (DeBERTa↔RAGAS Pearson r=0.18).
+
+**Surviving positive results:**
+
+- Fix 5: coherence-preserving uninformative noise produces a smaller
+  faith drop (−0.043) than random off-topic noise (−0.069) at matched
+  rate. Coherence carries signal independent of similarity.
+- Frontier-scale (pre-revision): paradox magnitude reproduced at
+  Llama-3.3-70B via Groq; not independently re-run because Fix 7 is
+  budget-blocked.
+- Multi-retriever ablation (pre-revision): paradox survives on
+  PubMedQA with stronger embedders.
+- Methodology contributions: pre-registered protocols, n=7500
+  multi-metric triangulation, full RAPTOR cost analysis, released
+  benchmark with DOI.
+
+### NeurIPS submission strategy
+
+**Recommended: NeurIPS Datasets & Benchmarks track (≈ 45–60% odds).**
+The released benchmark (HF Dataset + Zenodo DOI), pre-registered
+evaluations at scale, multi-metric triangulation, and the full Pareto
+baseline comparison are all core D&B contributions. The benchmark
+already exists at `saketmgnt/context-coherence-bench`.
+
+NeurIPS main track (≈ 25–35% odds) is reachable but uphill. Reviewers
+will see the Fix 1 null and Fix 2 collapse and ask "what's the
+contribution?" The revamped pitch must lead with **Fix 3 metric
+divergence** as the primary methodology contribution, not the
+refinement-paradox phenomenon claim.
+
+Safety nets: ACL / EMNLP / NAACL Findings track, TMLR (no novelty
+bar; rigor bar — this work clears it comfortably), NeurIPS workshop
+(80%+ odds at the right workshop).
+
+**Mandatory remaining work before any NeurIPS submission:**
+
+1. **Run Fix 6 on Kaggle T4×2** (≈ 3 h for the no-Self-RAG stage,
+   packages immediately to `AAA_FIX6_T4X2_OUTPUTS.zip`). Use
+   `notebooks/revision_fix6_kaggle_t4x2_fresh.ipynb`.
+2. **Fix 8 paper integration**: theory.tex retitle + theorem rewrite.
+3. **Fix 10 paper integration**: abstract scope rewrite + §8 long-form
+   subsection promotion.
+4. **Wire all completed-fix tables into `ragpaper/main.tex`** via
+   `\input{sections/revision/...}`. None are currently inputted.
+5. **Cascading edits in `abstract.tex` / `paradox.tex` /
+   `discussion.tex`** to match Fix 1 null + Fix 2 collapse.
+
+**Strongly recommended (each adds 5–10% acceptance probability):**
+
+6. Collect two-rater human-eval labels for the 99-item template at
+   `data/revision/fix_03/human_eval_template.jsonl`. Yields Cohen's κ
+   between raters and Spearman ρ vs each automated metric.
+7. Regenerate `experiments/run_confidence_calibration.py` output with
+   `mean_retrieval_similarity` + `passage_redundancy` columns, then
+   re-run Fix 9 to actually answer W9 with full controls.
+8. Optional second matched-similarity intervention on PubMedQA or with
+   a second generator (Llama-3 / Qwen instead of Mistral) — even a
+   second null gives the causal-claim disclosure two-domain coverage.
+
+### Hard operational constraints (do not violate without explicit user approval)
+
+- **Zero-dollar mode.** No paid APIs, no Groq quota burn, no
+  Together.ai paid calls, no OpenAI / Anthropic judge calls, no paid
+  Colab. Free Kaggle / Colab GPU, M4 Air local Ollama, free local
+  Hugging Face models, and manual human annotation only.
+- **Pre-registered statistics.** Sample sizes, seed counts, paired
+  Wilcoxon tests, 10000-resample bootstrap CIs, Wilson CIs for binary
+  rates, and effect sizes are recorded in each fix's pre-registration
+  log *before* execution.
+- **Honest reporting of null results.** Fix 1 null and Fix 2 collapse
+  must propagate through paper language, not be papered over. If a
+  later experiment changes a current finding, document the change
+  explicitly with both numbers.
+- **τ frozen** at the original SQuAD-50-held-out values everywhere
+  *except* inside Fix 4 (the cross-dataset τ-generalization
+  experiment).
+- **Released artifacts intact.** `pip install context-coherence`,
+  the LangChain integration, the HF dataset, the Zenodo DOI
+  (`10.5281/zenodo.19757291`), and the HF Space all remain runnable
+  and unchanged. The pip package version was bumped to `0.2.0` for
+  the revision artifact line; the released API is unchanged.
+
+### File map (revision-specific)
+
+- **Per-fix scripts:** `experiments/fix_NN_*.py`
+- **Per-fix pre-registration + post-run log:** `experiments/fix_NN_log.md`
+- **Per-fix raw data:** `data/revision/fix_NN/`
+- **Per-fix aggregated results:** `results/revision/fix_NN/`
+- **Per-fix paper sections:** `ragpaper/sections/revision/fix_NN_*.tex`
+- **Shared revision helpers:** `experiments/revision_utils.py`
+- **Provider wrappers (zero-dollar-aware):** `src/{ragas_scorer,vectara_hem_scorer,together_llm,openai_llm,anthropic_llm,groq_llm}.py`
+- **Fix 6 Kaggle scaffolding:** `notebooks/revision_fix6_kaggle_t4x2_fresh.ipynb`, `scripts/kaggle_fix6_t4x2.sh`, `scripts/kaggle_stream_fix6_t4x2.py`
+- **Other Kaggle launchers:** `scripts/kaggle_fix{1,2,3_4,5_11}_t4x2.sh` and matching `scripts/kaggle_stream_fix*_t4x2.py`
+- **Logs:** `logs/revision/*.log` (gitignored, produced by Kaggle/local runs)
+
+---
+
+## Historical status (pre-revision, 2026-04-25 end-of-day)
 
 **Phase 1 (8-item) — COMPLETE.** All reviewer-facing experiments ran.
 **Phase 2 (10-item) — 10/10 RUN.** Frontier-scale landed 2026-04-25: SQuAD/Llama-3.3-70B paradox = +0.100 (exact match to 7B), GPT-OSS-120B = +0.030. **Kills "small-model artifact" critique.** All 12/12 paper tables now filled.
