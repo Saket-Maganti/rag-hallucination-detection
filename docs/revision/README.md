@@ -96,7 +96,7 @@ infeasible under current constraints.
 | 3   | W3 (single metric) | **Done** | DeBERTa is the outlier; RAGAS shows much larger paradox; pairwise r=0.18–0.67. |
 | 4   | W4 (τ leakage) | **Done** | SQuAD/PubMedQA/NaturalQS flag for §8; TriviaQA/HotpotQA do not. |
 | 5   | W5 (noise slope) | **Done** | Coherence-preserving slope (−0.043) < random (−0.069) at matched rate. |
-| 6   | W6 (baselines) | **Code, scaffolded** | Kaggle T4×2 notebook + runner ready; no-Self-RAG run pending. |
+| 6   | W6 (baselines) | **Partial run complete** | No-Self-RAG Kaggle T4×2 package imported: 1,200 rows for HCPC-v2, CRAG, and RAPTOR-2L on SQuAD/HotpotQA; Self-RAG remains optional. |
 | 7   | W7 (70B repro) | **Blocked** | No genuinely free 70B endpoint; will disclose, not fake. |
 | 8   | W8 (theory) | **Paper-pending** | Theory.tex retitle + theorem rewrite mandatory because Fix 1 was null. |
 | 9   | W9 (confidence) | **Done, limited** | No-control r=0.36 p=0.005; controls absent in input; report as suggestive. |
@@ -360,14 +360,30 @@ hallucination, and a Pareto plot.
 **Kaggle scaffolding:** [`notebooks/revision_fix6_kaggle_t4x2_fresh.ipynb`](../../notebooks/revision_fix6_kaggle_t4x2_fresh.ipynb), [`scripts/kaggle_fix6_t4x2.sh`](../../scripts/kaggle_fix6_t4x2.sh), [`scripts/kaggle_stream_fix6_t4x2.py`](../../scripts/kaggle_stream_fix6_t4x2.py)
 **Paper section:** `ragpaper/sections/revision/fix_06_baselines.tex`
 
-**Status:** **CODE ONLY** — execution pending.
+**Status:** **PARTIAL RUN COMPLETE** — no-Self-RAG package imported
+2026-04-28; Self-RAG smoke/full run still optional.
 
-**Plan:** run the no-Self-RAG path first on Kaggle T4×2
-(~2–4 h), download the package, then optionally attempt the Self-RAG
-smoke test, then optionally the full Self-RAG run if smoke passes.
+**Imported package:** `/Users/saketmaganti/Downloads/AAA_FIX6_T4X2_OUTPUTS.zip`.
+The package contains HCPC-v2, CRAG, and RAPTOR-2L only. It does not contain
+Self-RAG smoke or full-run outputs.
 
-**Conditions to compare:** baseline, HCPC-v1, HCPC-v2, CRAG, RAPTOR,
-(optional) Self-RAG.
+**Result (`results/revision/fix_06/h2h_summary.csv`):**
+
+| dataset | method | n | faithfulness | hallucination | mean latency ms | p99 latency ms |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| HotpotQA | CRAG | 200 | 0.6427 | 0.105 | 1940.65 | 4254.93 |
+| HotpotQA | HCPC-v2 | 200 | 0.6334 | 0.125 | 2288.94 | 5545.37 |
+| HotpotQA | RAPTOR-2L | 200 | 0.6308 | 0.130 | 2413.58 | 5074.35 |
+| SQuAD | CRAG | 200 | 0.6982 | 0.120 | 1440.49 | 5110.87 |
+| SQuAD | HCPC-v2 | 200 | 0.7084 | 0.125 | 1719.94 | 5399.50 |
+| SQuAD | RAPTOR-2L | 200 | 0.7100 | 0.125 | 1713.70 | 4441.73 |
+
+**Interpretation:** on SQuAD, HCPC-v2 and RAPTOR-2L are effectively tied; on
+HotpotQA, CRAG is the strongest no-Self-RAG baseline. The paper should not
+claim HCPC-v2 uniformly dominates stronger baselines.
+
+**Conditions compared so far:** HCPC-v2, CRAG, RAPTOR-2L.
+**Remaining optional condition:** Self-RAG.
 **Datasets:** SQuAD, HotpotQA.
 **Sample:** n=200 per (dataset, condition).
 **Reports:** faithfulness, hallucination rate, p50/p99 latency,
@@ -539,8 +555,11 @@ Bringing the per-fix results together, the paper changes are:
 7. **§Confidence calibration.** Downgrade to "suggestive" and note
    the missing-control limitation. Forced by Fix 9.
 8. **§Head-to-head (headtohead.tex / appendix).** Add full RAPTOR
-   table with indexing cost and p99 latency. Sourced by Fix 11. Add
-   Fix 6 head-to-head once it runs.
+   table with indexing cost and p99 latency (Fix 11) and the no-Self-
+   RAG head-to-head with Pareto figure (Fix 6:
+   `ragpaper/figures/fix_06_pareto_faith_latency.pdf`). Honest framing:
+   HCPC-v2 is competitive on SQuAD short-answer and dominated by CRAG
+   on HotpotQA multi-hop.
 9. **§Causal intervention (new subsection).** Add the matched-
    similarity HIGH/LOW CCS experiment with the null result, the
    paired-difference figure, and the concession paragraph. Sourced
@@ -561,13 +580,6 @@ Ordered by priority and dependency.
   robustness, discussion).
 - Wire all completed-fix tables into `ragpaper/main.tex` via
   `\input{sections/revision/fix_NN_*}`.
-
-**Must do (single Kaggle compute slot):**
-- Run Fix 6 no-Self-RAG path on a fresh Kaggle T4×2 session via
-  `notebooks/revision_fix6_kaggle_t4x2_fresh.ipynb`.
-- Download `/kaggle/working/fix6_t4x2_outputs.zip`, import locally,
-  update `experiments/fix_06_log.md` with the result block, wire the
-  table into `ragpaper/sections/revision/fix_06_baselines.tex`.
 
 **Optional:**
 - Collect two-rater labels for `data/revision/fix_03/human_eval_template.jsonl`
@@ -694,7 +706,7 @@ notebooks/
 ├── revision_fix2_kaggle_t4x2_fresh.ipynb    ← Fix 2 (already used)
 ├── revision_fix3_4_kaggle_t4x2_fresh.ipynb  ← Fix 3 + Fix 4 (already used)
 ├── revision_fix5_11_kaggle_t4x2_fresh.ipynb ← Fix 5 + Fix 11 (already used)
-└── revision_fix6_kaggle_t4x2_fresh.ipynb    ← Fix 6 (PENDING execution)
+└── revision_fix6_kaggle_t4x2_fresh.ipynb    ← Fix 6 (no-Self-RAG used; Self-RAG optional)
 
 scripts/
 ├── kaggle_session1_fresh.sh

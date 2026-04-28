@@ -19,7 +19,7 @@ commands and runtime estimates live in [`runbook.md`](runbook.md).
 | 3 | Single faithfulness metric | Add local RAGAS-style judge + second NLI + optional human eval | Done | 7500 rows from verified Kaggle T4 x2 package. DeBERTa weakly agrees with alternate metrics; second NLI vs RAGAS has Pearson r=0.674177 and Spearman rho=0.651497. Human-eval template has 99 items. |
 | 4 | Tau-tuning leakage | 5x5 tune-on/eval-on matrix | Done | 7500 rows. Tau generalization is uneven; diagonal-vs-offdiagonal gaps must be flagged for PubMedQA, NaturalQS, and SQuAD. |
 | 5 | SQuAD noise-slope disclosure | Coherence-preserving same-topic noise injection | Done | 1591 rows. Coherent uninformative noise has smaller similarity slope than random noise, but still lowers faithfulness. |
-| 6 | Baseline head-to-head weak | Self-RAG/CRAG/RAPTOR/HCPC table | Pending compute | Fresh Kaggle T4 x2 notebook and runner are built for no-Self-RAG first, with optional Self-RAG smoke/full run. |
+| 6 | Baseline head-to-head weak | Self-RAG/CRAG/RAPTOR/HCPC table | Done (no-Self-RAG path) | 1200 evaluations on Kaggle T4 x2 (CRAG / HCPC-v2 / RAPTOR-2L on SQuAD + HotpotQA, n=200). HCPC-v2 does not dominate: on SQuAD all three are within 1.2 pp on faithfulness; on HotpotQA CRAG wins outright (faith 0.6427, halluc 10.5%, fastest at 1940 ms). RAPTOR build cost 17-22x dense. Self-RAG smoke/full optional follow-up. |
 | 7 | Single-backend 70B reliance | Together.ai Llama-3.3-70B reproduction | Budget-blocked | Script/log/LaTeX and Together wrapper written, but true 70B reproduction is not feasible under zero-dollar mode unless free 70B compute appears. |
 | 8 | Information-theory overclaim | Rename/reframe as consistency check | Pending paper integration | Paper patch/log written. Fix 1 null result makes this mandatory. |
 | 9 | Self-confidence confounding | Partial correlations controlling similarity/redundancy | Limited run complete | Available CSV lacks similarity/redundancy controls, so only no-control association was computed: Pearson r=0.360029, p=0.004720; Spearman rho=0.481454. Treat confidence as suggestive unless controls are regenerated. |
@@ -60,6 +60,7 @@ Key completed result paths:
 | 3 | `data/revision/fix_03/per_query.csv`; `results/revision/fix_03/table1_multimetric.csv`; `results/revision/fix_03/metric_correlations.csv` |
 | 4 | `data/revision/fix_04/per_query.csv`; `results/revision/fix_04/tau_summary.csv`; `results/revision/fix_04/tau_transfer_matrix.csv`; `results/revision/fix_04/generalization_flags.csv` |
 | 5 | `data/revision/fix_05/per_query.csv`; `results/revision/fix_05/noise_summary.csv`; `results/revision/fix_05/slope_response.csv` |
+| 6 | `data/revision/fix_06/per_query.csv`; `results/revision/fix_06/h2h_summary.csv`; `results/revision/fix_06/pareto_faithfulness_latency.pdf`; `ragpaper/figures/fix_06_pareto_faith_latency.pdf` |
 | 9 | `data/revision/fix_09/input_copy.csv`; `results/revision/fix_09/partial_correlations.csv` |
 | 11 | `data/revision/fix_11/per_query.csv`; `results/revision/fix_11/raptor_full_table.csv`; `results/revision/fix_11/raptor_indexing_costs.csv` |
 
@@ -112,3 +113,39 @@ intervention did not show that higher CCS causally improves faithfulness at
 fixed mean query similarity. The paper should preserve CCS as a diagnostic or
 predictive signal only unless a later, preregistered replication changes this
 result.
+
+## Fix 6 Result (no-Self-RAG path)
+
+| dataset  | condition | n   | faithfulness | hallucination_rate | mean_latency_ms | p99_latency_ms | base_index_s | raptor_index_s |
+| -------- | --------- | --: | -----------: | -----------------: | --------------: | -------------: | -----------: | -------------: |
+| squad    | crag      | 200 | 0.6982       | 0.120              | 1440            | 5111           | 8.01         | 175.4          |
+| squad    | hcpc_v2   | 200 | 0.7084       | 0.125              | 1720            | 5400           | 8.01         | 175.4          |
+| squad    | raptor_2l | 200 | 0.7100       | 0.125              | 1714            | 4442           | 8.01         | 175.4          |
+| hotpotqa | crag      | 200 | 0.6427       | 0.105              | 1941            | 4255           | 7.97         | 134.0          |
+| hotpotqa | hcpc_v2   | 200 | 0.6334       | 0.125              | 2289            | 5545           | 7.97         | 134.0          |
+| hotpotqa | raptor_2l | 200 | 0.6308       | 0.130              | 2414            | 5074           | 7.97         | 134.0          |
+
+Files:
+
+- `data/revision/fix_06/per_query.csv` (1200 evaluations)
+- `results/revision/fix_06/h2h_summary.csv`
+- `results/revision/fix_06/pareto_faithfulness_latency.pdf` (also at `ragpaper/figures/fix_06_pareto_faith_latency.pdf`)
+- `logs/revision/fix_06_baselines_no_selfrag.log`
+
+Interpretation: HCPC-v2 does not clearly dominate. On SQuAD all three
+methods are within 1.2 pp on faithfulness; HCPC-v2 (0.7084) and
+RAPTOR-2L (0.7100) tie within bootstrap variation, both slightly above
+CRAG (0.6982). On HotpotQA CRAG wins on faithfulness (0.6427), on
+hallucination rate (10.5%), and on latency (1940 ms mean) all at
+once. The paper claim that HCPC-v2 is a controlled instrument that
+recovers faithfulness against strong baselines is no longer defensible
+in its v2.0 form; the honest replacement is "HCPC-v2 is competitive on
+SQuAD short-answer and dominated on HotpotQA multi-hop."
+
+RAPTOR's offline tree-build cost (134-175 s) is 17-22x the dense base
+indexing cost (8 s), a practical wedge that needs amortization across
+many queries before it is worth the offline expense.
+
+Self-RAG smoke test and full Self-RAG run remain optional follow-ups
+via `notebooks/revision_fix6_kaggle_t4x2_fresh.ipynb` stages
+`smoke_selfrag` and `selfrag` respectively.

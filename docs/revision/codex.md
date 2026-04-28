@@ -185,8 +185,41 @@ Fix 11 RAPTOR full table is complete locally/imported:
 - `results/revision/fix_11/raptor_full_table.csv`
 - `results/revision/fix_11/raptor_indexing_costs.csv`
 
-Fix 6 is now the main remaining compute run. A fresh Kaggle T4 x2 notebook and
-runner have been added:
+Fix 6 (no-Self-RAG path) is complete and was imported from the verified
+Kaggle T4 x 2 package `AAA_FIX6_T4X2_OUTPUTS.zip`:
+
+- `data/revision/fix_06/per_query.csv` — 1200 evaluations
+- `results/revision/fix_06/h2h_summary.csv`
+- `results/revision/fix_06/pareto_faithfulness_latency.pdf`
+- `ragpaper/figures/fix_06_pareto_faith_latency.pdf` (paper-ready copy)
+- `logs/revision/fix_06_baselines_no_selfrag.log`
+
+Sample: 2 datasets (SQuAD, HotpotQA) x 3 conditions (CRAG, HCPC-v2,
+RAPTOR-2L) x 200 queries.
+
+Headline results:
+
+| dataset  | condition | faith  | halluc | mean ms | p99 ms |
+| -------- | --------- | -----: | -----: | ------: | -----: |
+| squad    | crag      | 0.6982 | 0.120  | 1440    | 5111   |
+| squad    | hcpc_v2   | 0.7084 | 0.125  | 1720    | 5400   |
+| squad    | raptor_2l | 0.7100 | 0.125  | 1714    | 4442   |
+| hotpotqa | crag      | 0.6427 | 0.105  | 1941    | 4255   |
+| hotpotqa | hcpc_v2   | 0.6334 | 0.125  | 2289    | 5545   |
+| hotpotqa | raptor_2l | 0.6308 | 0.130  | 2414    | 5074   |
+
+Key takeaway: HCPC-v2 does not clearly dominate. On SQuAD all three are
+within 1.2 pp on faithfulness; on HotpotQA CRAG wins on faith, halluc,
+and latency simultaneously. RAPTOR's offline build is 17-22x dense.
+Combined with the Fix 1 null and the Fix 2 paradox collapse, HCPC-v2
+can no longer be claimed as a controlled instrument that recovers
+faithfulness against strong baselines.
+
+Self-RAG smoke test and full Self-RAG run remain optional follow-ups
+via `notebooks/revision_fix6_kaggle_t4x2_fresh.ipynb` stages
+`smoke_selfrag` and `selfrag` respectively.
+
+The fresh Kaggle T4 x 2 notebook and runner that produced this result:
 
 - `notebooks/revision_fix6_kaggle_t4x2_fresh.ipynb`
 - `scripts/kaggle_fix6_t4x2.sh`
@@ -451,7 +484,7 @@ Status meanings:
 | 3 | Single faithfulness metric | Done, auto metrics | Optional: add human labels for the 99-item template. |
 | 4 | Tau-tuning leakage | Done | Flag diagonal-vs-offdiagonal gaps for PubMedQA, NaturalQS, and SQuAD. |
 | 5 | SQuAD noise slope | Done | Integrate noise-slope result into robustness discussion. |
-| 6 | Baseline head-to-head | Code + Kaggle notebook ready | Run no-Self-RAG on Kaggle T4 x2; package/download immediately. |
+| 6 | Baseline head-to-head | Done (no-Self-RAG path) | Wire h2h_summary.csv + Pareto figure into paper. Self-RAG smoke/full optional follow-up. |
 | 7 | Independent 70B reproduction | Budget-blocked | Disclose zero-dollar limitation; do not fake it. |
 | 8 | Info-theory overclaim | Paper patch pending integration | Integrate now; Fix 1 null makes this mandatory. |
 | 9 | Self-confidence partial correlation | Limited run complete | Report as suggestive unless controls are regenerated. |
@@ -460,25 +493,36 @@ Status meanings:
 
 ## Immediate Next Step
 
-Open this notebook in a fresh Kaggle T4 x2 session:
+Fix 1 through Fix 6, plus Fix 9 (limited) and Fix 11, are all
+complete. The remaining work is paper-side:
 
-```text
-notebooks/revision_fix6_kaggle_t4x2_fresh.ipynb
-```
+1. **Fix 8 paper integration.** Mandatory because Fix 1 was null.
+   Retitle `theory.tex` to "Information-Theoretic Consistency Check";
+   rewrite Proposition 1 + Theorem 1 as sufficient/structural, not
+   predictive.
+2. **Fix 10 paper integration.** Mandatory because Fix 1 + Fix 2 +
+   Fix 6 collapsed the headline. Abstract verb downgrade (drives ->
+   predicts), explicit scope to short-answer extractive QA, promote
+   long-form non-result to its own subsection.
+3. **Wire all completed-fix tables and figures into `ragpaper/main.tex`**
+   via `\input{sections/revision/fix_NN_*}`. None are inputted yet.
+   The Fix 6 figure is at
+   `ragpaper/figures/fix_06_pareto_faith_latency.pdf`.
+4. **Cascading edits in `abstract.tex` / `paradox.tex` /
+   `discussion.tex`** to match the Fix 1 null, Fix 2 collapse, and
+   Fix 6 head-to-head.
 
-Run setup, then the recommended no-Self-RAG Fix 6 path. It packages
-automatically after success. When complete, download:
+Optional follow-ups (each adds 5-10% NeurIPS acceptance probability):
 
-```text
-/kaggle/working/fix6_t4x2_outputs.zip
-```
-
-After Fix 6, decide whether to attempt the optional Self-RAG smoke/full run.
-Then update:
-
-- [`status.md`](status.md)
-- [`../../experiments/fix_06_log.md`](../../experiments/fix_06_log.md)
-- the corresponding `ragpaper/sections/revision/*.tex` files
+- Two-rater human-eval labels for the 99-item template at
+  `data/revision/fix_03/human_eval_template.jsonl`.
+- Regenerate `experiments/run_confidence_calibration.py` with
+  `mean_retrieval_similarity` + `passage_redundancy` columns and
+  re-run Fix 9 with full controls.
+- Run the optional Fix 6 Self-RAG smoke + full paths via
+  `notebooks/revision_fix6_kaggle_t4x2_fresh.ipynb` (stages
+  `smoke_selfrag` and `selfrag`) to add a Self-RAG row to the
+  head-to-head table.
 
 ## Caution
 

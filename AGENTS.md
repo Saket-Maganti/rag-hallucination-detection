@@ -1,4 +1,4 @@
-# CLAUDE.md — project context for future sessions
+# AGENTS.md — project context for future sessions
 
 Operational notes for picking up the RAG hallucination detection paper revision. Read this first.
 
@@ -681,7 +681,7 @@ The script validates working tree is clean, asserts required artifacts exist, bu
 - `results/{multidataset,headtohead,robustness,deployment_figure,frontier_scale}/` — slim CSVs only (no chroma DBs)
 - `space/`, `leaderboard/` — Gradio apps
 - `scripts/`, `experiments/`, `src/` — reproducibility code
-- `CLAUDE.md`, `README.md` — operator notes
+- `AGENTS.md`, `README.md` — operator notes
 
 ## Phase 7 — NeurIPS rigor upgrades (post-review hardening)
 
@@ -1178,6 +1178,6 @@ Follow `submission/openreview_checklist.md`. Key steps:
 1. **Empty 1-byte CSVs** → Ollama was down during that tuple. `completed_tuples.json` still says `true`. Wipe the affected keys, re-run with `--force`.
 2. **Tabulate missing on fresh venv** → adversarial script fails at markdown write. `pip install tabulate`. Data CSVs already written before that point.
 3. **Ollama port 11434 refused** → process died. `ollama serve` in dedicated terminal (not `&` inside script).
-4. **Worktree vs main repo confusion** → always work in `/Users/saketmaganti/claudeprojs/rag-hallucination-detection`, not `.claude/worktrees/*`.
+4. **Worktree vs main repo confusion** → always work in `/Users/saketmaganti/claudeprojs/rag-hallucination-detection`, not `.Codex/worktrees/*`.
 5. **Uneven per_query.csv row counts** after re-runs (seen in naturalqs: 93/212/131 instead of 90/90/90) → caused by accumulating across partial runs. Re-run cleanly with `--force` on a wiped `completed_tuples.json` entry for the affected tuples.
 6. **`results/hcpc_v2/logs/` is gitignored** → use `git add -f` to force-add when the mechanistic Kaggle session needs them in the cloned repo.
