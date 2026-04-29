@@ -141,13 +141,11 @@ Validation was run after the reorganization.
 
 ## Git Metadata
 
-This section is updated after commit/push.
-
 | Field | Value |
 |---|---|
-| Cleanup commit | Pending |
-| Final report commit | Pending |
-| Branch | Pending |
-| Remote | Pending |
-| Push status | Pending |
-| Intentionally untracked / ignored files | Pending |
+| Cleanup commit pushed first | `8d7247c1de1ec0ab9a5f4acc524510422d6b742c` |
+| Branch | `neurips-final-submission-package` |
+| Remote | `origin https://github.com/Saket-Maganti/rag-hallucination-detection.git` |
+| Push status | Succeeded at 2026-04-29 20:12:32 IST. GitHub created remote branch `neurips-final-submission-package`. |
+| Report metadata note | This report update is committed after the first push so the repository records the cleanup commit and push result. |
+| Intentionally untracked / ignored files | Local Chroma DB archives, old zip/log snapshots, generated `artifacts/generated/` snapshots, temporary LaTeX build files, caches, and diagnostic `results/*/logs/` folders are intentionally ignored. `git status --short` was clean before this report metadata update. |
