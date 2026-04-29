@@ -13,7 +13,7 @@ fixes / docs.
 - NeurIPS senior-review revision started with Fix 1 causal intervention:
   `experiments/fix_01_causal_matched_pairs.py`,
   `experiments/fix_01_log.md`, `REVISION_SUMMARY.md`, and
-  `ragpaper/sections/revision/fix_01_causal_intervention.tex`.
+  `papers/arxiv_longform/sections/revision/fix_01_causal_intervention.tex`.
 - `context-coherence` package version bumped to `0.2.0` for the revision
   artifact line while leaving the released API intact.
 - Added runnable senior-review revision scaffolds for Fixes 2-11, including
@@ -83,13 +83,13 @@ codebase are submission-ready for NeurIPS 2026.
 - Qualitative paradox example (Super Bowl 50 / Santa Clara → SF Bay Area)
 - `scripts/lint_paper.py` — pre-submission LaTeX lint (refs/cites/typos)
 - `scripts/upload_to_zenodo.py` — Zenodo deposit + publish helper
-- `submission/openreview_checklist.md` + `submission/paper_metadata.yml`
+- `submission_packages/neurips/openreview/openreview_checklist.md` + `submission_packages/neurips/openreview/paper_metadata.yml`
 
 ### Changed
 
 - README rewritten with released-artifacts table at the top
 - CITATION.bib: added `@dataset{maganti2026ccbench}` Zenodo entry
-- `ragpaper/sections/abstract.tex`: opens with the ChatGPT framing sentence
+- `papers/arxiv_longform/sections/abstract.tex`: opens with the ChatGPT framing sentence
 - `theory.tex`: 13 placeholder labels auto-mapped to existing labels
 - `space/requirements.txt`: added `audioop-lts` shim for Python 3.13 + Gradio
 

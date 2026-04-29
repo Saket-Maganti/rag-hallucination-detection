@@ -26,8 +26,8 @@ def _run(script: str) -> subprocess.CompletedProcess:
 def test_headline_figure_builds():
     r = _run("experiments/build_headline_figure.py")
     assert r.returncode == 0, r.stderr[-500:]
-    assert (ROOT / "ragpaper/figures/headline_frontier.pdf").exists()
-    assert (ROOT / "ragpaper/figures/headline_frontier.tex").exists()
+    assert (ROOT / "papers/arxiv_longform/figures/headline_frontier.pdf").exists()
+    assert (ROOT / "papers/arxiv_longform/figures/headline_frontier.tex").exists()
 
 
 # ── CCS calibration figure (Phase 3 #7) ──────────────────────────────
@@ -35,7 +35,7 @@ def test_headline_figure_builds():
 def test_ccs_calibration_builds():
     r = _run("experiments/build_ccs_calibration.py")
     assert r.returncode == 0, r.stderr[-500:]
-    pdf = ROOT / "ragpaper/figures/ccs_calibration.pdf"
+    pdf = ROOT / "papers/arxiv_longform/figures/ccs_calibration.pdf"
     assert pdf.exists() and pdf.stat().st_size > 1000
 
     csv = ROOT / "results/ccs_calibration/quintile_table.csv"
@@ -49,7 +49,7 @@ def test_ccs_calibration_builds():
 def test_disentanglement_figure_builds():
     r = _run("experiments/build_disentanglement_figure.py")
     assert r.returncode == 0, r.stderr[-500:]
-    assert (ROOT / "ragpaper/figures/disentanglement.pdf").exists()
+    assert (ROOT / "papers/arxiv_longform/figures/disentanglement.pdf").exists()
     df = pd.read_csv(ROOT / "results/disentanglement/quartile_table.csv")
     assert "faith_mean" in df.columns
     assert len(df) >= 4   # at least 1 row per sim quartile
@@ -77,6 +77,6 @@ def test_topk_table_populates_when_data_present():
         pytest.skip("top-k results not yet present")
     r = _run("experiments/build_topk_table.py")
     assert r.returncode == 0
-    out = (ROOT / "ragpaper/figures/topk_table.tex").read_text()
+    out = (ROOT / "papers/arxiv_longform/figures/topk_table.tex").read_text()
     assert "populated after" not in out      # placeholder language
     assert "paradox" in out.lower() or "$" in out

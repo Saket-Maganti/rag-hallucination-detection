@@ -1,0 +1,75 @@
+\section{Limitations}
+\label{sec:limitations}
+
+\paragraph{Single-generator focus on the headline cell.}
+The $n{=}500{\times}5$ scaling study (\S\ref{sec:scaling}) is on
+SQuAD/Mistral-7B only. Multi-dataset numbers exist at $n{=}30$ and
+$n{=}90$ for Mistral, Llama-3, and Qwen-2.5 from earlier rounds and
+are released alongside this paper, but only the SQuAD/Mistral cell
+has been re-run at proper power. A reviewer who wanted the same
+audit on PubMedQA/Llama-3 (a more domain-mismatched setting) would
+have to re-run that cell themselves. The released Kaggle notebooks
+make this a 4--6 hour task on a free T4\(\times\)2.
+
+\paragraph{Long-form QA out of scope.}
+The audit is scoped to short-answer extractive QA. Long-form
+generation evaluation (MS-MARCO, QASPER) is reported in earlier
+work as not exhibiting the refinement paradox; our scaling study
+does not extend to long-form. Long-form RAG faithfulness is an
+open and harder evaluation problem
+\citep{krishna2021hurdles}; we do not address it here.
+
+\paragraph{Free 70B reproduction is budget-blocked.}
+Independent reproduction of the frontier-scale (70B parameter)
+faithfulness numbers via a non-Groq backend such as Together.ai
+would require paid API access. Under the zero-dollar constraint
+of this work that reproduction is blocked. The 70B/120B numbers
+reported in earlier work via Groq's free tier (Llama-3.3-70B
+SQuAD paradox $\approx 0.100$; GPT-OSS-120B SQuAD paradox
+$\approx 0.030$ on $n{=}30$) stand as single-backend observations
+and should be read with the understanding that we have not yet
+reproduced them on a second 70B backend. This is disclosed, not
+papered over.
+
+\paragraph{RAGAS-judge self-bias risk.}
+The RAGAS-style LLM-judge in our \S\ref{sec:multimetric}
+multi-scorer audit uses a separate Mistral-7B instance with a
+different prompt and a structured JSON-schema response. This
+mitigates direct identity self-bias but not family-level bias: a
+Mistral-7B judging a Mistral-7B answer may agree with the
+generated answer's surface plausibility for reasons that have
+nothing to do with faithfulness. A future version of this audit
+using a frontier-scale third-party judge (Claude-3.5-Sonnet,
+GPT-4o, Gemini-2-Pro) would resolve this. Doing so honestly costs
+paid API tokens, which the zero-dollar constraint of this work
+disallows.
+
+\paragraph{Self-RAG harness fairness.}
+\S\ref{sec:headtohead}'s Self-RAG numbers reflect Self-RAG run inside
+a CRAG-style harness with a DeBERTa-v3 entailment scorer that does
+not understand reflection tokens. The
+``Self-RAG underperforms by $\sim 0.14$ faithfulness'' finding is
+therefore harness-conditional. A more faithful Self-RAG comparison
+would require modifying the entailment scorer to strip Self-RAG's
+control tokens before scoring, or running Self-RAG on the
+faithfulness benchmark its authors used. We report the
+matched-harness number because it is the number a downstream
+practitioner would observe; an aligned-harness number would
+require additional engineering and is not in this paper's scope.
+
+\paragraph{Causal intervention is single-domain.}
+The Fix 1 matched-similarity intervention runs on SQuAD only,
+$n{=}200$ matched pairs. The same intervention on PubMedQA or
+HotpotQA is a natural extension that would either replicate or
+contradict our null. We do not yet know which.
+
+\paragraph{Single retrieval embedder for the scaling study.}
+The scaling study (\S\ref{sec:scaling}) uses
+\texttt{all-MiniLM-L6-v2} as the embedder. Earlier multi-retriever
+work showed the paradox is alignment-mismatch-property:
+the magnitude on SQuAD with stronger embedders (BGE-large,
+GTE-large) is much smaller than with MiniLM. The collapse at scale
+that we report is therefore consistent with what we would have
+predicted from the multi-retriever results, but a full multi-
+retriever multi-seed multi-metric study at $n{=}500$ remains future
+work.

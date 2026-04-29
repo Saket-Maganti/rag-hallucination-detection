@@ -18,7 +18,7 @@ from langchain_huggingface import HuggingFaceEmbeddings
 embeddings = HuggingFaceEmbeddings(
     model_name="sentence-transformers/all-MiniLM-L6-v2",
 )
-store = Chroma(persist_directory="./chroma_db", embedding_function=embeddings)
+store = Chroma(persist_directory="./artifacts/generated/chroma_db", embedding_function=embeddings)
 base = store.as_retriever(search_kwargs={"k": 5})
 
 gated = CoherenceGatedRetriever(

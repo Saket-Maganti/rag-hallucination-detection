@@ -1,0 +1,7 @@
+metric,n,pearson_r,pearson_p,spearman_rho,spearman_p
+graph_connectivity,955,0.2816,0.0,0.264,0.0
+mean_pair_cos,955,0.2311,0.0,0.2057,0.0
+mmr_diversity,955,-0.2311,0.0,-0.2057,0.0
+ccs_metric,955,0.2297,0.0,0.2056,0.0
+matrix_entropy,955,0.1684,0.0,0.2018,0.0
+min_pair_cos,955,0.2164,0.0,0.1915,0.0

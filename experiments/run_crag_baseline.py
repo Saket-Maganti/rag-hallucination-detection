@@ -119,7 +119,7 @@ def run(ds, n_q, backend, model, det, include_selfrag=False):
     pipe = RAGPipeline(
         chunk_size=1024, chunk_overlap=100, top_k=3,
         model_name=model, embed_model=EMBED,
-        persist_dir=f"./chroma_db_crag/{coll}",
+        persist_dir=f"./artifacts/generated/chroma_db_crag/{coll}",
     )
     pipe.index_documents(docs, collection_name=coll)
     if backend == "groq":

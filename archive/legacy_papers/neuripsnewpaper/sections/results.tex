@@ -1,0 +1,252 @@
+\section{Results}
+
+\subsection{H1 rejected: coherence does not causally improve faithfulness at fixed relevance}
+
+The matched construction succeeds: 200 SQuAD query pairs are built with mean
+absolute similarity gap 0.006 and mean CCS gap 0.533. This is a strong
+manipulation of set coherence while local relevance is nearly fixed. The
+faithfulness effect is null (Table~\ref{tab:causal}).
+
+\begin{table}[H]
+\centering
+\small
+\caption{Matched-similarity intervention. Higher CCS does not improve
+faithfulness at fixed mean query similarity.}
+\label{tab:causal}
+\begin{tabular}{lrrrrrr}
+\toprule
+Setting & $n$ & HIGH faith & LOW faith & HIGH--LOW & $p$ & 95\% CI \\
+\midrule
+SQuAD / Mistral / DeBERTa & 200 & 0.636 & 0.639 & -0.002 & 0.628 & [-0.022, 0.017] \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The binary hallucination result is even less compatible with a simple causal
+story: HIGH-CCS sets hallucinate more often than LOW-CCS sets (16.5\% vs.
+9.0\%). We therefore reject H1. The result turns the old coherence story into
+evidence for the paper's current thesis: without a matched control, a plausible
+retrieval-set statistic can be mistaken for a faithfulness mechanism.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.78\linewidth]{fix_01_paired_diff.pdf}
+\caption{Paired HIGH--LOW CCS faithfulness differences under the
+matched-similarity intervention. The distribution is centered near zero, and
+the Wilcoxon test does not reject equality ($p=0.628$), so the controlled test
+rejects the causal coherence hypothesis rather than supporting it.}
+\label{fig:matched_ccs_null}
+\end{figure}
+
+\subsection{H2 weakened: the scaled DeBERTa refinement effect is small}
+
+Scaling the SQuAD/Mistral cell to $n=500$ over five seeds reduces the
+DeBERTa-measured baseline-minus-refinement effect to 1.1 faithfulness points
+(Table~\ref{tab:scaled}). Only one of five seeds is significant for the
+baseline-minus-HCPC-v1 contrast. HCPC-v2 restores the HCPC-v1 drop on average,
+but the effect is not the large, stable phenomenon suggested by the pilot.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Scaled SQuAD/Mistral headline cell.}
+\label{tab:scaled}
+\begin{tabular}{lrrrr}
+\toprule
+Condition & $n$ & Faithfulness & Hallucination & Retrieval similarity \\
+\midrule
+Baseline & 2500 & 0.661 & 0.146 & 0.532 \\
+HCPC-v1 & 2500 & 0.650 & 0.147 & 0.569 \\
+HCPC-v2 & 2500 & 0.661 & 0.143 & 0.532 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+This is still an interesting non-monotonicity: HCPC-v1 raises retrieval
+similarity while lowering DeBERTa faithfulness. But it is a small effect under
+this metric, not a headline-scale failure. The original $n=30$ result should
+therefore be treated as pilot evidence.
+
+\subsection{H3 rejected: the same generations imply different conclusions}
+
+Metric choice changes the magnitude of the core result
+(Table~\ref{tab:metrics}). This is the most important positive result in the
+revision: evaluator choice is not a reporting detail, but part of the
+identified estimand. The same 7,500 generations yield a 1.1 point
+baseline-minus-HCPC-v1 effect under DeBERTa, 3.2 points under a second NLI
+model, and 14.0 points under a local RAGAS-style judge. DeBERTa and RAGAS
+correlate only $r=0.182$; the second NLI model and RAGAS correlate $r=0.674$.
+
+\begin{table}[H]
+\centering
+\small
+\setlength{\tabcolsep}{7pt}
+\caption{Central metric-dependence result: identical generations produce
+different intervention magnitudes under different faithfulness judges.}
+\label{tab:metrics}
+\begin{tabular}{lrrrr}
+\toprule
+Condition & $n$ & DeBERTa & Second NLI & RAGAS-style judge \\
+\midrule
+Baseline & 2500 & 0.661 & 0.350 & 0.730 \\
+HCPC-v1 & 2500 & 0.650 & 0.318 & 0.590 \\
+HCPC-v2 & 2500 & 0.661 & 0.351 & 0.728 \\
+\midrule
+Baseline--v1 & -- & 0.011 & 0.032 & 0.140 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\small
+\caption{Metric agreement on the same 7,500 generations.}
+\label{tab:metric_corr}
+\begin{tabular}{lrr}
+\toprule
+Metric pair & Pearson $r$ & Spearman $\rho$ \\
+\midrule
+DeBERTa / second NLI & 0.259 & 0.265 \\
+DeBERTa / RAGAS-style judge & 0.182 & 0.212 \\
+Second NLI / RAGAS-style judge & 0.674 & 0.651 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+A single faithfulness metric does not identify the effect size of a RAG
+intervention. The result is not merely that metrics have different scales; the
+weak DeBERTa--RAGAS correlation means that the evaluator changes the empirical
+conclusion.
+
+\subsection{H4 dataset-dependent: threshold transfer is uneven}
+
+For evaluation dataset $d$ and threshold $\tau$, the recovery score is
+\[
+\mathrm{Recovery}(d,\tau) =
+\frac{\mathrm{Faith}_{\mathrm{gate}}(d,\tau) -
+\mathrm{Faith}_{\mathrm{HCPC}\mbox{-}\mathrm{v1}}(d)}
+{\mathrm{Faith}_{\mathrm{baseline}}(d) -
+\mathrm{Faith}_{\mathrm{HCPC}\mbox{-}\mathrm{v1}}(d)}.
+\]
+The diagonal recovery is the recovery obtained when $\tau$ is tuned and
+evaluated on the same dataset. The off-diagonal mean averages recovery when
+that tuned $\tau$ is transferred to the other four datasets. The gap is their
+difference. Scores can exceed 1 when the gated policy exceeds the baseline
+relative to HCPC-v1, and they can be negative when the transferred threshold is
+worse than HCPC-v1 under this normalization.
+
+The $5\times5$ threshold-transfer matrix shows large in-domain advantages for
+SQuAD, PubMedQA, and NaturalQuestions (Table~\ref{tab:tauflags}). HotpotQA and
+TriviaQA do not show the same pattern. Thus, a single threshold tuned on one
+dataset cannot be treated as generally validated.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Threshold-transfer recovery score: in-domain versus cross-dataset
+threshold effect.}
+\label{tab:tauflags}
+\begin{tabular}{lrrr}
+\toprule
+Tune dataset & Diagonal recovery & Off-diagonal mean & Gap \\
+\midrule
+PubMedQA & 1.452 & 0.451 & 1.002 \\
+NaturalQuestions & 1.401 & 0.211 & 1.191 \\
+SQuAD & 0.823 & -0.141 & 0.963 \\
+TriviaQA & 0.464 & 0.698 & -0.234 \\
+HotpotQA & -0.112 & 0.093 & -0.205 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Coherence remains diagnostically useful}
+
+The noise experiment prevents an overcorrection. Although CCS is not causal in
+Test 1, coherence is not equivalent to generic retrieval degradation. Random
+off-topic noise has a steeper faithfulness slope than same-topic
+answer-uninformative noise: $-0.069$ vs. $-0.043$ per unit noise rate
+(Table~\ref{tab:noise}). Same-topic noise still hurts, but it hurts less.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Noise slope response.}
+\label{tab:noise}
+\begin{tabular}{lrrr}
+\toprule
+Condition & Faith slope & Similarity slope & Drop at full noise \\
+\midrule
+Random noise & -0.069 & -0.481 & 0.052 \\
+Coherent uninformative noise & -0.043 & -0.113 & 0.042 \\
+HCPC-v1 refinement & -- & -- & 0.001 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+This supports a narrower research claim: set-level context structure is a
+useful diagnostic variable, but it is neither sufficient for support nor
+validated as an empirical mechanism.
+
+\subsection{H5 rejected: no policy is uniformly best after cost is included}
+
+Figure~\ref{fig:pareto_p99} and Table~\ref{tab:h2h} report the full
+SQuAD/HotpotQA baseline comparison using the verified Self-RAG artifact.
+HCPC-v2 is competitive on SQuAD, but RAPTOR-2L is slightly higher in
+faithfulness and lower in p99 latency. On HotpotQA, CRAG wins on faithfulness,
+hallucination rate, and latency. Self-RAG performs poorly in this matched
+short-answer harness.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.98\linewidth]{fix_06_pareto_p99_log_full_selfrag.pdf}
+\caption{Cost-aware Pareto view of the full baseline audit. The x-axis uses
+p99 latency on a log scale so the Self-RAG tail remains visible without
+compressing the other methods. No method is uniformly best across datasets once
+faithfulness, tail latency, hallucination behavior, and offline indexing costs
+are considered.}
+\label{fig:pareto_p99}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\scriptsize
+\caption{Head-to-head baseline comparison, $n=200$ per dataset/condition.
+Latency is milliseconds.}
+\label{tab:h2h}
+\begin{tabular}{llrrrr}
+\toprule
+Dataset & Method & Faith & Halluc. & Mean lat. & p99 lat. \\
+\midrule
+SQuAD & CRAG & 0.698 & 0.120 & 1021 & 3318 \\
+SQuAD & HCPC-v2 & 0.708 & 0.125 & 1349 & 3612 \\
+SQuAD & RAPTOR-2L & 0.710 & 0.125 & 1296 & 3189 \\
+SQuAD & Self-RAG & 0.574 & 0.390 & 7542 & 44800 \\
+\midrule
+HotpotQA & CRAG & 0.643 & 0.105 & 1473 & 3281 \\
+HotpotQA & HCPC-v2 & 0.632 & 0.130 & 1841 & 4032 \\
+HotpotQA & RAPTOR-2L & 0.631 & 0.130 & 1906 & 4043 \\
+HotpotQA & Self-RAG & 0.574 & 0.430 & 6158 & 46965 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+RAPTOR's offline tree-building cost is also nontrivial: 99.7--161.2 seconds
+across datasets, compared with 1.2--8.3 seconds for dense indexing
+(Table~\ref{tab:raptorcost}). Method claims that omit indexing and tail latency
+miss part of the deployment result.
+
+\begin{table}[H]
+\centering
+\scriptsize
+\caption{RAPTOR cost audit across three datasets, $n=100$ each.}
+\label{tab:raptorcost}
+\begin{tabular}{lrrrrrr}
+\toprule
+Dataset & Faith & Halluc. & p50 lat. & p99 lat. & Dense idx. & RAPTOR idx. \\
+\midrule
+SQuAD & 0.789 & 0.050 & 1190 & 4943 & 8.333 s & 161.203 s \\
+PubMedQA & 0.560 & 0.290 & 3901 & 6812 & 1.177 s & 108.264 s \\
+HotpotQA & 0.617 & 0.210 & 1973 & 4274 & 7.140 s & 99.740 s \\
+\bottomrule
+\end{tabular}
+\end{table}

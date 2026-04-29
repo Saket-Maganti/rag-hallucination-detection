@@ -1,0 +1,82 @@
+\documentclass[10pt]{article}
+
+% --- packages ----------------------------------------------------------------
+\usepackage[margin=1.0in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\theoremstyle{plain}
+\newtheorem{proposition}{Proposition}
+\newtheorem{theorem}{Theorem}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\usepackage{graphicx}
+\graphicspath{{figures/}}
+\usepackage{xcolor}
+\usepackage{natbib}
+\setlength{\bibsep}{4pt plus 4pt minus 1pt}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+\usepackage{placeins}
+\usepackage{float}
+\usepackage{caption}
+\captionsetup{font=small}
+
+\emergencystretch=2em
+\tolerance=400
+
+% --- title -------------------------------------------------------------------
+\title{\Large\bfseries
+When Retrieval Quality Decouples from Faithfulness:\\[0.2em]
+A Pre-Registered Audit of Retrieval-Augmented Generation Evaluation}
+
+\newif\ifanonymous
+\anonymousfalse  % switch to \anonymoustrue for the OpenReview submission
+\ifanonymous
+  \author{Anonymous Authors\\\textit{Submission under double-blind review}}
+\else
+  \author{%
+    Saket Maganti\thanks{%
+      Independent researcher.  Correspondence:
+      \href{mailto:freeopenapex@gmail.com}{freeopenapex@gmail.com}.
+      Code, benchmark, and pre-registrations released at
+      \href{https://github.com/Saket-Maganti/rag-hallucination-detection}{github.com/Saket-Maganti/rag-hallucination-detection}.
+    }
+  }
+\fi
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\input{sections/abstract}
+\end{abstract}
+
+% =====================================================================
+%  Main paper
+% =====================================================================
+\input{sections/introduction}
+\input{sections/background}
+\input{sections/methodology}
+\input{sections/causal_intervention}
+\input{sections/scaling}
+\input{sections/multimetric}
+\input{sections/tau_generalization}
+\input{sections/coherence_noise}
+\input{sections/headtohead}
+\input{sections/benchmark}
+\input{sections/related}
+\input{sections/discussion}
+\input{sections/limitations}
+\input{sections/conclusion}
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}

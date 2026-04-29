@@ -1,0 +1,30 @@
+\section{What Survives: Coherence vs.\ Similarity}
+\label{sec:coherence_survives}
+
+The matched-similarity test rejects the strong CCS interpretation, but it
+should not be overread as evidence that context-set structure is useless. We
+compare two kinds of uninformative context: random off-topic noise and
+same-topic passages that preserve some contextual coherence while omitting the
+answer. If coherence were only generic retrieval quality under another name,
+the slopes should look similar.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Noise slope response. Coherence-preserving uninformative noise hurts
+less than random off-topic noise at matched rate.}
+\label{tab:noise}
+\begin{tabular}{lrrr}
+\toprule
+Condition & Faith slope & Similarity slope & Drop at full noise \\
+\midrule
+Random noise & -0.069 & -0.481 & 0.052 \\
+Coherent uninformative noise & -0.043 & -0.113 & 0.042 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+This supports a narrower claim. Coherence carries diagnostic signal beyond
+mean query similarity, but it does not identify support by itself. A coherent
+context set can still omit the answer, and a low-coherence set can still
+contain the necessary evidence.

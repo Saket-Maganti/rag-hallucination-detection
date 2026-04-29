@@ -1,0 +1,66 @@
+\section{Background and Setup}
+\label{sec:background}
+
+\paragraph{RAG and faithfulness.}
+A RAG pipeline retrieves $k$ passages
+$\{p_1, \ldots, p_k\}$ for a query $q$, concatenates them as
+context, and asks a generator $\mathcal{G}$ to produce an answer
+$a = \mathcal{G}(q, p_1, \ldots, p_k)$. Faithfulness is the question
+of whether the claims in $a$ are entailed by
+$\{p_1, \ldots, p_k\}$. Faithfulness is typically operationalized
+by an entailment scorer $\phi: (\text{premise},
+\text{hypothesis}) \to [0, 1]$ run sentence-by-sentence and
+averaged. The dominant choice in recent RAG papers is
+\texttt{cross-encoder/nli-deberta-v3-base}
+\citep{he2021debertav3}.
+
+\paragraph{The refinement paradox.}
+A line of recent work \citep{xu2023recomp} examines what happens
+when the retrieved set is post-processed to retain only
+high-relevance passages. The intuition is that filtering out
+irrelevant retrievals should improve faithfulness. \emph{Hybrid
+Context-Preserving Chunking} (HCPC) and its
+coherence-aware variant HCPC-v2, introduced as a controlled
+intervention probe, have been reported to expose a counterintuitive
+\emph{refinement paradox}: aggressive refinement that maximizes
+per-passage similarity reduces answer faithfulness, while a
+selective coherence-aware refinement (HCPC-v2) recovers it. Earlier
+results at $n{=}30$ per condition reported a SQuAD/Mistral-7B
+paradox magnitude of $0.069 \pm 0.004$ across three seeds, with a
+signal-to-standard-deviation ratio of $\sim 17$.
+
+\paragraph{Context coherence as a candidate mediator.}
+The proposed mechanism is the \emph{Context Coherence Score} (CCS),
+a generator-free retrieval-time diagnostic defined as
+\(\mathrm{CCS}(\{p_1, \ldots, p_k\}) = \overline{\mathrm{sim}}_{ij}
+- \sigma_{\mathrm{sim}_{ij}}\), where the average and standard
+deviation are taken over the off-diagonal pairwise embedding
+similarities of the retrieved passages.
+The hypothesized causal claim is that CCS, not per-passage
+relevance, mediates faithfulness: at fixed mean query-passage
+similarity, lower CCS would produce lower faithfulness.
+
+\paragraph{Why this needs auditing.}
+Three properties of the published evidence make a pre-registered
+audit appropriate. First, the headline statistic comes from
+$n{=}30$ queries per condition; small samples are notorious for
+inflating effect sizes. Second, faithfulness is reported under a
+single scorer (DeBERTa-v3 NLI); we have no published cross-scorer
+agreement statistics on RAG outputs at scale. Third, the threshold
+$\tau$ that gates HCPC's refinement decision is tuned on a 50-query
+held-out subset of SQuAD --- the same dataset the paradox is
+reported on. The latter two are common practices across the broader
+RAG literature, not unique to this work. We use the refinement
+paradox as a stress test of those practices.
+
+\paragraph{Pre-registration.}
+For each experiment we fix sample sizes, seeds, scoring code, and
+statistical tests \emph{before} running any generation, in
+machine-checkable logs at
+\texttt{experiments/fix\_NN\_log.md}. Effect-size thresholds and
+honest-reporting commitments (what we will say if a hypothesis is
+not supported) are also fixed in advance. We use paired Wilcoxon
+signed-rank for paired contrasts, 10{,}000-resample bootstrap CIs
+for continuous summary statistics, and Wilson score CIs for binary
+proportions. Cohen's $d_z$ is reported alongside every paired
+contrast, regardless of significance.

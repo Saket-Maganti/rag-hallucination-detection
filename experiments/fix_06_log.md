@@ -76,7 +76,7 @@ Head-to-head summary (results/revision/fix_06/h2h_summary.csv):
 | hotpotqa | raptor_2l | 200 | 0.6308       | 0.130              | 2413.58         | 5074.35        | 7.97         | 134.01         |
 
 Pareto plot at results/revision/fix_06/pareto_faithfulness_latency.pdf;
-copied to ragpaper/figures/fix_06_pareto_faith_latency.pdf for the
+copied to papers/arxiv_longform/figures/fix_06_pareto_faith_latency.pdf for the
 paper.
 
 Honest interpretation: HCPC-v2 does NOT clearly dominate the head-to-

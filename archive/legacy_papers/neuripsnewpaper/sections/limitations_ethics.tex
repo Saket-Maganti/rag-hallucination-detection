@@ -1,0 +1,40 @@
+\section{Limitations and Ethics}
+
+\paragraph{Scope.}
+The benchmark supports claims about short-answer extractive QA. It should not
+be used to claim that the same paradox, or the same policy ranking, holds for
+long-form synthesis, agentic workflows, or domain-specific retrieval without
+additional controls.
+
+\paragraph{Faithfulness metrics.}
+The multi-metric result is a strength and a limitation. It shows that evaluator
+choice matters, but it does not establish which evaluator is correct. No
+completed two-rater human calibration is reported; a 99-item template is staged
+for future calibration.
+
+\paragraph{Thresholds and CCS.}
+Thresholds do not transfer cleanly across datasets: SQuAD, PubMedQA, and
+NaturalQuestions show large in-domain versus off-diagonal recovery gaps. CCS is
+also not causal in the matched-similarity test and has regimes where it is
+uninformative about support, including coherent context sets that omit the
+answer. It should be treated as one diagnostic among several.
+
+\paragraph{Self-RAG harness.}
+Self-RAG underperforms in our short-answer harness. This should be reported
+carefully: the result is evidence about this matched inference setup, not a
+global claim that Self-RAG is weak. Different prompting, decoding, or task
+formats could change the outcome.
+
+\paragraph{Compute and reproducibility.}
+The revision was run under a zero-dollar constraint using local models and free
+GPU sessions. That improves accessibility but leaves one planned independent
+70B reproduction blocked. The earlier 70B observation is therefore not treated
+as an independently rerun revision result. The artifact should disclose this
+plainly rather than replace it with paid or unverifiable runs.
+
+\paragraph{Ethical considerations.}
+The benchmark is designed to reduce hallucination overclaims in RAG systems,
+which is especially relevant for domains where unsupported answers can cause
+harm. The main ethical risk is misuse: a single metric or a single dataset row
+could be cherry-picked to market a RAG system as faithful. The benchmark
+therefore emphasizes per-query logs, multiple metrics, and cost-aware reporting.

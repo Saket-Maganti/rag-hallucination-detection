@@ -282,8 +282,8 @@ python3 experiments/fix_09_partial_correlations.py \
   --redundancy_col passage_redundancy
 
 # Fix 8 and Fix 10 are paper-only patch review/integration.
-sed -n '1,240p' ragpaper/sections/revision/fix_08_theory_reframe.tex
-sed -n '1,240p' ragpaper/sections/revision/fix_10_scope_deployment.tex
+sed -n '1,240p' papers/arxiv_longform/sections/revision/fix_08_theory_reframe.tex
+sed -n '1,240p' papers/arxiv_longform/sections/revision/fix_10_scope_deployment.tex
 ```
 
 No-hosted-GPU runtime:
@@ -735,7 +735,7 @@ central claim.
 No compute command. Wire the LaTeX patch after Fix 1 is known:
 
 ```bash
-sed -n '1,240p' ragpaper/sections/revision/fix_08_theory_reframe.tex
+sed -n '1,240p' papers/arxiv_longform/sections/revision/fix_08_theory_reframe.tex
 ```
 
 Runtime: minutes of manual integration.
@@ -765,7 +765,7 @@ No compute command. Wire the LaTeX patch after Fix 1 and long-form results are
 known:
 
 ```bash
-sed -n '1,240p' ragpaper/sections/revision/fix_10_scope_deployment.tex
+sed -n '1,240p' papers/arxiv_longform/sections/revision/fix_10_scope_deployment.tex
 ```
 
 Runtime: minutes of manual integration.

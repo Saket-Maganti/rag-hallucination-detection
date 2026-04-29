@@ -86,7 +86,7 @@ def run_tuple(ds, ce, n_q, det):
     pipe = RAGPipeline(
         chunk_size=1024, chunk_overlap=100, top_k=3,
         model_name="mistral", embed_model=EMBED,
-        persist_dir=f"./chroma_db_ce/{coll}",
+        persist_dir=f"./artifacts/generated/chroma_db_ce/{coll}",
     )
     pipe.index_documents(docs, collection_name=coll)
     # Override the CE in both retrievers

@@ -25,8 +25,8 @@ Inputs:
     or results/multidataset/per_query.csv
 
 Outputs:
-    ragpaper/figures/coherence_heatmap.pdf
-    ragpaper/figures/coherence_heatmap.tex
+    papers/arxiv_longform/figures/coherence_heatmap.pdf
+    papers/arxiv_longform/figures/coherence_heatmap.tex
     results/coherence_heatmap/example_metadata.json
 
 Usage:
@@ -50,7 +50,7 @@ import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parent.parent
-OUT_DIR = ROOT / "ragpaper" / "figures"
+OUT_DIR = ROOT / "papers" / "arxiv_longform" / "figures"
 OUT_PDF = OUT_DIR / "coherence_heatmap.pdf"
 OUT_TEX = OUT_DIR / "coherence_heatmap.tex"
 OUT_META_DIR = ROOT / "results" / "coherence_heatmap"
@@ -99,7 +99,7 @@ def _retrieve_chunks(query: str, dataset: str) -> List[str]:
             chunk_size=1024, chunk_overlap=100, top_k=5,
             model_name="mistral",
             embed_model="sentence-transformers/all-MiniLM-L6-v2",
-            persist_dir=f"./chroma_db_heatmap/{coll}",
+            persist_dir=f"./artifacts/generated/chroma_db_heatmap/{coll}",
         )
         pipe.index_documents(docs, collection_name=coll)
         ds, _ = pipe.retrieve_with_scores(query)

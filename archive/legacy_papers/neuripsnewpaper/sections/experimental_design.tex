@@ -1,0 +1,101 @@
+\section{Controlled Experimental Design}
+
+The experiments are a controlled falsification suite. Each test isolates a
+claim that can look convincing in a conventional aggregate RAG table, then
+asks whether that claim survives when the relevant confounder is separated.
+
+\paragraph{Pre-registration.}
+Sample sizes, seeds, primary statistics, and decision rules were frozen before
+execution. Paired continuous contrasts use Wilcoxon signed-rank tests and
+Cohen's $d_z$. Means use 10,000-resample bootstrap confidence intervals.
+Hallucination rates use Wilson intervals. HCPC thresholds remain frozen except
+in the threshold-transfer experiment, where tuning and evaluation datasets are
+explicitly separated. No paid API calls are used in the revision results.
+
+\paragraph{Test 1: separating coherence from local relevance.}
+For each SQuAD query, we retrieve the top 20 passages and search over
+3-passage subsets. We choose one HIGH-CCS and one LOW-CCS set with matched
+mean query similarity ($|\Delta \simq|\leq0.02$). This directly tests H1:
+whether coherence improves faithfulness after local relevance is held fixed.
+
+\paragraph{Test 2: scaling the refinement effect.}
+We rerun the SQuAD/Mistral headline cell at $n=500$ over five seeds and three
+conditions: dense baseline, HCPC-v1 refinement, and HCPC-v2 gated refinement.
+This tests whether the original pilot-sized refinement paradox remains large
+and stable at scale.
+
+\paragraph{Test 3: changing the faithfulness observer.}
+The same 7,500 generations are scored with DeBERTa-v3 NLI, a second NLI model,
+and a local RAGAS-style judge. This keeps the model outputs fixed and varies
+only the observer, isolating metric dependence.
+
+\paragraph{Test 4: transferring policy thresholds.}
+We tune the HCPC threshold $\tau$ on each of five datasets and evaluate it on
+all five. A robust policy should not require large in-domain tuning advantage.
+
+\paragraph{Test 5: separating coherence from generic noise.}
+We compare random off-topic noise with same-topic but answer-uninformative
+noise. If coherence is only another name for retrieval quality, the two noise
+types should have similar faithfulness slopes. If coherence carries diagnostic
+signal beyond generic degradation, same-topic uninformative noise should be
+less harmful.
+
+\paragraph{Test 6: comparing deployment policies.}
+We evaluate HCPC-v2, CRAG, RAPTOR-2L, and Self-RAG on SQuAD and HotpotQA at
+$n=200$ per dataset/condition. The verified full Self-RAG artifact contains
+1,600 per-query evaluations, 8 summary rows, and 0 error rows. We report
+faithfulness, hallucination rate, mean latency, p99 latency, and indexing
+cost. A separate RAPTOR audit reports p50/p99 latency, dense-index cost,
+tree-build cost, and index size across SQuAD, PubMedQA, and HotpotQA.
+
+\subsection{ControlledRAG as a Reusable Protocol}
+
+\method{} is intended as an audit protocol for RAG claims, not as a one-off
+set of experiments for this paper. The unit of analysis is a claim made by a
+RAG system paper: that a retrieval change improves support, that a threshold
+generalizes, that a metric identifies an effect size, or that a method is
+deployment-preferable. Each protocol step asks what else would need to be true
+for that claim to be identified.
+
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{\method{} audit controls. Each control can be reused with other
+datasets, retrievers, generators, and faithfulness metrics.}
+\label{tab:controlledrag_protocol}
+\begin{tabularx}{\linewidth}{p{0.20\linewidth}p{0.24\linewidth}Xp{0.20\linewidth}}
+\toprule
+Control & Claim it tests & Failure mode exposed & Primary artifact/table \\
+\midrule
+Similarity-matched intervention & Set coherence improves faithfulness after
+local relevance is fixed & A plausible set statistic can lose its apparent
+effect once local query--passage similarity is controlled & Table~\ref{tab:causal};
+\texttt{paired\_wilcoxon.csv} \\
+Multi-seed scale correction & A pilot effect remains large under repeated
+sampling & Small effects can be seed-sensitive even when the direction looks
+stable in a small headline cell & Table~\ref{tab:scaled};
+\texttt{headline\_table.csv} \\
+Fixed-generation multi-metric scoring & A single automatic judge identifies the
+intervention effect size & The same generations can imply different effect
+magnitudes under different faithfulness observers & Table~\ref{tab:metrics};
+\texttt{table1} multimetric CSV \\
+Threshold-transfer matrix & One tuned threshold generalizes across datasets &
+In-domain tuning can hide poor off-diagonal transfer & Table~\ref{tab:tauflags};
+\texttt{tau} transfer matrix CSV \\
+Coherent-vs-random noise separation & Coherence is just generic retrieval
+quality under another name & Same-topic uninformative context and random
+off-topic context can have different faithfulness slopes & Table~\ref{tab:noise};
+\texttt{slope\_response.csv} \\
+Cost-aware Pareto audit & One method is deployment-preferable & A method can
+win one dataset or metric while losing on p99 latency, hallucination, or
+offline indexing cost & Figure~\ref{fig:pareto_p99};
+Table~\ref{tab:h2h} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The protocol is deliberately modular. A future RAG paper can replace the
+datasets, generators, retrievers, or judges while keeping the same audit
+questions: match the confounder, scale the headline cell, rescore fixed
+generations, transfer thresholds, separate noise types, and report the cost
+surface.

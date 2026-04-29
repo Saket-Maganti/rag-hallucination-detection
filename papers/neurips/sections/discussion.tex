@@ -1,0 +1,21 @@
+\section{Discussion}
+\label{sec:discussion}
+
+% POLISH FIX 6/PAGE-BUDGET: Kept the discussion claim ledger but moved the
+% reusable seven-item reporting standard to Section 1 and shortened repetition.
+\paragraph{The collapse is informative.}
+The audit weakens the simple refinement-paradox story: the pilot effect becomes
+small under DeBERTa, the matched CCS test rejects the strong coherence
+interpretation, and the baseline ranking changes with dataset and cost surface.
+That is the point. Standard RAG reporting under-identifies faithfulness claims.
+
+\paragraph{What can and cannot be claimed.}
+Local retrieval quality and answer faithfulness can decouple; CCS is diagnostic,
+not causal; metric choice materially changes intervention magnitude; human
+calibration gives only moderate alignment for the closest automatic scorer;
+threshold transfer is uneven; and baseline comparisons require hallucination,
+p99 latency, and indexing cost. The audit does not show that HCPC-v2 solves
+hallucination, that the DeBERTa paradox is large and stable at scale, that
+Self-RAG is globally weak, or that any automatic scorer is a universal
+faithfulness metric. The operational recommendation is the seven-item reporting
+standard in Section~\ref{sec:introduction}.

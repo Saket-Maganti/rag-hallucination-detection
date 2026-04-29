@@ -1,0 +1,78 @@
+\section{Methodology}
+\label{sec:methodology}
+
+\paragraph{Datasets.}
+Seven question-answering corpora are used. SQuAD
+\citep{rajpurkar2016squad}, PubMedQA \citep{jin2019pubmedqa},
+HotpotQA distractor \citep{yang2018hotpotqa}, NaturalQuestions
+\citep{kwiatkowski2019nq}, and TriviaQA \citep{joshi2017triviaqa}
+form the short-answer extractive-QA core. MS-MARCO
+\citep{nguyen2016msmarco} and QASPER \citep{dasigi2021qasper}
+provide long-form retrieval evaluation contexts but are reported as
+limitation-bounded scope (see \S\ref{sec:limitations}).
+
+\paragraph{Generators.}
+Five generators span the parameter range:
+Mistral-7B-Instruct \citep{jiang2023mistral} and Llama-3-8B
+\citep{meta2024llama3} via local Ollama, Qwen-2.5-7B-Instruct
+\citep{qwen2024} also via Ollama, plus Llama-3.3-70B-Versatile
+and GPT-OSS-120B via Groq's free API for frontier-scale checks.
+Independent reproduction at 70B+ via Together.ai is
+budget-blocked under the zero-dollar constraint of this work and
+is disclosed as such (\S\ref{sec:limitations}).
+
+\paragraph{Retrieval substrate.}
+ChromaDB v0.4 \citep{chroma2023} with cosine similarity, indexed
+over $1024$-token chunks (overlap $100$). The default embedder is
+\texttt{sentence-transformers/all-MiniLM-L6-v2}
+\citep{reimers2019sbert}. Multi-retriever robustness uses BGE-large,
+E5-large, and GTE-large \citep{xiao2023bge,wang2022e5,li2023gte}.
+Cross-encoder reranking (where required) uses
+\texttt{ms-marco-MiniLM-L-6-v2}.
+
+\paragraph{Faithfulness scorers.}
+Three independent scorers are used in parallel:
+\begin{itemize}
+\itemsep -2pt
+\item \(\phi_{\mathrm{DeBERTa}}\):
+\texttt{cross-encoder/nli-deberta-v3-base} sentence-by-sentence
+mean entailment \citep{he2021debertav3}.
+\item \(\phi_{\mathrm{mnli}}\): \texttt{roberta-large-mnli} as a
+zero-shot entailment proxy.
+\item \(\phi_{\mathrm{ragas}}\): a Mistral-7B-as-judge instance
+prompted with a RAGAS-style \citep{shahul2024ragas} faithfulness
+rubric and a structured JSON-schema response, parsed defensively.
+The judge is run as a \emph{separate} Mistral-7B process (different
+context window, different instruction) from the system under test
+to limit immediate self-bias; we discuss residual self-bias risk
+in \S\ref{sec:multimetric}.
+\end{itemize}
+A faithfulness reading is reported as the per-query mean of one of
+these scorers; hallucination rate is reported as the proportion of
+queries for which the reading is below $0.5$, with Wilson score
+95\,\% confidence intervals on that proportion.
+
+\paragraph{Pre-registration log.}
+Every experiment is pre-registered at
+\texttt{experiments/fix\_NN\_log.md} with: hypothesis, sample size,
+seed list, statistical test, effect-size threshold, and
+honest-reporting commitment if the hypothesis is not supported. A
+hypothesis is considered supported only if all three of the
+following hold: (a) the pre-registered statistical test rejects at
+$p<0.05$; (b) Cohen's $d_z>0.2$ for paired-difference experiments;
+(c) the 10{,}000-resample bootstrap 95\,\% CI on the effect-size
+estimate excludes zero. Every CSV reported in this paper is
+committed at \texttt{data/revision/fix\_NN/per\_query.csv} and
+every aggregated table at
+\texttt{results/revision/fix\_NN/}. A reproducibility script
+runs the full audit on a free Kaggle T4\(\times\)2 session in roughly
+five hours; see \S\ref{sec:benchmark}.
+
+\paragraph{Computational budget.}
+All experiments run on free hardware: an Apple M4 Air for
+Ollama-backed runs and a Kaggle T4\(\times\)2 session for the
+8-bit Self-RAG comparison and any GPU-resident NLI scoring.
+No paid APIs, no Groq quota burn beyond the free tier, no
+Together.ai paid calls, and no GPT-4o-mini/Claude judge calls
+are used. Total compute is well under 50 GPU-hours of free-tier
+allocation across all experiments in this paper.

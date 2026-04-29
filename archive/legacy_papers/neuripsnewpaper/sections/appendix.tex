@@ -1,0 +1,59 @@
+\section{Artifact and Source Table Manifest}
+
+The main paper is backed by the source tables copied into
+\texttt{neuripsnewpaper/source\_tables/} and by the imported full Self-RAG
+artifact files listed below.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Primary source artifacts used in this draft.}
+\begin{tabular}{ll}
+\toprule
+File & Used for \\
+\midrule
+\texttt{paired\_wilcoxon.csv} & Matched-similarity causal intervention \\
+\texttt{headline\_table.csv} & Scaled SQuAD/Mistral headline cell \\
+\texttt{paired\_contrasts.csv} & Per-seed paired tests for Fix 2 \\
+\texttt{table1\_multimetric.csv} & Three-metric faithfulness table \\
+\texttt{metric\_correlations.csv} & Metric agreement analysis \\
+\texttt{tau\_transfer\_matrix.csv} & Cross-dataset threshold transfer \\
+\texttt{generalization\_flags.csv} & Dataset-specific tuning flags \\
+\texttt{slope\_response.csv} & Coherence-preserving noise slopes \\
+\texttt{h2h\_summary\_full\_selfrag.csv} & Full baseline comparison with Self-RAG \\
+\texttt{data/revision/fix\_06/per\_query\_full\_selfrag.csv} & Full Self-RAG per-query artifact \\
+\texttt{results/revision/fix\_06/h2h\_summary\_full\_selfrag.csv} & Imported full Self-RAG summary \\
+\texttt{raptor\_full\_table.csv} & RAPTOR latency and indexing cost \\
+\texttt{partial\_correlations.csv} & Self-confidence association audit \\
+\texttt{source\_tables/CHECKSUMS.md} & Checksums for imported source tables \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Human Calibration Plan}
+
+No completed two-rater human labels are reported in the main paper. Two staged
+files exist:
+\begin{itemize}[leftmargin=1.6em,itemsep=2pt,topsep=2pt]
+  \item \path{data/revision/fix_03/human_eval_template.jsonl}: 99 examples
+  with blank rater fields.
+  \item \path{results/human_eval/samples.csv}: an older 90-example sampling
+  sheet with blank human fields.
+\end{itemize}
+The planned calibration uses two independent raters, a three-way label scheme
+(supported, partially supported, unsupported), Cohen's $\kappa$ for inter-rater
+agreement, and Spearman correlation between adjudicated labels and each
+automatic score: DeBERTa, the second NLI scorer, and the local RAGAS-style
+judge.
+
+\section{Supplementary Submission Notes}
+
+\begin{enumerate}[leftmargin=1.6em,itemsep=2pt,topsep=2pt]
+  \item Fill the 99-item human-evaluation template and report rater agreement.
+  \item Add the official \texttt{neurips\_2026.sty} file before submission.
+  The draft source already loads it automatically if present; the current
+  geometry block is a local fallback only.
+  \item Keep the main paper and supplement separate for submission unless the
+  final NeurIPS instructions require a single combined PDF.
+  \item Replace anonymous metadata with camera-ready metadata only after review.
+\end{enumerate}

@@ -1,0 +1,40 @@
+\section{Limitations and Ethics}
+\label{sec:limitations_ethics}
+
+% POLISH FIX 4/P2-B: Reframed Self-RAG as harness-mismatched and clarified
+% that earlier large-model observations are not central revision evidence.
+\paragraph{Short-answer scope.}
+The main evidence concerns short-answer extractive QA. It should not be used
+to claim the same behavior in long-form synthesis, agentic workflows, or
+domain-specific retrieval without additional controls.
+
+\paragraph{Human calibration and judge bias.}
+The human evaluation has 99 examples, two raters, and adjudicated labels: it
+calibrates scorer disagreement in the audited cell, but does not definitively
+validate any faithfulness metric. The RAGAS-style judge is local and
+zero-dollar, but may share family-level biases with the generator; the stronger
+conclusion is metric fragility, not that the judge is universally correct.
+
+\paragraph{CCS and threshold scope.}
+The matched-similarity test is a single-domain causal test on SQuAD/Mistral.
+It rejects the strong CCS interpretation in that setting; it does not exhaust
+all possible context-structure hypotheses. Threshold transfer is also uneven,
+so thresholded policies should report off-diagonal behavior.
+
+\paragraph{Self-RAG harness fairness.}
+Self-RAG is a harness-mismatched appendix baseline because it uses a different
+backbone, quantization path, and reflective decoding objective than the
+Mistral-backed methods in the main table. Its measured behavior should not be
+read as a global statement about Self-RAG.
+
+\paragraph{Large-model reproduction.}
+The pilot's 70B and 120B observations are not re-verified under the zero-dollar
+revision constraint and therefore are not treated as central evidence; they
+are not contradicted by the audit.
+
+\paragraph{Ethics.}
+The audit is intended to reduce overclaims about faithful RAG systems. The
+main risk is misuse: a single metric, a single threshold, or one favorable
+baseline row could be cherry-picked to market a system as grounded. We
+therefore emphasize per-query logs, multiple metrics, human calibration,
+negative results, and cost-aware reporting.

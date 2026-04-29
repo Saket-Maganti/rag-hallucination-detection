@@ -161,7 +161,7 @@ def run_dataset(dataset_name, docs_raw, qa_pairs):
         top_k=TOP_K,
         model_name=MODEL_NAME,
         embed_model=EMBED_MODEL,
-        persist_dir=f"./chroma_db_coh_{dataset_name}",
+        persist_dir=f"./artifacts/generated/chroma_db_coh_{dataset_name}",
     )
     pipeline.index_documents(docs_raw[:N_DOCS],
                               collection_name=f"coh_{dataset_name}")

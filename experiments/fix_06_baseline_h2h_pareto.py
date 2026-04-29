@@ -88,7 +88,7 @@ def run_dataset(args: argparse.Namespace, dataset: str, detector: HallucinationD
         chunk_overlap=100,
         top_k=3,
         model_name=args.model,
-        persist_dir=f"./chroma_db_fix06/{dataset}",
+        persist_dir=f"./artifacts/generated/chroma_db_fix06/{dataset}",
     )
     t_index0 = time.time()
     pipe.index_documents(docs, collection_name=f"fix06_{dataset}")

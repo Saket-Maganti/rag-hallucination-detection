@@ -137,7 +137,7 @@ def run_one(
         top_k=top_k,
         model_name=model,
         embed_model=EMBED_MODEL,
-        persist_dir=f"./chroma_db_noise/{collection}",
+        persist_dir=f"./artifacts/generated/chroma_db_noise/{collection}",
     )
     pipeline.index_documents(docs, collection_name=collection)
 

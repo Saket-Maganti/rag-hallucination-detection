@@ -96,7 +96,7 @@ infeasible under current constraints.
 | 3   | W3 (single metric) | **Done** | DeBERTa is the outlier; RAGAS shows much larger paradox; pairwise r=0.18–0.67. |
 | 4   | W4 (τ leakage) | **Done** | SQuAD/PubMedQA/NaturalQS flag for §8; TriviaQA/HotpotQA do not. |
 | 5   | W5 (noise slope) | **Done** | Coherence-preserving slope (−0.043) < random (−0.069) at matched rate. |
-| 6   | W6 (baselines) | **Partial run complete** | No-Self-RAG Kaggle T4×2 package imported: 1,200 rows for HCPC-v2, CRAG, and RAPTOR-2L on SQuAD/HotpotQA; Self-RAG remains optional. |
+| 6   | W6 (baselines) | **Done, full Self-RAG verified** | Full Kaggle T4×2 Self-RAG package verified: 1,600 rows for HCPC-v2, CRAG, RAPTOR-2L, and Self-RAG on SQuAD/HotpotQA. HCPC-v2 does not dominate; CRAG wins HotpotQA; Self-RAG underperforms in this matched short-answer harness. |
 | 7   | W7 (70B repro) | **Blocked** | No genuinely free 70B endpoint; will disclose, not fake. |
 | 8   | W8 (theory) | **Paper-pending** | Theory.tex retitle + theorem rewrite mandatory because Fix 1 was null. |
 | 9   | W9 (confidence) | **Done, limited** | No-control r=0.36 p=0.005; controls absent in input; report as suggestive. |
@@ -119,7 +119,7 @@ mean per-passage similarity.
 **Code:** [`experiments/fix_01_causal_matched_pairs.py`](../../experiments/fix_01_causal_matched_pairs.py)
 **Data:** `data/revision/fix_01/`
 **Results:** `results/revision/fix_01/`
-**Paper section:** `ragpaper/sections/revision/fix_01_causal_intervention.tex`
+**Paper section:** `papers/arxiv_longform/sections/revision/fix_01_causal_intervention.tex`
 
 **Hypothesis (frozen):** $\mathbb{E}[\text{faith} | \text{HIGH-CCS}] - \mathbb{E}[\text{faith} | \text{LOW-CCS}] > 0$ at fixed mean query similarity (within ±0.02). H1 supported iff paired Wilcoxon p<0.05 AND Cohen's $d_z$>0.2 AND bootstrap 95% CI excludes 0.
 
@@ -155,7 +155,7 @@ causally validated. Per the pre-registration:
   causal by Fix 1.
 - §5 retitled "Information-Theoretic Consistency Check" (also Fix 8).
 - §`sec:causal_intervention` added with the null result, the paired-
-  difference plot (`ragpaper/figures/fix_01_paired_diff.pdf`), and a
+  difference plot (`papers/arxiv_longform/figures/fix_01_paired_diff.pdf`), and a
   short concession paragraph.
 
 ---
@@ -169,7 +169,7 @@ causally validated. Per the pre-registration:
 **Code:** [`experiments/fix_02_scaled_headline_n500.py`](../../experiments/fix_02_scaled_headline_n500.py)
 **Data:** `data/revision/fix_02/per_query.csv` (7500 evaluations)
 **Results:** `results/revision/fix_02/`
-**Paper section:** `ragpaper/sections/revision/fix_02_scaled_headline.tex`
+**Paper section:** `papers/arxiv_longform/sections/revision/fix_02_scaled_headline.tex`
 
 **Sample:** 5 seeds (41–45) × 3 conditions (baseline / HCPC-v1 / HCPC-v2)
 × 500 SQuAD queries. Mistral-7B via Ollama. τ frozen at paper values.
@@ -216,7 +216,7 @@ on the choice of scorer.
 **Helpers:** [`src/ragas_scorer.py`](../../src/ragas_scorer.py), [`src/vectara_hem_scorer.py`](../../src/vectara_hem_scorer.py)
 **Data:** `data/revision/fix_03/per_query.csv` (7500 rows scored)
 **Results:** `results/revision/fix_03/`
-**Paper section:** `ragpaper/sections/revision/fix_03_multimetric.tex`
+**Paper section:** `papers/arxiv_longform/sections/revision/fix_03_multimetric.tex`
 
 Vectara HEM required custom remote code; the second NLI fell back to
 `roberta-large-mnli` per the scorer's documented fallback path. The
@@ -274,7 +274,7 @@ test whether the SQuAD-tuned τ transfers.
 **Code:** [`experiments/fix_04_tau_generalization.py`](../../experiments/fix_04_tau_generalization.py)
 **Data:** `data/revision/fix_04/per_query.csv` (7500 evaluations)
 **Results:** `results/revision/fix_04/`
-**Paper section:** `ragpaper/sections/revision/fix_04_tau_generalization.tex`
+**Paper section:** `papers/arxiv_longform/sections/revision/fix_04_tau_generalization.tex`
 
 **Sample:** 5 datasets (SQuAD, PubMedQA, HotpotQA, NaturalQS, TriviaQA)
 × 5 τ values (0.30, 0.40, 0.50, 0.60, 0.70) × 300 queries.
@@ -317,7 +317,7 @@ loss from coherence loss.
 **Code:** [`experiments/fix_05_coherence_preserving_noise.py`](../../experiments/fix_05_coherence_preserving_noise.py)
 **Data:** `data/revision/fix_05/per_query.csv` (1591 evaluations)
 **Results:** `results/revision/fix_05/`
-**Paper section:** `ragpaper/sections/revision/fix_05_noise_slope.tex`
+**Paper section:** `papers/arxiv_longform/sections/revision/fix_05_noise_slope.tex`
 
 **Sample:** 200 SQuAD queries; baseline + coherence-preserving noise
 (same-topic answer-absent passages from the query's top-20 pool, 3
@@ -358,32 +358,40 @@ hallucination, and a Pareto plot.
 **Pre-registration:** [`experiments/fix_06_log.md`](../../experiments/fix_06_log.md)
 **Code:** [`experiments/fix_06_baseline_h2h_pareto.py`](../../experiments/fix_06_baseline_h2h_pareto.py) (now writes periodic partial CSVs via `--save_every`)
 **Kaggle scaffolding:** [`notebooks/revision_fix6_kaggle_t4x2_fresh.ipynb`](../../notebooks/revision_fix6_kaggle_t4x2_fresh.ipynb), [`scripts/kaggle_fix6_t4x2.sh`](../../scripts/kaggle_fix6_t4x2.sh), [`scripts/kaggle_stream_fix6_t4x2.py`](../../scripts/kaggle_stream_fix6_t4x2.py)
-**Paper section:** `ragpaper/sections/revision/fix_06_baselines.tex`
+**Paper section:** `papers/arxiv_longform/sections/revision/fix_06_baselines.tex`
 
-**Status:** **PARTIAL RUN COMPLETE** — no-Self-RAG package imported
-2026-04-28; Self-RAG smoke/full run still optional.
+**Status:** **DONE, FULL SELFRAG VERIFIED** — no-Self-RAG package was
+imported first, then the full Self-RAG-only Kaggle follow-up completed
+and was verified locally on 2026-04-28.
 
-**Imported package:** `/Users/saketmaganti/Downloads/AAA_FIX6_T4X2_OUTPUTS.zip`.
-The package contains HCPC-v2, CRAG, and RAPTOR-2L only. It does not contain
-Self-RAG smoke or full-run outputs.
+**Verified full package:** `/Users/saketmaganti/Downloads/AAA_FIX6_FULL_SELFRAG_ONLY_OUTPUTS.zip`.
+Archive sha256:
+`cf2b25a1b5c16e3430ca22ed4aeaac80dce23e9b570c4e8715be620c8ae45bb8`.
+Integrity check passed; the full run has 1600 per-query rows, 8 summary
+rows, 0 errors, and 200 queries per dataset/condition. The wrapper ended
+with `END stage=selfrag rc=0 elapsed=5071s`.
 
-**Result (`results/revision/fix_06/h2h_summary.csv`):**
+**Full Self-RAG result (`papers/neurips/source_tables/h2h_summary_full_selfrag.csv`):**
 
 | dataset | method | n | faithfulness | hallucination | mean latency ms | p99 latency ms |
 | --- | --- | ---: | ---: | ---: | ---: | ---: |
-| HotpotQA | CRAG | 200 | 0.6427 | 0.105 | 1940.65 | 4254.93 |
-| HotpotQA | HCPC-v2 | 200 | 0.6334 | 0.125 | 2288.94 | 5545.37 |
-| HotpotQA | RAPTOR-2L | 200 | 0.6308 | 0.130 | 2413.58 | 5074.35 |
-| SQuAD | CRAG | 200 | 0.6982 | 0.120 | 1440.49 | 5110.87 |
-| SQuAD | HCPC-v2 | 200 | 0.7084 | 0.125 | 1719.94 | 5399.50 |
-| SQuAD | RAPTOR-2L | 200 | 0.7100 | 0.125 | 1713.70 | 4441.73 |
+| HotpotQA | CRAG | 200 | 0.6432 | 0.105 | 1473.04 | 3280.63 |
+| HotpotQA | HCPC-v2 | 200 | 0.6323 | 0.130 | 1840.58 | 4032.43 |
+| HotpotQA | RAPTOR-2L | 200 | 0.6308 | 0.130 | 1906.35 | 4042.84 |
+| HotpotQA | Self-RAG | 200 | 0.5739 | 0.430 | 6157.93 | 46965.38 |
+| SQuAD | CRAG | 200 | 0.6982 | 0.120 | 1021.16 | 3317.52 |
+| SQuAD | HCPC-v2 | 200 | 0.7084 | 0.125 | 1348.63 | 3611.52 |
+| SQuAD | RAPTOR-2L | 200 | 0.7100 | 0.125 | 1295.57 | 3188.73 |
+| SQuAD | Self-RAG | 200 | 0.5741 | 0.390 | 7542.42 | 44800.05 |
 
 **Interpretation:** on SQuAD, HCPC-v2 and RAPTOR-2L are effectively tied; on
-HotpotQA, CRAG is the strongest no-Self-RAG baseline. The paper should not
-claim HCPC-v2 uniformly dominates stronger baselines.
+HotpotQA, CRAG is the strongest baseline. Self-RAG underperforms in this
+matched short-answer harness, with faithfulness near 0.574, hallucination
+rates of 39-43%, and p99 latency around 45-47 seconds. The paper should not
+claim HCPC-v2 uniformly dominates stronger baselines, and should describe the
+Self-RAG finding as harness-specific rather than universal.
 
-**Conditions compared so far:** HCPC-v2, CRAG, RAPTOR-2L.
-**Remaining optional condition:** Self-RAG.
+**Conditions compared:** HCPC-v2, CRAG, RAPTOR-2L, Self-RAG.
 **Datasets:** SQuAD, HotpotQA.
 **Sample:** n=200 per (dataset, condition).
 **Reports:** faithfulness, hallucination rate, p50/p99 latency,
@@ -400,7 +408,7 @@ backend" in rebuttal.
 **Pre-registration:** [`experiments/fix_07_log.md`](../../experiments/fix_07_log.md)
 **Code:** [`experiments/fix_07_together_70b_reproduction.py`](../../experiments/fix_07_together_70b_reproduction.py)
 **Wrapper:** [`src/together_llm.py`](../../src/together_llm.py)
-**Paper section:** `ragpaper/sections/revision/fix_07_together.tex`
+**Paper section:** `papers/arxiv_longform/sections/revision/fix_07_together.tex`
 
 **Status:** **BUDGET-BLOCKED.** A 70B model does not fit on free T4 /
 P100 / L4 / M4 Air, and Together.ai is paid. Until free 70B-capable
@@ -421,7 +429,7 @@ Theorem 1 that implied predictive power Fix 1 has now disconfirmed.
 
 **Pre-registration:** [`experiments/fix_08_log.md`](../../experiments/fix_08_log.md)
 **Code:** none (paper-only)
-**Paper section:** `ragpaper/sections/revision/fix_08_theory_reframe.tex`
+**Paper section:** `papers/arxiv_longform/sections/revision/fix_08_theory_reframe.tex`
 
 **Status:** **PAPER-PENDING.** Mandatory because Fix 1 was null.
 
@@ -443,7 +451,7 @@ might be mediated by per-passage similarity or pairwise redundancy.
 **Code:** [`experiments/fix_09_partial_correlations.py`](../../experiments/fix_09_partial_correlations.py)
 **Data:** `data/revision/fix_09/input_copy.csv`
 **Results:** `results/revision/fix_09/partial_correlations.csv`
-**Paper section:** `ragpaper/sections/revision/fix_09_partial_confidence.tex`
+**Paper section:** `papers/arxiv_longform/sections/revision/fix_09_partial_confidence.tex`
 
 **Status:** **DONE, LIMITED.**
 
@@ -481,7 +489,7 @@ is buried, and Fix 1 + Fix 2 have weakened the claim further.
 
 **Pre-registration:** [`experiments/fix_10_log.md`](../../experiments/fix_10_log.md)
 **Code:** none (paper-only)
-**Paper section:** `ragpaper/sections/revision/fix_10_scope_deployment.tex`
+**Paper section:** `papers/arxiv_longform/sections/revision/fix_10_scope_deployment.tex`
 
 **Status:** **PAPER-PENDING.** Mandatory because Fix 1 + Fix 2 collapsed
 the headline.
@@ -504,7 +512,7 @@ this fix populates the full per-(dataset, metric) table.
 **Code:** [`experiments/fix_11_raptor_full_table.py`](../../experiments/fix_11_raptor_full_table.py)
 **Data:** `data/revision/fix_11/per_query.csv` (300 evaluations)
 **Results:** `results/revision/fix_11/raptor_full_table.csv`, `raptor_indexing_costs.csv`
-**Paper section:** `ragpaper/sections/revision/fix_11_raptor_full_table.tex`
+**Paper section:** `papers/arxiv_longform/sections/revision/fix_11_raptor_full_table.tex`
 
 **Sample:** 3 datasets × 100 queries.
 
@@ -555,11 +563,12 @@ Bringing the per-fix results together, the paper changes are:
 7. **§Confidence calibration.** Downgrade to "suggestive" and note
    the missing-control limitation. Forced by Fix 9.
 8. **§Head-to-head (headtohead.tex / appendix).** Add full RAPTOR
-   table with indexing cost and p99 latency (Fix 11) and the no-Self-
-   RAG head-to-head with Pareto figure (Fix 6:
-   `ragpaper/figures/fix_06_pareto_faith_latency.pdf`). Honest framing:
-   HCPC-v2 is competitive on SQuAD short-answer and dominated by CRAG
-   on HotpotQA multi-hop.
+   table with indexing cost and p99 latency (Fix 11) and the full
+   Self-RAG/CRAG/RAPTOR/HCPC-v2 head-to-head (Fix 6; verified full
+   summary copied to `papers/neurips/source_tables/h2h_summary_full_selfrag.csv`).
+   Honest framing: HCPC-v2 is competitive on SQuAD short-answer,
+   dominated by CRAG on HotpotQA multi-hop, and Self-RAG underperforms
+   in this matched short-answer harness.
 9. **§Causal intervention (new subsection).** Add the matched-
    similarity HIGH/LOW CCS experiment with the null result, the
    paired-difference figure, and the concession paragraph. Sourced
@@ -570,15 +579,15 @@ Bringing the per-fix results together, the paper changes are:
 Ordered by priority and dependency.
 
 **Must do (paper-only, no compute):**
-- Wire `ragpaper/sections/revision/fix_08_theory_reframe.tex` into
+- Wire `papers/arxiv_longform/sections/revision/fix_08_theory_reframe.tex` into
   `theory.tex` (rename + theorem rewrite).
-- Wire `ragpaper/sections/revision/fix_10_scope_deployment.tex` into
+- Wire `papers/arxiv_longform/sections/revision/fix_10_scope_deployment.tex` into
   `abstract.tex` and `discussion.tex` (scope narrowing).
-- Wire `ragpaper/sections/revision/fix_01_causal_intervention.tex`
+- Wire `papers/arxiv_longform/sections/revision/fix_01_causal_intervention.tex`
   into the paradox/method narrative.
 - Apply the cascading edits in §5 above (abstract, paradox, method,
   robustness, discussion).
-- Wire all completed-fix tables into `ragpaper/main.tex` via
+- Wire all completed-fix tables into `papers/arxiv_longform/main.tex` via
   `\input{sections/revision/fix_NN_*}`.
 
 **Optional:**
@@ -587,8 +596,6 @@ Ordered by priority and dependency.
 - Regenerate `experiments/run_confidence_calibration.py` output with
   `mean_retrieval_similarity` and `passage_redundancy` columns and
   re-run Fix 9 with full controls.
-- Attempt Fix 6 Self-RAG smoke test, then optionally the full
-  Self-RAG run.
 
 **Blocked:**
 - Fix 7 (Together.ai 70B reproduction) stays blocked unless free 70B
@@ -688,7 +695,7 @@ results/revision/
 ├── fix_09/  partial_correlations, summary
 └── fix_11/  raptor_full_table, raptor_indexing_costs, summary
 
-ragpaper/sections/revision/
+papers/arxiv_longform/sections/revision/
 ├── fix_01_causal_intervention.tex
 ├── fix_02_scaled_headline.tex
 ├── fix_03_multimetric.tex
@@ -706,7 +713,7 @@ notebooks/
 ├── revision_fix2_kaggle_t4x2_fresh.ipynb    ← Fix 2 (already used)
 ├── revision_fix3_4_kaggle_t4x2_fresh.ipynb  ← Fix 3 + Fix 4 (already used)
 ├── revision_fix5_11_kaggle_t4x2_fresh.ipynb ← Fix 5 + Fix 11 (already used)
-└── revision_fix6_kaggle_t4x2_fresh.ipynb    ← Fix 6 (no-Self-RAG used; Self-RAG optional)
+└── revision_fix6_kaggle_t4x2_fresh.ipynb    ← Fix 6 (full Self-RAG follow-up verified)
 
 scripts/
 ├── kaggle_session1_fresh.sh

@@ -1,0 +1,51 @@
+\section{Threshold Transfer}
+\label{sec:threshold_transfer}
+
+% POLISH P2-A: Added a worked caption example so recovery scores above 1 and
+% below 0 are interpretable without rereading the normalization equation.
+Thresholded retrieval policies can look strong when the threshold is tuned and
+evaluated on the same dataset. We test transfer by tuning \(\tau\) on each of
+five datasets and evaluating on all five. For evaluation dataset \(d\) and
+threshold \(\tau\), recovery is
+\[
+\mathrm{Recovery}(d,\tau) =
+\frac{\mathrm{Faith}_{\mathrm{gate}}(d,\tau) -
+\mathrm{Faith}_{\mathrm{HCPC}\mbox{-}\mathrm{v1}}(d)}
+{\mathrm{Faith}_{\mathrm{baseline}}(d) -
+\mathrm{Faith}_{\mathrm{HCPC}\mbox{-}\mathrm{v1}}(d)}.
+\]
+Scores can exceed 1 when the gated policy exceeds the baseline relative to
+HCPC-v1, and can be negative when transfer is worse than HCPC-v1 under this
+normalization.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Threshold-transfer recovery score. SQuAD, PubMedQA, and
+NaturalQuestions show large in-domain versus off-diagonal gaps; TriviaQA
+and HotpotQA do not. \emph{Worked example.} On PubMedQA, baseline
+$=0.559148$, HCPC-v1 $=0.562581$, gated at $\tau{=}0.4$ $=0.557595$
+(table rounded to three decimals); recovery $=
+(0.557595-0.562581)/(0.559148-0.562581)=1.452$. Because HCPC-v1 happens
+to outperform the dense baseline on PubMedQA, this above-$1$ score means
+the gated policy fell $45.2\%$ of $|\text{baseline}-\text{HCPC-v1}|$
+below the baseline; a negative score means the gated policy underperforms
+HCPC-v1 under this normalization.}
+\label{tab:tauflags}
+\begin{tabular}{lrrr}
+\toprule
+Tune dataset & Diagonal recovery & Off-diagonal mean & Gap \\
+\midrule
+PubMedQA & 1.452 & 0.451 & 1.002 \\
+NaturalQuestions & 1.401 & 0.211 & 1.191 \\
+SQuAD & 0.823 & -0.141 & 0.963 \\
+TriviaQA & 0.464 & 0.698 & -0.234 \\
+HotpotQA & -0.112 & 0.093 & -0.205 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The result is uneven transfer, not a universal failure. Some datasets show a
+large in-domain advantage, while others do not. Reporting only the tuned
+diagonal would make the policy look more stable than the off-diagonal evidence
+supports.

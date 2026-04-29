@@ -1,0 +1,41 @@
+\section{Information-Theoretic Consistency Check}
+
+This section is not a proof of the empirical mechanism. Its role is narrower:
+it checks that the observed non-identifiability is compatible with a simple
+information view of retrieval.
+
+Let $Y$ denote the answer-supporting information needed for query $q$, and let
+each passage $p_i$ contain two kinds of signal: local query evidence measured
+by a score $s(q,p_i)$, and answer-supporting information $I(Y;p_i\mid q)$ that
+may not be captured by the local score. A refinement rule that keeps passages
+or sub-passages only through $s(q,p_i)$ is using an incomplete statistic unless
+$s$ is sufficient for answer support.
+
+\begin{proposition}[Incomplete local scores]
+If two passages can have the same local score but different
+$I(Y;p_i\mid q)$, then a policy that ranks only by local score can replace a
+more answer-informative context with a less answer-informative one while
+leaving the reported retrieval score unchanged or improved.
+\end{proposition}
+
+\paragraph{Implication.}
+The proposition is structural. It says that local scoring leaves room for
+discarding answer-relevant information; it does not say that this failure is
+common, large, or caused by CCS. Those are empirical questions, and the matched
+coherence experiment rejects the strong causal version for the primary
+SQuAD/Mistral setting.
+
+\begin{theorem}[Consistency of the controlled tests]
+Suppose a RAG claim is based on a statistic $z(q,P)$ that is not sufficient for
+answer support. Then there can exist two context-selection policies with the
+same or better value of $z$ but different answer faithfulness. Identifying the
+faithfulness effect therefore requires additional controls, such as matching
+local similarity, varying the evaluator, checking threshold transfer, or
+reporting deployment cost.
+\end{theorem}
+
+\paragraph{Use in this paper.}
+The theorem motivates the experimental design, not the conclusion. The results
+come from the preregistered controls in Section~3. The information-theoretic
+view only explains why a local retrieval score can be an insufficient basis for
+faithfulness claims.

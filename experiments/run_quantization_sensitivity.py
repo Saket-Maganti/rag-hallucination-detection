@@ -127,7 +127,7 @@ def run_tuple(dataset, quant_alias, n_q, detector):
         top_k=3,
         model_name=tag,
         embed_model=EMBED_MODEL,
-        persist_dir=f"./chroma_db_quant/{coll}",
+        persist_dir=f"./artifacts/generated/chroma_db_quant/{coll}",
     )
     pipe.index_documents(docs, collection_name=coll)
     v1 = HCPCRetriever(pipeline=pipe, sim_threshold=V1_SIM,

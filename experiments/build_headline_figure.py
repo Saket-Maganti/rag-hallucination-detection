@@ -12,8 +12,8 @@ Inputs:
     results/frontier_scale/paradox_by_scale.csv (Llama-70B, GPT-OSS-120B)
 
 Output:
-    ragpaper/figures/headline_frontier.pdf    (LaTeX-includable, vector)
-    ragpaper/figures/headline_frontier.tex    (figure environment + caption)
+    papers/arxiv_longform/figures/headline_frontier.pdf    (LaTeX-includable, vector)
+    papers/arxiv_longform/figures/headline_frontier.tex    (figure environment + caption)
 
 Usage:
     python3 experiments/build_headline_figure.py
@@ -35,7 +35,7 @@ import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parent.parent
-OUT_DIR = ROOT / "ragpaper" / "figures"
+OUT_DIR = ROOT / "papers" / "arxiv_longform" / "figures"
 OUT_PDF = OUT_DIR / "headline_frontier.pdf"
 OUT_TEX = OUT_DIR / "headline_frontier.tex"
 
@@ -158,7 +158,7 @@ $\Delta=\textrm{faith}_{\textrm{base}}-\textrm{faith}_{\textrm{v1}}$
 annotated above each pair.  PubMedQA paradox attenuates at scale --- a
 prediction the coherence account makes (stronger parametric priors are
 better substitutes for fragmented biomedical evidence) --- but does
-not invert.  See \S\ref{sec:rob:frontier} for the full table.}
+not invert.  See \S\ref{sec:robustness} for the full table.}
 \label{fig:headline_frontier}
 \end{figure}
 """

@@ -78,7 +78,7 @@ All Fixes 1-11 have code/log/LaTeX scaffolds:
 - `experiments/fix_09_partial_correlations.py`
 - `experiments/fix_11_raptor_full_table.py`
 - `experiments/revision_utils.py`
-- `ragpaper/sections/revision/fix_*.tex`
+- `papers/arxiv_longform/sections/revision/fix_*.tex`
 
 Shared helpers/wrappers added:
 
@@ -185,39 +185,41 @@ Fix 11 RAPTOR full table is complete locally/imported:
 - `results/revision/fix_11/raptor_full_table.csv`
 - `results/revision/fix_11/raptor_indexing_costs.csv`
 
-Fix 6 (no-Self-RAG path) is complete and was imported from the verified
-Kaggle T4 x 2 package `AAA_FIX6_T4X2_OUTPUTS.zip`:
+Fix 6 is complete through the full Self-RAG follow-up. The no-Self-RAG
+package was imported first; the later full package was verified locally from
+`/Users/saketmaganti/Downloads/AAA_FIX6_FULL_SELFRAG_ONLY_OUTPUTS.zip`.
 
-- `data/revision/fix_06/per_query.csv` — 1200 evaluations
-- `results/revision/fix_06/h2h_summary.csv`
-- `results/revision/fix_06/pareto_faithfulness_latency.pdf`
-- `ragpaper/figures/fix_06_pareto_faith_latency.pdf` (paper-ready copy)
-- `logs/revision/fix_06_baselines_no_selfrag.log`
+- archive sha256: `cf2b25a1b5c16e3430ca22ed4aeaac80dce23e9b570c4e8715be620c8ae45bb8`
+- full run: 1600 per-query evaluations, 8 summary rows, 0 errors
+- copied summary for the new paper:
+  `papers/neurips/source_tables/h2h_summary_full_selfrag.csv`
+- wrapper tail: `END stage=selfrag rc=0 elapsed=5071s`
 
-Sample: 2 datasets (SQuAD, HotpotQA) x 3 conditions (CRAG, HCPC-v2,
-RAPTOR-2L) x 200 queries.
+Sample: 2 datasets (SQuAD, HotpotQA) x 4 conditions (CRAG, HCPC-v2,
+RAPTOR-2L, Self-RAG) x 200 queries.
 
 Headline results:
 
 | dataset  | condition | faith  | halluc | mean ms | p99 ms |
 | -------- | --------- | -----: | -----: | ------: | -----: |
-| squad    | crag      | 0.6982 | 0.120  | 1440    | 5111   |
-| squad    | hcpc_v2   | 0.7084 | 0.125  | 1720    | 5400   |
-| squad    | raptor_2l | 0.7100 | 0.125  | 1714    | 4442   |
-| hotpotqa | crag      | 0.6427 | 0.105  | 1941    | 4255   |
-| hotpotqa | hcpc_v2   | 0.6334 | 0.125  | 2289    | 5545   |
-| hotpotqa | raptor_2l | 0.6308 | 0.130  | 2414    | 5074   |
+| squad    | crag      | 0.6982 | 0.120  | 1021    | 3318   |
+| squad    | hcpc_v2   | 0.7084 | 0.125  | 1349    | 3612   |
+| squad    | raptor_2l | 0.7100 | 0.125  | 1296    | 3189   |
+| squad    | selfrag   | 0.5741 | 0.390  | 7542    | 44800  |
+| hotpotqa | crag      | 0.6432 | 0.105  | 1473    | 3281   |
+| hotpotqa | hcpc_v2   | 0.6323 | 0.130  | 1841    | 4032   |
+| hotpotqa | raptor_2l | 0.6308 | 0.130  | 1906    | 4043   |
+| hotpotqa | selfrag   | 0.5739 | 0.430  | 6158    | 46965  |
 
-Key takeaway: HCPC-v2 does not clearly dominate. On SQuAD all three are
-within 1.2 pp on faithfulness; on HotpotQA CRAG wins on faith, halluc,
-and latency simultaneously. RAPTOR's offline build is 17-22x dense.
+Key takeaway: HCPC-v2 does not clearly dominate. On SQuAD RAPTOR-2L
+and HCPC-v2 are effectively tied; on HotpotQA CRAG wins on faith,
+hallucination, and latency simultaneously. Self-RAG underperforms in
+this matched short-answer harness, with faithfulness near 0.574,
+hallucination rates of 39-43%, and p99 latency around 45-47 seconds.
+Report that as harness-specific, not as a universal Self-RAG claim.
 Combined with the Fix 1 null and the Fix 2 paradox collapse, HCPC-v2
 can no longer be claimed as a controlled instrument that recovers
 faithfulness against strong baselines.
-
-Self-RAG smoke test and full Self-RAG run remain optional follow-ups
-via `notebooks/revision_fix6_kaggle_t4x2_fresh.ipynb` stages
-`smoke_selfrag` and `selfrag` respectively.
 
 The fresh Kaggle T4 x 2 notebook and runner that produced this result:
 
@@ -484,7 +486,7 @@ Status meanings:
 | 3 | Single faithfulness metric | Done, auto metrics | Optional: add human labels for the 99-item template. |
 | 4 | Tau-tuning leakage | Done | Flag diagonal-vs-offdiagonal gaps for PubMedQA, NaturalQS, and SQuAD. |
 | 5 | SQuAD noise slope | Done | Integrate noise-slope result into robustness discussion. |
-| 6 | Baseline head-to-head | Done (no-Self-RAG path) | Wire h2h_summary.csv + Pareto figure into paper. Self-RAG smoke/full optional follow-up. |
+| 6 | Baseline head-to-head | Done, full Self-RAG verified | Wire the full Self-RAG/CRAG/RAPTOR/HCPC table into the paper; use `papers/neurips/source_tables/h2h_summary_full_selfrag.csv` as the latest summary. |
 | 7 | Independent 70B reproduction | Budget-blocked | Disclose zero-dollar limitation; do not fake it. |
 | 8 | Info-theory overclaim | Paper patch pending integration | Integrate now; Fix 1 null makes this mandatory. |
 | 9 | Self-confidence partial correlation | Limited run complete | Report as suggestive unless controls are regenerated. |
@@ -504,10 +506,10 @@ complete. The remaining work is paper-side:
    Fix 6 collapsed the headline. Abstract verb downgrade (drives ->
    predicts), explicit scope to short-answer extractive QA, promote
    long-form non-result to its own subsection.
-3. **Wire all completed-fix tables and figures into `ragpaper/main.tex`**
+3. **Wire all completed-fix tables and figures into `papers/arxiv_longform/main.tex`**
    via `\input{sections/revision/fix_NN_*}`. None are inputted yet.
    The Fix 6 figure is at
-   `ragpaper/figures/fix_06_pareto_faith_latency.pdf`.
+   `papers/arxiv_longform/figures/fix_06_pareto_faith_latency.pdf`.
 4. **Cascading edits in `abstract.tex` / `paradox.tex` /
    `discussion.tex`** to match the Fix 1 null, Fix 2 collapse, and
    Fix 6 head-to-head.
@@ -519,10 +521,6 @@ Optional follow-ups (each adds 5-10% NeurIPS acceptance probability):
 - Regenerate `experiments/run_confidence_calibration.py` with
   `mean_retrieval_similarity` + `passage_redundancy` columns and
   re-run Fix 9 with full controls.
-- Run the optional Fix 6 Self-RAG smoke + full paths via
-  `notebooks/revision_fix6_kaggle_t4x2_fresh.ipynb` (stages
-  `smoke_selfrag` and `selfrag`) to add a Self-RAG row to the
-  head-to-head table.
 
 ## Caution
 

@@ -158,7 +158,7 @@ def run_one(ds: str, model: str, seed: int, n_q: int,
         chunk_overlap=int(CHUNK_SIZE * 0.1),
         top_k=TOP_K,
         model_name=model,
-        persist_dir=f"./chroma_db_ms/{coll}",
+        persist_dir=f"./artifacts/generated/chroma_db_ms/{coll}",
     )
     pipeline.index_documents(docs, collection_name=coll)
     _reseed_ollama(pipeline, seed)

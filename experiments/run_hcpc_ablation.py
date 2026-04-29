@@ -402,7 +402,7 @@ def main():
             top_k=TOP_K,
             model_name=MODEL_NAME,
             embed_model=EMBED_MODEL,
-            persist_dir=f"./chroma_db_hcpc/{collection_name}",
+            persist_dir=f"./artifacts/generated/chroma_db_hcpc/{collection_name}",
         )
         n_chunks = pipeline.index_documents(docs, collection_name=collection_name)
         print(f"[HCPC] {ds_name}: indexed {n_chunks} chunks (1024-token fixed)")

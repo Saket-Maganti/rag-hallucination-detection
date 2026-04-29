@@ -21,7 +21,7 @@ Inputs (in priority order):
     results/frontier_scale/per_query.csv
 
 Outputs:
-    ragpaper/figures/qualitative_paradox.tex     (LaTeX example box)
+    papers/arxiv_longform/figures/qualitative_paradox.tex     (LaTeX example box)
     results/qualitative/example_metadata.json    (selected query, scores)
 
 Usage:
@@ -45,7 +45,7 @@ from typing import Dict, List, Optional
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parent.parent
-OUT_TEX = ROOT / "ragpaper" / "figures" / "qualitative_paradox.tex"
+OUT_TEX = ROOT / "papers" / "arxiv_longform" / "figures" / "qualitative_paradox.tex"
 OUT_META = ROOT / "results" / "qualitative" / "example_metadata.json"
 
 INPUTS = [

@@ -3,7 +3,7 @@ experiments/build_topk_table.py — auto-populate Table tab:topk
 ==============================================================
 
 Reads results/topk_sensitivity/paradox_by_k.csv (produced by
-run_topk_sensitivity.py) and rewrites ragpaper/figures/topk_table.tex
+run_topk_sensitivity.py) and rewrites papers/arxiv_longform/figures/topk_table.tex
 with a fully populated LaTeX tabular body. The robustness section
 includes this fragment via `\input{figures/topk_table}`.
 
@@ -11,7 +11,7 @@ This closes the loop: after `run_topk_sensitivity.py` finishes,
 one command refreshes the paper table without hand-editing.
 
 Outputs:
-    ragpaper/figures/topk_table.tex      (LaTeX tabular body)
+    papers/arxiv_longform/figures/topk_table.tex      (LaTeX tabular body)
 
 Usage:
     python3 experiments/build_topk_table.py
@@ -25,7 +25,7 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parent.parent
 INPUT_CSV = ROOT / "results" / "topk_sensitivity" / "paradox_by_k.csv"
-OUT_TEX = ROOT / "ragpaper" / "figures" / "topk_table.tex"
+OUT_TEX = ROOT / "papers" / "arxiv_longform" / "figures" / "topk_table.tex"
 
 
 def main() -> None:

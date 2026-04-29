@@ -1,0 +1,76 @@
+\section{Pre-Registered Audit Protocol: \method{}}
+\label{sec:protocol}
+
+The experiments are a controlled falsification suite. Each test isolates a
+claim that can look convincing in a conventional aggregate RAG table, then
+asks whether the claim survives once the relevant confounder is separated.
+
+\paragraph{Pre-registration and statistics.}
+Sample sizes, seeds, primary statistics, and decision rules were frozen before
+execution. Paired continuous contrasts use Wilcoxon signed-rank tests and
+Cohen's \(d_z\). Means use 10,000-resample bootstrap confidence intervals.
+Hallucination rates use Wilson intervals. Thresholds are frozen except in the
+threshold-transfer experiment, where tuning and evaluation datasets are
+explicitly separated. No paid API calls are used in the revision results.
+
+\paragraph{Datasets, generators, and scorers.}
+The core revision evidence uses short-answer extractive QA, primarily SQuAD,
+PubMedQA, HotpotQA, NaturalQuestions, and TriviaQA
+\citep{rajpurkar2016squad,jin2019pubmedqa,yang2018hotpotqa,kwiatkowski2019nq,joshi2017triviaqa}.
+The main scaled cell is SQuAD with Mistral-7B-Instruct
+\citep{jiang2023mistral}. Faithfulness is scored with DeBERTa-v3 NLI
+\citep{he2021deberta}, a second NLI model, and a local RAGAS-style
+Mistral-as-judge rubric \citep{es2024ragas}. The local judge is useful for
+triangulation but may share family-level biases with the generator; we treat
+that as a limitation rather than a source of authority.
+
+\paragraph{Human calibration design.}
+To ground the scorer disagreement, two raters annotate 99 examples sampled
+from the fixed-generation multi-metric cell. Labels are
+\texttt{supported}, \texttt{partially\_supported}, and \texttt{unsupported};
+adjudicated labels are mapped to \(1,0.5,0\) for rank correlations. The
+instructions require raters to judge support using only the provided passages.
+
+% POLISH FIX 2 (2026-04-29): switched from a tabularx X column to explicit
+% p{} widths with locally raised \arraystretch so multi-line cells wrap cleanly
+% inside their column boundaries instead of running into the next row.
+\begingroup
+\renewcommand{\arraystretch}{1.15}
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{\method{} audit controls. Each control can be reused with other
+datasets, retrievers, generators, and faithfulness metrics.}
+\label{tab:controlledrag_protocol}
+\begin{tabular}{p{2.6cm}p{3.6cm}p{4.4cm}p{1.8cm}}
+\toprule
+Control & Claim it tests & Failure mode exposed & Primary evidence \\
+\midrule
+Similarity-matched intervention &
+CCS improves faithfulness after local relevance is fixed &
+A set statistic can lose its apparent effect once mean query-passage similarity is controlled &
+Table~\ref{tab:causal} \\
+Multi-seed scale correction &
+A pilot effect remains stable under repeated sampling &
+Small effects can be seed-sensitive even when the pilot direction is plausible &
+Table~\ref{tab:scaled} \\
+Fixed-generation multi-metric and human-calibrated scoring &
+One automatic judge identifies the intervention effect size &
+The same outputs can imply different magnitudes, and human alignment can be only moderate &
+Tables~\ref{tab:metrics}--\ref{tab:human_calibration} \\
+Threshold-transfer matrix &
+A tuned threshold is a reusable policy &
+In-domain tuning can hide weak off-diagonal transfer &
+Table~\ref{tab:tauflags} \\
+Coherent-vs-random noise separation &
+Coherence is just generic retrieval quality &
+Same-topic uninformative context and random context can have different slopes &
+Table~\ref{tab:noise} \\
+Cost-aware baseline audit &
+A method is deployment-preferable &
+Dataset wins can disappear once hallucination, p99 latency, and indexing cost are included &
+Fig.~\ref{fig:pareto_p99}; Table~\ref{tab:h2h} \\
+\bottomrule
+\end{tabular}
+\end{table}
+\endgroup

@@ -1,0 +1,75 @@
+\section{Discussion}
+\label{sec:discussion}
+
+\paragraph{What can and cannot be claimed about the refinement paradox.}
+After the audit, the strongest empirical statement supported by
+the data is: \emph{In short-answer extractive QA on SQuAD with
+Mistral-7B, aggressive per-passage refinement produces a
+faithfulness change whose magnitude depends substantially on the
+choice of faithfulness scorer.} Under DeBERTa-v3 the magnitude is
+small ($0.011$), the per-seed contrasts are mostly non-significant,
+and a matched-similarity intervention finds no causal role for CCS.
+Under a RAGAS-style LLM-judge the magnitude is large ($0.140$).
+The two scorers agree at Pearson $r = 0.18$ on the same outputs.
+We do not believe a confident claim about the
+\emph{magnitude} of the paradox is supported by the data;
+we believe a claim about \emph{measurement instability} is.
+
+\paragraph{Why this matters beyond one phenomenon.}
+The single-scorer / small-sample / in-distribution-tuning pattern
+that produced the published refinement-paradox magnitude is the
+modal evaluation pattern across recent RAG-faithfulness papers.
+If the same audit were applied to the dozen or so recently-reported
+``faithfulness-improving retrieval interventions,'' the magnitudes
+would likely be similarly metric-dependent. We propose
+pre-registration, multi-scorer reporting, and explicit
+cross-dataset $\tau$ disclosure as the minimum bar for future
+RAG-faithfulness empirical claims.
+
+\paragraph{The surviving structural finding.}
+\S\ref{sec:coherence_noise} preserves a non-trivial result:
+coherence-preserving uninformative noise produces a smaller
+faithfulness drop than random off-topic noise at matched per-
+passage similarity. This says coherence (in some sense, not
+necessarily CCS) is real and structurally separable from
+similarity. Future work should look for an
+operationalization of coherence that survives the matched-similarity
+test of \S\ref{sec:causal_intervention} \emph{and} explains the
+slope difference of \S\ref{sec:coherence_noise}. Candidate
+operationalizations include attention-weighted retrieved-mass
+\citep{geva2023attention}, generator-perplexity over retrieval-set
+prefixes, or coherence scored by a separate LLM judge with explicit
+schema.
+
+\paragraph{What HCPC-v2 actually is, after the audit.}
+We retain HCPC-v2 in the released benchmark as a \emph{candidate
+deployment policy}, not as a controlled coherence-causality probe.
+Empirically HCPC-v2 is competitive on SQuAD (within 0.0016 of
+RAPTOR-2L, slightly above CRAG by 0.010) and dominated on HotpotQA
+(below CRAG by 0.011 on faithfulness, by 2.5 pp on hallucination,
+and by 18\,\% on latency). Whether it is worth deploying is a
+function of the deployment regime; the released LangChain
+integration makes the policy switchable per query.
+
+\paragraph{Self-RAG's underperformance.}
+The harness fairness question raised in \S\ref{sec:headtohead}
+deserves emphasis. Self-RAG was trained on a different distribution
+than ours and emits reflection tokens that an entailment scorer
+treats as additional answer text; the apparent
+$0.57$ faithfulness vs.\ $0.71$ for the other methods may
+substantially be a harness mismatch rather than a real capability
+gap. We report Self-RAG numbers because they are the
+matched-harness numbers a downstream practitioner would actually
+observe if they swapped Self-RAG into a CRAG-style pipeline,
+which is a useful piece of information even if it is not the
+fairest possible Self-RAG comparison.
+
+\paragraph{What the audit costs.}
+The full audit ran on free hardware: an Apple M4 Air for Ollama-
+backed runs and a Kaggle T4\(\times\)2 session for the 8-bit Self-RAG
+comparison. Total runtime is well under 25 hours of free Kaggle GPU
+plus 10--15 hours of M4 wall-clock, and zero paid API tokens. The
+audit pattern is therefore reproducible by any researcher with
+free Kaggle access and a workstation, which we view as a
+prerequisite for the recommendation to make multi-scorer
+pre-registration routine.

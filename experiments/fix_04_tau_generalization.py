@@ -50,7 +50,7 @@ def run_dataset_tau(args: argparse.Namespace, dataset: str, tau: float,
         top_k=3,
         model_name=args.model,
         embed_model=EMBED_MODEL,
-        persist_dir=f"./chroma_db_fix04/{coll}",
+        persist_dir=f"./artifacts/generated/chroma_db_fix04/{coll}",
     )
     pipe.index_documents(docs, collection_name=coll)
     pipe.llm = make_llm(args.backend, args.model, temperature=0.0)

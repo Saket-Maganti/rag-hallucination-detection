@@ -9,7 +9,7 @@
 # Build:    docker build -t coherence-paradox:v2.0.0 .
 # Test:     docker run --rm coherence-paradox:v2.0.0 make tests
 # Figures:  docker run --rm -v $PWD/results:/app/results \
-#                          -v $PWD/ragpaper:/app/ragpaper \
+#                          -v $PWD/papers/arxiv_longform:/app/papers/arxiv_longform \
 #               coherence-paradox:v2.0.0 make figures
 #
 # Image size is ~1.5 GB (Python + numpy + sentence-transformers).
@@ -52,7 +52,7 @@ COPY src/         ./src/
 COPY experiments/ ./experiments/
 COPY scripts/     ./scripts/
 COPY tests/       ./tests/
-COPY ragpaper/    ./ragpaper/
+COPY papers/arxiv_longform/    ./papers/arxiv_longform/
 COPY data/        ./data/
 COPY results/     ./results/
 COPY release/     ./release/

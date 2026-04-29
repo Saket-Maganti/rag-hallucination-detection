@@ -93,7 +93,7 @@ def run(ds, n_q, backend, model, det):
     pipe = RAGPipeline(
         chunk_size=1024, chunk_overlap=100, top_k=3,
         model_name=model, embed_model=EMBED,
-        persist_dir=f"./chroma_db_conf/{coll}",
+        persist_dir=f"./artifacts/generated/chroma_db_conf/{coll}",
     )
     pipe.index_documents(docs, collection_name=coll)
 

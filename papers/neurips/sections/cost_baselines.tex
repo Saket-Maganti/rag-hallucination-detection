@@ -1,0 +1,69 @@
+\section{Cost-Aware Baseline Audit}
+\label{sec:cost_baselines}
+
+% POLISH FIX 4: Moved Self-RAG out of the main matched-harness table/figure
+% and into the appendix because its backbone, quantization, fine-tuning, and
+% reflection-oriented outputs make it a harness-mismatched comparison.
+We compare HCPC-v2, CRAG \citep{yan2024crag}, RAPTOR-2L
+\citep{raptor2024} in a matched short-answer harness. Self-RAG
+\citep{asai2024selfrag} is reported separately in the supplement: its
+released fine-tuned Llama-2-7B
+checkpoint, 8-bit inference path, reflective decoding behavior, and
+entailment-style scoring make that comparison harness-conditional.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\linewidth]{figure2_pareto_p99_log.pdf}
+\caption{Cost-aware view of the matched-harness baseline audit. The
+$x$-axis is p99 latency in seconds; method is encoded by marker shape and
+dataset by color. No matched-harness method has a single deployment
+ordering across datasets once faithfulness, hallucination behavior, tail
+latency, and offline indexing costs are considered. The harness-mismatched
+Self-RAG numbers are reported separately in the supplement.}
+\label{fig:pareto_p99}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\scriptsize
+\caption{Head-to-head baseline comparison, \(n=200\) per
+dataset/condition. Latency is milliseconds.}
+\label{tab:h2h}
+\begin{tabular}{llrrrr}
+\toprule
+Dataset & Method & Faith & Halluc. & Mean lat. & p99 lat. \\
+\midrule
+SQuAD & CRAG & 0.698 & 0.120 & 1021 & 3318 \\
+SQuAD & HCPC-v2 & 0.708 & 0.125 & 1349 & 3612 \\
+SQuAD & RAPTOR-2L & 0.710 & 0.125 & 1296 & 3189 \\
+\midrule
+HotpotQA & CRAG & 0.643 & 0.105 & 1473 & 3281 \\
+HotpotQA & HCPC-v2 & 0.632 & 0.130 & 1841 & 4032 \\
+HotpotQA & RAPTOR-2L & 0.631 & 0.130 & 1906 & 4043 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+HCPC-v2 is competitive on SQuAD, where RAPTOR-2L is slightly higher in
+faithfulness and lower in p99 latency. On HotpotQA, CRAG has higher
+faithfulness, lower hallucination, and lower latency. Self-RAG numbers are in
+the supplement; a fair evaluation requires a scoring protocol that accounts
+for reflective decoding rather than treating every extra token as ordinary
+answer content.
+
+\begin{table}[H]
+\centering
+\scriptsize
+\caption{RAPTOR cost audit across three datasets (\(n=100\) each). Latency
+columns are milliseconds; indexing columns are wall-clock seconds.}
+\label{tab:raptorcost}
+\begin{tabular}{lrrrrrr}
+\toprule
+Dataset & Faith & Halluc. & p50 lat. & p99 lat. & Dense idx. & RAPTOR idx. \\
+\midrule
+SQuAD & 0.789 & 0.050 & 1190 & 4943 & 8.333 s & 161.203 s \\
+PubMedQA & 0.560 & 0.290 & 3901 & 6812 & 1.177 s & 108.264 s \\
+HotpotQA & 0.617 & 0.210 & 1973 & 4274 & 7.140 s & 99.740 s \\
+\bottomrule
+\end{tabular}
+\end{table}

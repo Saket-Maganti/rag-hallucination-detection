@@ -1,0 +1,74 @@
+\section{Introduction}
+
+Retrieval-augmented generation (RAG) papers often report an improvement in a
+retrieval score and then infer an improvement in answer faithfulness. The
+reasoning is understandable. If the retriever returns passages that better
+match the query, then the generator should have better evidence. Dense
+retrieval, reranking, compression, and post-retrieval refinement all inherit
+some version of this local premise.
+
+The premise is incomplete. A generator receives a context set, not independent
+passage scores. Individually relevant passages can be redundant, mutually
+inconsistent, or missing the bridge needed to support an answer. Conversely, a
+lower-scoring passage may contain the one fact that makes the answer grounded.
+Faithfulness also depends on the evaluator: an NLI scorer, another NLI scorer,
+and an LLM judge can assign materially different support values to the same
+answer. A deployment claim then adds another layer: a method that improves one
+dataset row may be too slow, too threshold-sensitive, or worse on another task.
+
+The central question is therefore:
+
+\begin{quote}
+\emph{Which RAG faithfulness claims remain identifiable once local retrieval
+similarity, context-set structure, evaluator choice, transfer, and cost are
+separated?}
+\end{quote}
+
+We answer with a controlled falsification suite built around a tempting but
+ultimately rejected mechanism. The starting variable is the Context Coherence
+Score (CCS), a retrieval-time statistic that measures mean pairwise similarity
+among retrieved passages. CCS is a plausible set-level complement to
+query-passage relevance: it asks whether the retrieved passages look mutually
+compatible, rather than whether each passage looks relevant in isolation. A
+natural hypothesis is that this coherence variable explains why some retrieval
+refinements appear to reduce faithfulness.
+
+The controlled test rejects the strong version of that story. We construct
+HIGH- and LOW-CCS context sets that are matched on mean query-passage
+similarity. The manipulation creates a large coherence gap; the faithfulness
+effect is null and slightly negative. This null is not a cosmetic limitation.
+It is the central methodological result: an intuitive RAG mechanism can look
+plausible under aggregate retrieval and faithfulness tables, then disappear
+when the relevant controls are imposed.
+
+The rest of the paper shows that this failure is part of a wider
+identifiability problem. Local retrieval similarity does not identify answer
+support. CCS alone does not identify answer support. A single automatic metric
+does not identify intervention effect size. A threshold tuned on one dataset
+does not cleanly identify a transferable policy. A one-row baseline comparison
+does not identify deployment superiority once latency and indexing cost are
+included.
+
+\paragraph{Contributions.}
+\begin{itemize}[leftmargin=1.6em,itemsep=2pt,topsep=2pt]
+  \item \textbf{A controlled falsification of causal coherence.} We isolate
+  context coherence from mean query similarity and show that higher CCS does
+  not improve faithfulness in a preregistered SQuAD/Mistral intervention.
+  \item \textbf{A scale correction of the refinement paradox.} The original
+  pilot-sized DeBERTa effect shrinks to 1.1 points at $n=500$ across five
+  seeds, with only one seed reaching significance for the baseline--HCPC-v1
+  contrast.
+  \item \textbf{A multi-metric non-identifiability result.} The same
+  generations yield materially different conclusions under DeBERTa, a second
+  NLI model, and a local RAGAS-style judge.
+  \item \textbf{A threshold-transfer and baseline/cost audit.} We show that
+  threshold recovery is dataset-dependent and that HCPC-v2, CRAG, RAPTOR-2L,
+  and Self-RAG do not form a single deployment ranking.
+  \item \textbf{A released controlled protocol and artifact.} We package
+  matched controls, per-query generations, metric scores, threshold-transfer
+  matrices, noise controls, and Pareto accounting as \method.
+\end{itemize}
+
+The paper's strongest claim is deliberately narrow: standard RAG reporting is
+insufficient without controls that separate retrieval scores, context-set
+structure, evaluator choice, transfer, and cost.

@@ -59,7 +59,7 @@ class RAGPipeline:
         top_k: int = 3,
         model_name: str = "mistral",
         embed_model: str = "sentence-transformers/all-MiniLM-L6-v2",
-        persist_dir: str = "./chroma_db",
+        persist_dir: str = "./artifacts/generated/chroma_db",
         chunker: Optional[Any] = None,          # NEW: inject adaptive chunker
         embeddings: Optional[Any] = None,       # NEW: inject custom embedder
     ):

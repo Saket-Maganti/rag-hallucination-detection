@@ -195,7 +195,7 @@ def run(dataset: str, n_queries: int, backend: str, model: str,
     pipe = RAGPipeline(
         chunk_size=1024, chunk_overlap=100, top_k=6,
         model_name=model, embed_model=EMBED,
-        persist_dir=f"./chroma_db_causal/{coll}",
+        persist_dir=f"./artifacts/generated/chroma_db_causal/{coll}",
     )
     pipe.index_documents(docs, collection_name=coll)
     pipe.llm = _make_llm(backend, model)

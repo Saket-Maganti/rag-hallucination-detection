@@ -24,8 +24,8 @@ Inputs (any with valid ccs values are merged):
     results/frontier_scale/per_query.csv
 
 Outputs:
-    ragpaper/figures/ccs_calibration.pdf
-    ragpaper/figures/ccs_calibration.tex
+    papers/arxiv_longform/figures/ccs_calibration.pdf
+    papers/arxiv_longform/figures/ccs_calibration.tex
     results/ccs_calibration/quintile_table.csv  (numbers behind panel B)
 
 Usage:
@@ -45,7 +45,7 @@ import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parent.parent
-OUT_DIR = ROOT / "ragpaper" / "figures"
+OUT_DIR = ROOT / "papers" / "arxiv_longform" / "figures"
 OUT_PDF = OUT_DIR / "ccs_calibration.pdf"
 OUT_TEX = OUT_DIR / "ccs_calibration.tex"
 OUT_CSV_DIR = ROOT / "results" / "ccs_calibration"

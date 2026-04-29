@@ -49,7 +49,7 @@ def run_dataset(args: argparse.Namespace, dataset: str, detector: HallucinationD
         flush=True,
     )
     docs, qa_pairs = load_dataset_by_name(dataset, max_papers=args.max_contexts)
-    persist = Path(f"./chroma_db_fix11/{dataset}")
+    persist = Path(f"./artifacts/generated/chroma_db_fix11/{dataset}")
     pipe = RAGPipeline(
         chunk_size=1024,
         chunk_overlap=100,

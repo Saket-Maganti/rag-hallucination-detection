@@ -104,7 +104,7 @@ def run_tuple(ds, temp, backend, model, n_q, det):
     pipe = RAGPipeline(
         chunk_size=1024, chunk_overlap=100, top_k=3,
         model_name=model, embed_model=EMBED,
-        persist_dir=f"./chroma_db_temp/{coll}",
+        persist_dir=f"./artifacts/generated/chroma_db_temp/{coll}",
     )
     pipe.index_documents(docs, collection_name=coll)
 

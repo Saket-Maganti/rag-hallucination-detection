@@ -321,7 +321,7 @@ Required action:
 
 Patch location:
 
-- `ragpaper/sections/revision/fix_08_theory_reframe.tex`
+- `papers/arxiv_longform/sections/revision/fix_08_theory_reframe.tex`
 
 ## Fix 9: Self-Confidence Partial Correlations
 
@@ -381,7 +381,7 @@ Required action:
 
 Patch location:
 
-- `ragpaper/sections/revision/fix_10_scope_deployment.tex`
+- `papers/arxiv_longform/sections/revision/fix_10_scope_deployment.tex`
 
 ## Fix 11: RAPTOR Full Table
 

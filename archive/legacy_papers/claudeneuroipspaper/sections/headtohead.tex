@@ -1,0 +1,116 @@
+\section{Pre-Registered Head-to-Head: HCPC-v2, CRAG, RAPTOR-2L, Self-RAG}
+\label{sec:headtohead}
+
+This section places HCPC-v2 alongside three published baselines on
+a matched harness:
+CRAG \citep{yan2024crag},
+RAPTOR-2L \citep{sarthi2024raptor},
+and Self-RAG via the released \texttt{selfrag/selfrag\_llama2\_7b}
+checkpoint \citep{asai2024selfrag} loaded at 8-bit. Same generator
+(Mistral-7B-Instruct via local Ollama, except Self-RAG which uses
+its own fine-tuned Llama-2-7B), same dense embedder
+(\texttt{all-MiniLM-L6-v2}), same DeBERTa-v3 NLI scorer.
+$1{,}600$ pre-registered evaluations across two datasets.
+
+\paragraph{Result.}
+
+\begin{table}[H]
+\centering
+\small
+\caption{Head-to-head on the same harness. $n{=}200$ per cell.
+Latency is in milliseconds; mean and p99. Indexing cost columns are
+shared per dataset. Self-RAG runs on its own fine-tuned 7B at 8-bit
+on a Kaggle T4; HCPC-v2/CRAG/RAPTOR-2L run on Mistral-7B via Ollama.}
+\label{tab:h2h}
+\begin{tabular}{llcccccc}
+\toprule
+Dataset & Method & $n$ & Faith. & Halluc. &
+Mean lat.\ (ms) & p99 lat.\ (ms) & RAPTOR idx.\ (s) \\
+\midrule
+\multirow{4}{*}{SQuAD}
+  & CRAG       & 200 & $0.6982$ & $0.120$ & $\mathbf{1{,}021}$ & $\mathbf{3{,}318}$ & --- \\
+  & HCPC-v2    & 200 & $0.7084$ & $0.125$ & $1{,}349$ & $3{,}612$ & --- \\
+  & RAPTOR-2L  & 200 & $\mathbf{0.7100}$ & $0.125$ & $1{,}296$ & $3{,}189$ & $163.9$ \\
+  & Self-RAG   & 200 & $0.5741$ & $\mathbf{0.390}$ & $7{,}542$ & $\mathbf{44{,}800}$ & --- \\
+\midrule
+\multirow{4}{*}{HotpotQA}
+  & \textbf{CRAG}       & 200 & $\mathbf{0.6432}$ & $\mathbf{0.105}$ & $\mathbf{1{,}473}$ & $\mathbf{3{,}281}$ & --- \\
+  & HCPC-v2    & 200 & $0.6323$ & $0.130$ & $1{,}841$ & $4{,}032$ & --- \\
+  & RAPTOR-2L  & 200 & $0.6308$ & $0.130$ & $1{,}906$ & $4{,}043$ & $102.5$ \\
+  & Self-RAG   & 200 & $0.5739$ & $0.430$ & $6{,}158$ & $\mathbf{46{,}965}$ & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\linewidth]{fig_pareto.pdf}
+\caption{Faithfulness vs.\ mean latency across methods, both
+datasets. Down-and-to-the-right is the desirable corner. CRAG
+dominates HotpotQA on both axes; HCPC-v2 and RAPTOR-2L are tied on
+SQuAD; Self-RAG is dominated on both datasets in this matched harness.}
+\label{fig:pareto}
+\end{figure}
+
+\paragraph{Per-method observations.}
+\textbf{HCPC-v2 does not dominate.} On SQuAD (short-answer
+extractive QA, the friendliest setting for HCPC-v2), HCPC-v2 ties
+RAPTOR-2L within $0.0016$ on faithfulness ($0.7084$ vs.\ $0.7100$);
+both are above CRAG's $0.6982$, but the magnitude of the gap is
+smaller than the cross-scorer variation reported in
+\S\ref{sec:multimetric}. On HotpotQA (multi-hop), CRAG strictly
+dominates: higher faithfulness, lower hallucination rate, and lowest
+mean latency simultaneously.
+
+\textbf{RAPTOR-2L pays an offline cost.} RAPTOR's
+two-level summary tree requires
+\(102\)--\(164\) s of offline LLM-based summarization per dataset,
+versus \(\sim 8\) s for plain dense indexing. Query-time latency
+is competitive, but the offline cost is a real deployment
+consideration that prior single-line RAPTOR mentions in
+RAG papers do not surface.
+
+\textbf{Self-RAG underperforms in this matched harness.}
+Self-RAG faithfulness is $\sim 0.57$ on both datasets, well
+below the $0.63$--$0.71$ band of the Mistral-7B-based methods. Its
+hallucination rate is $39$--$43\,\%$ vs.\ $10$--$13\,\%$ for the
+others. Mean latency is $7\times$ higher; p99 latency is
+\(13\)--\(14\times\) higher (\(\sim 45\) s tail). We attribute most
+of this gap to two factors: (1) Self-RAG's fine-tuned Llama-2-7B
+backbone is from an older generation than Mistral-7B-Instruct on
+short-answer extractive QA, and (2) the Self-RAG decoding loop
+emits reflection tokens that this evaluation harness does not
+reward (the entailment scorer treats them as additional answer
+text, hurting faithfulness scores). A fairer Self-RAG comparison
+would require harness modifications outside the scope of a
+matched-harness audit; we report the comparison as-is and
+discuss its limitations in \S\ref{sec:limitations}.
+
+\paragraph{Pareto frontier.}
+On SQuAD, the Pareto frontier of (faithfulness, mean latency) is
+held by CRAG (lowest latency at $1{,}021$ ms, faithfulness $0.6982$)
+and RAPTOR-2L (highest faithfulness at $0.7100$, latency $1{,}296$ ms).
+HCPC-v2 sits inside the frontier: dominated by RAPTOR-2L on
+faithfulness and by CRAG on latency.
+On HotpotQA, CRAG is alone on the frontier; all other methods are
+strictly worse on at least one axis. Figure \ref{fig:pareto}
+visualizes this.
+
+\paragraph{Honest framing.}
+We do not claim CRAG is universally best. CRAG's evaluator is a
+cross-encoder proxy for the unreleased T5 evaluator described in
+the original CRAG paper, which may favor it on these
+matched-harness short-answer datasets. What we do claim is that
+the popular framing ``HCPC-v2 is a strong retrieval-time
+intervention compared with Self-RAG and CRAG'' is not supported
+by this matched harness on these two datasets. Section
+\ref{sec:related} discusses what the right comparison would look
+like.
+
+\paragraph{Full RAPTOR table.}
+For completeness, RAPTOR-2L results across three datasets at
+$n{=}100$ per dataset are reported in Appendix Table
+\ref{tab:raptor-full} (full table in
+\texttt{results/revision/fix\_11/raptor\_full\_table.csv}). Build
+cost is \(100\)--\(161\) s per dataset; index size is
+$1.8$--$16.6$ MB per dataset.

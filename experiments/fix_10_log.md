@@ -14,4 +14,4 @@
 
 Patch text is in:
 
-`ragpaper/sections/revision/fix_10_scope_deployment.tex`
+`papers/arxiv_longform/sections/revision/fix_10_scope_deployment.tex`

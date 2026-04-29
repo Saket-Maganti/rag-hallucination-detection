@@ -34,7 +34,7 @@ Outputs:
 Usage:
     python3 scripts/lint_paper.py
     python3 scripts/lint_paper.py --fail-on-warning  # CI-strict mode
-    python3 scripts/lint_paper.py --paths ragpaper/sections/results.tex
+    python3 scripts/lint_paper.py --paths papers/arxiv_longform/sections/results.tex
 """
 
 from __future__ import annotations
@@ -48,7 +48,7 @@ from pathlib import Path
 from typing import Dict, List, Set, Tuple
 
 ROOT = Path(__file__).resolve().parent.parent
-PAPER_DIR = ROOT / "ragpaper"
+PAPER_DIR = ROOT / "papers" / "arxiv_longform"
 BIB = PAPER_DIR / "references.bib"
 
 # --- Tunables ---------------------------------------------------------------
@@ -270,8 +270,8 @@ def check_lines(files: List[Path]) -> List[str]:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--paths", nargs="*", default=None,
-                    help="override scan paths (default: ragpaper/main.tex + "
-                         "ragpaper/sections/)")
+                    help="override scan paths (default: papers/arxiv_longform/main.tex + "
+                         "papers/arxiv_longform/sections/)")
     ap.add_argument("--fail-on-warning", action="store_true")
     args = ap.parse_args()
 

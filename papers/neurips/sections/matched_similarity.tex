@@ -1,0 +1,59 @@
+\section{Matched-Similarity Causal Test}
+\label{sec:matched_similarity}
+
+% POLISH FIX 5: Added answer-span presence analysis to interpret why HIGH-CCS
+% sets hallucinate more often; the evidence points to lower answer coverage in
+% HIGH-CCS contexts rather than a tested generator-confidence mechanism.
+The strong CCS hypothesis predicts that, at fixed local retrieval similarity,
+higher context coherence should improve faithfulness. We test that directly.
+For each SQuAD query, the protocol retrieves candidate passages and chooses a
+HIGH-CCS and LOW-CCS three-passage set whose mean query-passage similarity
+differs by at most 0.02. The construction succeeds: mean absolute similarity
+gap is 0.006 and mean CCS gap is 0.533 across 200 matched pairs.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Matched-similarity intervention. Higher CCS does not improve
+faithfulness at fixed mean query-passage similarity.}
+\label{tab:causal}
+\begin{tabular}{lrrrrrr}
+\toprule
+Setting & \(n\) & HIGH faith & LOW faith & HIGH--LOW & \(p\) & 95\% CI \\
+\midrule
+SQuAD / Mistral / DeBERTa & 200 & 0.636 & 0.639 & -0.002 & 0.628 & [-0.022, 0.017] \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The binary hallucination result points in the wrong direction for the strong
+claim: HIGH-CCS contexts hallucinate more often than LOW-CCS contexts
+(16.5\% vs.\ 9.0\%). We therefore reject the causal CCS interpretation tested
+here. CCS may still be diagnostically useful, but it is not sufficient to
+identify answer support once local retrieval similarity is held fixed.
+
+A span-presence check suggests a simple reason for the wrong-sign result. We
+normalize the gold answer and ask whether it appears anywhere in the three
+retrieved passages. LOW-CCS contexts contain the answer more often than
+HIGH-CCS contexts (27.0\% vs.\ 17.5\%; exact McNemar \(p=0.011\)); the
+four-way count is 19 pairs with the answer in both, 35 in LOW only, 16 in HIGH
+only, and 130 in neither.
+
+Thus the HIGH-CCS sets do not merely provide an equally answer-bearing but
+more coherent scaffold; they more often omit the answer span. A plausible
+reading is that coherent-looking context can still be incomplete, encouraging
+fluent unsupported answers when the needed span is absent
+\citep{maynez2020faithfulness}. We report this as a hypothesis suggested by
+the data, not as a tested mechanism.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\linewidth]{fix_01_paired_diff.pdf}
+\caption{Paired HIGH--LOW CCS faithfulness differences under the
+matched-similarity intervention. The diagonal line represents equal HIGH and
+LOW faithfulness; points above the line are pairs where HIGH-CCS helped, and
+points below it are pairs where it hurt. The distribution straddles the
+diagonal, so the controlled test rejects the strong CCS hypothesis rather than
+supporting it.}
+\label{fig:matched_ccs_null}
+\end{figure}

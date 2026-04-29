@@ -1,0 +1,64 @@
+\section{Related Work}
+\label{sec:related}
+
+\paragraph{Retrieval-augmented generation.}
+Retrieval-augmented generation as a deployment pattern was
+formalized by \citet{lewis2020rag} and rapidly extended through
+fusion-in-decoder \citep{izacard2020fid}, end-to-end retrieval
+training \citep{sachan2021endtoend}, and a growing collection of
+post-retrieval refinement strategies. \citet{gao2023rag} provide a
+recent survey. Our paper does not introduce a new RAG method; we
+audit how existing methods are evaluated.
+
+\paragraph{Retrieval-time interventions.}
+The four published interventions we compare against
+(\S\ref{sec:headtohead}) span the design space.
+RECOMP \citep{xu2023recomp} compresses retrieved passages.
+Self-RAG \citep{asai2024selfrag} delegates retrieve/skip decisions
+to reflection tokens emitted by a fine-tuned generator.
+CRAG \citep{yan2024crag} runs a per-passage relevance evaluator and
+falls back to web search on low-confidence retrievals
+(we substitute a cross-encoder for the unreleased T5 evaluator and
+disable the web fallback for matched harness fairness).
+RAPTOR \citep{sarthi2024raptor} builds a hierarchical summary tree
+over the retrieval corpus offline.
+Active-retrieval Forward-Looking Active REtrieval generation
+\citep{jiang2023active} interleaves retrieval with generation.
+None of these papers report cross-dataset $\tau$ generalization or
+multi-scorer faithfulness; our audit is intended to make those
+checks routine.
+
+\paragraph{Faithfulness measurement.}
+Sentence-level entailment via DeBERTa-v3 NLI
+\citep{he2021debertav3} is the dominant choice in recent RAG-
+faithfulness papers. Alternatives include FactScore
+\citep{min2023factscore}, AlignScore \citep{zha2023alignscore},
+and the RAGAS framework \citep{shahul2024ragas}, which uses an LLM
+judge with an atomic-claim decomposition. We do not benchmark
+faithfulness scorers in absolute terms; our \S\ref{sec:multimetric}
+finding is that \emph{relative agreement} among popular scorers on
+the same RAG outputs is much weaker than the field's reliance on a
+single scorer would suggest.
+
+\paragraph{Reproducibility and pre-registration in NLP.}
+Pre-registration is uncommon in NLP relative to clinical or
+psychological research, but a recent line of work argues for it
+\citep{vandeven2020preregistration,ulmer2022preregister}.
+\citet{rogers2023reviewing} document widespread variance in NLP
+empirical claims under reproduction, particularly when small
+samples and unreported tuning are involved. \citet{schaeffer2023emergent}
+showed that an apparent emergent-abilities phenomenon dissolved under
+proper-power evaluation, in a structurally similar episode to the
+collapse we report in \S\ref{sec:scaling}.
+Our audit operationalizes that recommendation for the specific
+case of RAG faithfulness, with sample sizes, seeds, statistical
+tests, and effect-size thresholds fixed in machine-checkable logs
+before any generation runs.
+
+\paragraph{Negative results in machine learning.}
+Workshops and venues for negative results
+\citep{negativeresults2024} have argued that disconfirming
+empirical claims is a contribution. Our paper sits in that tradition
+without being a pure negative-results paper: \S\ref{sec:coherence_noise}
+preserves a structural positive finding even after the headline
+claim collapses.

@@ -172,7 +172,7 @@ that predicts hallucination at retrieval time.
 CCS + faith-drop scoring scripts so any future retriever can post a
 paradox number in one command.
 
-**Paper.** See `ragpaper/` in the repo (LaTeX source + compiled PDF).
+**Paper.** See `papers/arxiv_longform/` in the repo (LaTeX source + compiled PDF).
 """
 
 

@@ -87,7 +87,7 @@ def run(args: argparse.Namespace) -> pd.DataFrame:
         top_k=3,
         model_name=args.model,
         embed_model=EMBED_MODEL,
-        persist_dir="./chroma_db_fix05/squad",
+        persist_dir="./artifacts/generated/chroma_db_fix05/squad",
     )
     pipe.index_documents(docs, collection_name="fix05_squad")
     pipe.llm = make_llm(args.backend, args.model, temperature=0.0)

@@ -1,0 +1,58 @@
+\section{Discussion}
+
+\paragraph{Standard RAG reporting is insufficient.}
+The central result is not that one retrieval policy should replace another.
+It is that a common evidential pattern in RAG papers is too weak: local
+retrieval score improves, one faithfulness metric changes, and a deployment
+claim follows. Our controls show that each step can fail. Local relevance does
+not identify answer support; CCS alone does not identify answer support; a
+single automatic metric does not identify effect size; and one baseline row
+does not identify a deployment winner.
+
+\paragraph{Why the null result matters.}
+The matched-coherence null is not a failed paper; it is the paper's strongest
+control. Without it, one might conclude from correlations and pilot tables that
+coherence is the mechanism behind refinement failures. With it, the evidence
+supports a more careful interpretation: coherence is one retrieval-set property
+that can diagnose fragility, but support also depends on answer coverage,
+redundancy, contradiction, generator behavior, and evaluator bias. The collapse
+of the intuitive story is the point: it shows why identifiability controls are
+needed before RAG papers turn retrieval statistics into faithfulness claims.
+
+\paragraph{What CCS is after the controls.}
+CCS is a diagnostic variable, not a mechanism. It is useful because it measures
+a set-level property that local relevance misses and because the noise
+experiment shows that coherence-preserving degradation behaves differently
+from random degradation. It should not be used by itself to certify answer
+support.
+
+\paragraph{Metric disagreement is central.}
+The multi-metric result is not an appendix detail. A 1.1-point DeBERTa effect,
+a 3.2-point second-NLI effect, and a 14.0-point local RAGAS-style effect on
+the same generations lead to different scientific narratives. Until RAG
+faithfulness metrics are better calibrated against human judgments, papers
+should report metric disagreement rather than hide it behind a preferred
+scalar. In this setting, metric disagreement is part of the estimand, not a
+reporting nuisance.
+
+\paragraph{Deployment claims need cost surfaces.}
+The baseline audit rejects a single method ranking. RAPTOR-2L narrowly leads
+SQuAD faithfulness in the full head-to-head table, CRAG wins HotpotQA on
+faithfulness, hallucination rate, and latency, and Self-RAG underperforms in
+this matched short-answer harness. Offline indexing cost and p99 latency are
+part of the result, not engineering afterthoughts. Deployment claims require
+dataset-specific behavior, mean latency, p99 latency, and offline indexing
+cost alongside faithfulness.
+
+\paragraph{Implications for RAG evaluation.}
+The common RAG reporting pattern, "retrieval metric up, faithfulness metric up,
+therefore method works," is insufficient. We recommend that research papers
+report at least:
+\begin{enumerate}[leftmargin=1.6em,itemsep=2pt,topsep=2pt]
+  \item query-passage similarity and retrieval-set coherence;
+  \item paired query-level contrasts with bootstrap intervals;
+  \item multiple faithfulness metrics;
+  \item threshold transfer across datasets;
+  \item hallucination rates with Wilson intervals;
+  \item mean latency, p99 latency, and offline indexing cost.
+\end{enumerate}

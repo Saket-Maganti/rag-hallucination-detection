@@ -1,0 +1,81 @@
+\section{Introduction}
+\label{sec:introduction}
+
+% POLISH FIX 1: Moved the fixed-generation multi-scorer result to the opening
+% frame so the paper leads with its strongest positive audit finding.
+RAG evaluation has a familiar shortcut: a retrieval score improves, one
+automatic faithfulness metric moves in the desired direction, and the paper
+infers that answer support has improved. Our audit finds that the scorer can
+be the fragile link. On the same 7,500 generated answers, the same intervention
+has effect sizes 0.011, 0.032, and 0.140 under DeBERTa, a second NLI scorer,
+and a local RAGAS-style judge. In a 99-example two-rater calibration
+(\(\kappa=0.774\)), DeBERTa has weak rank alignment with adjudicated support
+labels, while the second NLI scorer and RAGAS-style judge are only moderately
+aligned; their confidence intervals overlap, so the ordering is suggestive
+rather than definitive. The durable finding is not that one scorer is best,
+but that RAG faithfulness claims are not identified by a single observer.
+
+This paper audits that gap. A generator receives a context set, not a list of
+independent passage scores, and a faithfulness conclusion depends on the
+observer used to score support. We use the refinement paradox as a stress
+test: the pilot finding that more aggressive per-passage refinement can raise
+retrieval similarity while lowering measured answer faithfulness. The goal is
+not to promote that phenomenon as large or stable. It is to ask a sharper
+methodological question:
+
+\begin{quote}
+\emph{Which RAG faithfulness claims remain identifiable once local retrieval
+similarity, context-set structure, evaluator choice, human calibration,
+threshold transfer, and cost are separated?}
+\end{quote}
+
+The answer is sobering. The strongest intuitive story -- that context
+coherence explains faithfulness failures -- fails under a direct control. We
+construct HIGH- and LOW-CCS context sets matched on mean query-passage
+similarity; the coherence manipulation is large, but faithfulness does not
+improve. This failure is the point. It shows how a plausible retrieval-time
+quantity can look meaningful in aggregate tables and then lose its apparent
+effect once the confounder is isolated.
+
+The wider audit reaches the same conclusion from other angles. The pilot
+DeBERTa effect becomes small and seed-sensitive at \(n=500\times5\). The same
+generations imply different intervention magnitudes under different scorers.
+A small two-rater human calibration clarifies that the scorer disagreement is
+not cosmetic: no automatic scorer has strong human alignment in this sample,
+although the RAGAS-style judge has the highest rank correlation. Thresholds
+tuned on one dataset transfer unevenly. Baseline comparisons change when p99
+latency and indexing cost are included.
+
+% POLISH FIX 6: Promoted the minimum reporting standard from the discussion
+% into the introduction so reviewers see the reusable recommendation early.
+\paragraph{Recommended minimum reporting standard for RAG faithfulness claims.}
+\begin{enumerate}[leftmargin=1.8em,itemsep=1pt,topsep=2pt]
+  \item Paired query-level contrasts with bootstrap intervals.
+  \item Local query-passage similarity and at least one set-level context statistic.
+  \item Multiple faithfulness scorers.
+  \item A small human calibration whenever automated metrics disagree.
+  \item Threshold transfer across datasets.
+  \item Hallucination rates with Wilson intervals.
+  \item Mean latency, p99 latency, and offline indexing cost.
+\end{enumerate}
+
+\paragraph{Contributions.}
+\begin{itemize}[leftmargin=1.6em,itemsep=2pt,topsep=2pt]
+  \item We show that faithfulness scoring is metric-fragile on fixed
+  generations, and calibrate the disagreement with a 99-example two-rater
+  human audit.
+  \item We provide a pre-registered scale audit of a pilot refinement-paradox
+  cell, replacing a small-sample headline with \(n=500\times5\) seed evidence.
+  \item We falsify the strong CCS interpretation with a matched-similarity
+  intervention, while preserving a narrower diagnostic role via a
+  coherent-versus-random noise test.
+  \item We audit threshold transfer and cost-aware baselines, and document the
+  Self-RAG artifact separately as a harness-mismatched appendix baseline.
+  \item We package the checks as \method{}, a reusable protocol for auditing
+  RAG faithfulness claims. Code and data are anonymized in the supplementary
+  material and will be released upon acceptance.
+\end{itemize}
+
+The paper's thesis is deliberately conservative: RAG faithfulness claims are
+under-identified unless retrieval similarity, context-set structure, evaluator
+choice, human calibration, threshold transfer, and cost are reported separately.

@@ -1,0 +1,88 @@
+\section{Introduction}
+\label{sec:introduction}
+
+Retrieval-augmented generation (RAG) is the dominant deployment
+pattern for large language models that must ground their outputs in
+external evidence \citep{lewis2020rag,izacard2020fid,gao2023rag}.
+The core empirical question --- \emph{when is a generated answer
+faithful to its retrieved context?} --- has drawn an expanding
+catalogue of mitigations: corrective retrieval
+\citep{yan2024crag}, self-reflective generation
+\citep{asai2024selfrag}, hierarchical summarization
+\citep{sarthi2024raptor}, and selective per-passage refinement
+\citep{xu2023recomp,jiang2023active}. The relative merit of these
+methods is typically claimed via faithfulness measurements on a
+small set of generators and one entailment scorer, often with
+hyperparameters tuned on a held-out slice of the same dataset that
+is then used to report results.
+
+This paper examines the consequences of those evaluation choices.
+We adopt one recently-named phenomenon ---
+the \emph{refinement paradox}, in which more aggressive
+per-passage refinement is reported to \emph{reduce} faithfulness ---
+as a stress test. We pre-register six experiments across five
+weaknesses and run them on free compute. We report what holds and
+what does not, with effect sizes and confidence intervals throughout.
+
+\paragraph{What we find.}
+The headline magnitude of the refinement paradox does not survive
+proper-power evaluation. At \(n{=}500\) and five seeds, only 1/5
+seeds reaches the conventional \(p<0.05\) threshold, and the pooled
+bootstrap 95\,\% confidence interval on the paired contrast crosses
+zero. A pre-registered matched-similarity causal intervention finds
+no support for context coherence as a causal mediator at fixed
+mean retrieval similarity. Faithfulness scoring is itself unstable
+across scorers: under DeBERTa-v3 the paradox magnitude is
+0.011; under a RAGAS-style LLM-judge using a separate Mistral-7B
+instance it is 0.140 ($\sim 13\times$ larger), with pairwise Pearson
+\(r\) of 0.18 between the two on \(n{=}7{,}500\) paired evaluations.
+Hyperparameter generalization is uneven: SQuAD-tuned thresholds do
+not transfer to PubMedQA or NaturalQuestions without measurable
+drop. Head-to-head comparison of four retrieval-time interventions
+shows no clear winner --- CRAG wins HotpotQA, RAPTOR-2L narrowly
+edges HCPC-v2 on SQuAD faithfulness, and Self-RAG underperforms
+substantially when the evaluation harness is held fixed.
+
+\paragraph{What survives.}
+A structural disentanglement experiment shows a non-trivial
+positive finding: at matched per-passage similarity,
+\emph{coherence-preserving uninformative noise} (passages from the
+same topic that do not contain the answer) produces a smaller
+faithfulness drop than random off-topic noise. The two slopes are
+\(-0.043\) and \(-0.069\) per noise rate, respectively. Context
+coherence appears to carry some signal independent of similarity ---
+even when the canonical operationalization (CCS, the Context
+Coherence Score) is not the causal mechanism the matched-similarity
+intervention tests.
+
+\paragraph{Contributions.}
+This paper makes four contributions.
+\begin{enumerate}
+\itemsep -2pt
+\item A pre-registered audit of the refinement paradox at
+$10\times$ the published sample size (5 seeds, 7{,}500 paired
+contrasts), showing the published magnitude collapses at scale.
+\item A multi-metric triangulation of RAG faithfulness scoring on
+$n{=}7{,}500$ paired generations, revealing that DeBERTa-v3 NLI is
+an outlier relative to roberta-large-mnli and an LLM-judge.
+\item A pre-registered causal intervention with matched-similarity
+HIGH/LOW CCS triples that does not support a causal interpretation
+of context coherence, alongside a coherence-preserving noise
+experiment that nonetheless preserves a structural role for
+coherence beyond similarity.
+\item A released benchmark
+(\href{https://huggingface.co/datasets/saketmgnt/context-coherence-bench}{\texttt{saketmgnt/context-coherence-bench}};
+DOI \href{https://doi.org/10.5281/zenodo.19757291}{10.5281/zenodo.19757291}),
+with per-query CSVs, pre-registrations, and Kaggle T4\(\times\)2
+notebooks that reproduce every claim in this paper.
+\end{enumerate}
+
+\paragraph{Reading guide.}
+\S\ref{sec:background}--\S\ref{sec:methodology} fix definitions and
+the pre-registration discipline.
+\S\ref{sec:causal_intervention}--\S\ref{sec:headtohead} report the
+five experiments described above, each as a self-contained
+subsection with hypothesis, sample, statistical test, and result.
+\S\ref{sec:benchmark} documents the released artifact;
+\S\ref{sec:related}--\S\ref{sec:conclusion} contextualize the work
+and discuss limitations.

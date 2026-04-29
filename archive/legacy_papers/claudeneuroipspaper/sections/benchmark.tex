@@ -1,0 +1,86 @@
+\section{Released Benchmark}
+\label{sec:benchmark}
+
+The pre-registered audit in this paper is reproducible end-to-end
+on free hardware. We release every artifact required to replicate
+the claims and to extend the audit to new methods.
+
+\paragraph{Released artifacts.}
+
+\begin{itemize}
+\itemsep -2pt
+\item \textbf{Hugging Face Dataset.}
+\href{https://huggingface.co/datasets/saketmgnt/context-coherence-bench}%
+{\texttt{saketmgnt/context-coherence-bench}}.
+Loadable via \verb|load_dataset("saketmgnt/context-coherence-bench")|.
+Five configs:
+\texttt{coherence\_paradox} (the SQuAD/Mistral $n{=}500{\times}5$ headline cell),
+\texttt{adversarial\_drift}, \texttt{adversarial\_disjoint},
+\texttt{adversarial\_contradict}, \texttt{adversarial\_control}.
+
+\item \textbf{Permanent DOI.}
+\href{https://doi.org/10.5281/zenodo.19757291}{10.5281/zenodo.19757291}
+on Zenodo, with sha256 manifest, license, citation entry.
+
+\item \textbf{Pip package.}
+\verb|pip install context-coherence==0.2.0|. Pure-numpy core
+implementation of CCS and the gating policy used by HCPC-v2.
+
+\item \textbf{LangChain integration.}
+\texttt{integrations/langchain/coherence\_gated\_retriever.py},
+a drop-in \texttt{BaseRetriever} that exposes the CCS-gated
+intervention. Status: integration is functional and tested; we
+report negative results on its causal claim
+(\S\ref{sec:causal_intervention}) but the diagnostic remains useful
+for retrieval-time monitoring.
+
+\item \textbf{Per-query CSVs.} Every per-query result table for every
+fix in this paper is committed to the public repository at
+\texttt{data/revision/fix\_NN/per\_query.csv}. Aggregations live at
+\texttt{results/revision/fix\_NN/}. Pre-registrations are at
+\texttt{experiments/fix\_NN\_log.md}.
+
+\item \textbf{Kaggle T4\(\times\)2 reproduction notebooks.}
+\texttt{notebooks/revision\_session1\_kaggle\_fresh.ipynb} (Fix 1 +
+Fix 5 + Fix 11),
+\texttt{notebooks/revision\_fix2\_kaggle\_t4x2\_fresh.ipynb} (Fix 2),
+\texttt{notebooks/revision\_fix3\_4\_kaggle\_t4x2\_fresh.ipynb}
+(Fix 3 + Fix 4),
+\texttt{notebooks/revision\_fix5\_11\_kaggle\_t4x2\_fresh.ipynb}
+(Fix 5 + Fix 11),
+\texttt{notebooks/revision\_fix6\_kaggle\_t4x2\_fresh.ipynb} (Fix 6
+including Self-RAG).
+Total compute under 25 hours of free Kaggle T4\(\times\)2.
+
+\item \textbf{Track-changes paper sources.} LaTeX sources for this
+audit, with \texttt{\%~TRACKED-CHANGES:} markers indicating
+exactly what changed from a prior published draft and why, are at
+\texttt{ragpaper/sections/revision/}. The full revision book is at
+\texttt{docs/revision/README.md}.
+\end{itemize}
+
+\paragraph{What's in the audit suite, in order.}
+
+\begin{enumerate}
+\itemsep -2pt
+\item Construct matched-similarity HIGH/LOW CCS triples on a
+target dataset (Fix 1 protocol). Pre-registered $\pm 0.02$ tolerance,
+$n{=}200$ pairs.
+\item Run the headline cell at $n{=}500$ across 5 seeds (Fix 2);
+report per-seed paired Wilcoxon, pooled bootstrap CI, Wilson CI.
+\item Re-score the headline cell with two additional faithfulness
+scorers (Fix 3); report pairwise correlations.
+\item Build the cross-dataset $\tau$-generalization matrix (Fix 4);
+flag cells with diagonal-vs-off-diagonal recovery gap $> 0.03$.
+\item Run coherence-preserving noise injection vs.\ random
+noise injection (Fix 5); report regression slopes per condition.
+\item Run head-to-head against published baselines on a matched
+harness (Fix 6); report Pareto frontier.
+\item For threshold-based methods, report cross-dataset numbers,
+not in-distribution numbers.
+\item Pre-register every $n$, every seed, every test
+\emph{before} executing.
+\end{enumerate}
+
+We argue that any future RAG-faithfulness paper would benefit
+from running this checklist before finalizing claims.

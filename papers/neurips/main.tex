@@ -1,0 +1,103 @@
+% =====================================================================
+% papers/neurips/main.tex
+%
+% Double-blind NeurIPS submission draft. The supplement is built separately
+% from supplement.tex. Build:
+%   pdflatex main && bibtex main && pdflatex main && pdflatex main
+% =====================================================================
+
+\documentclass[10pt]{article}
+
+% TODO(submission): place the official NeurIPS 2026 style file
+% `neurips_2026.sty` in this directory before final submission. The source
+% below uses it automatically when present; the geometry block is only a local
+% fallback so this draft remains buildable. Do not shrink margins or fonts.
+\newif\ifofficialneurips
+\IfFileExists{neurips_2026.sty}{%
+  \officialneuripstrue
+  \usepackage{neurips_2026}
+}{%
+  \officialneuripsfalse
+  \usepackage[letterpaper,margin=1.0in]{geometry}
+  \usepackage{natbib}
+}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\theoremstyle{plain}
+\newtheorem{proposition}{Proposition}
+\newtheorem{theorem}{Theorem}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+\usepackage{enumitem}
+\usepackage{float}
+\usepackage{multicol}
+
+\graphicspath{{figures/}}
+% POLISH FIX 6 (2026-04-29): bibliography compressed to keep the 10-page
+% body+refs budget after the §11 three-paragraph rewrite added six new
+% bibitems. Switched from footnotesize to scriptsize and zeroed bibsep.
+\setlength{\bibsep}{0pt plus 1pt minus 0pt}
+\renewcommand{\bibfont}{\scriptsize}
+\emergencystretch=2em
+\tolerance=400
+\raggedbottom
+
+\newcommand{\ccs}{\mathrm{CCS}}
+\newcommand{\simq}{\mathrm{Sim}_{q}}
+\newcommand{\method}{ControlledRAG}
+\newcommand{\fix}[1]{\textsc{Fix #1}}
+
+\title{\Large\bfseries When Retrieval Quality Decouples from Faithfulness:\\[0.2em]
+A Pre-Registered Audit of RAG Evaluation}
+
+\newif\ifanonymous
+\anonymoustrue
+
+\author{Anonymous Authors\\\textit{Submission under double-blind review}}
+
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\input{sections/abstract}
+\end{abstract}
+
+\input{sections/introduction}
+\input{sections/background}
+\input{sections/protocol}
+\input{sections/matched_similarity}
+\input{sections/scaling}
+\input{sections/metric_fragility}
+\input{sections/threshold_transfer}
+\input{sections/coherence_survives}
+\input{sections/cost_baselines}
+\input{sections/discussion}
+\input{sections/related_work}
+\input{sections/limitations_ethics}
+\input{sections/conclusion}
+
+% POLISH FIX 6 (2026-04-29): two-column bibliography keeps the +6 §11
+% bibitems inside the 10-page envelope without further font-size cuts.
+{\footnotesize
+\setlength{\columnsep}{12pt}
+\begin{multicols}{2}
+\bibliographystyle{plainnat}
+\bibliography{references}
+\end{multicols}
+}
+
+\end{document}

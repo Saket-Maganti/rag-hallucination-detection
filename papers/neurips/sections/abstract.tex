@@ -1,0 +1,28 @@
+% POLISH FIX 1/FIX 6: Reframed the abstract around fixed-generation metric
+% fragility and human calibration, and added the minimum reporting standard
+% sentence requested for the executive summary.
+Retrieval-augmented generation (RAG) papers often treat better retrieval
+quality as evidence that answers are more faithful. We show that the
+faithfulness scorer can be the under-identified variable: on 7,500 fixed
+generations, one intervention has effect sizes 0.011, 0.032, and 0.140 under
+DeBERTa, a second NLI scorer, and a local RAGAS-style judge. A 99-example
+two-rater human calibration reaches Cohen's \(\kappa=0.774\), but alignment
+with adjudicated support is weak for DeBERTa and moderate for the other
+scorers (Spearman \(\rho=0.140,0.380,0.441\)); bootstrap intervals overlap, so
+the ordering is suggestive. We then use a pre-registered refinement-paradox
+stress test to audit identifiability once retrieval similarity, context-set
+structure, evaluator choice, human calibration, threshold transfer, and cost
+are separated. At \(n=500\) across five seeds, the DeBERTa-measured
+SQuAD/Mistral pilot effect shrinks to 1.1 faithfulness points, with only 1/5
+seeds significant. A matched HIGH/LOW context-coherence test does not support
+a causal CCS interpretation (HIGH--LOW \(=-0.002\), \(p=0.628\), 95\% CI
+\([-0.022,0.017]\)); HIGH-CCS contexts hallucinate more often (16.5\% vs.\
+9.0\%). Threshold transfer is uneven, and HCPC-v2, CRAG, and RAPTOR-2L yield
+no single deployment ordering once tail latency and indexing cost are
+reported; Self-RAG is documented separately as a harness-mismatched appendix
+baseline. Coherent uninformative noise hurts less than random off-topic noise.
+We propose a minimum reporting standard for RAG faithfulness claims (paired
+query-level contrasts, retrieval/context statistics, multiple scorers, human
+calibration on disagreements, threshold-transfer evidence, hallucination
+rates, p99 latency, indexing cost) and release \method{} as the audit protocol
+that operationalizes it.

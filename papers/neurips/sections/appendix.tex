@@ -1,0 +1,150 @@
+\section{Artifact Manifest}
+\label{app:manifest}
+
+% POLISH FIX 4: Added a harness-mismatched Self-RAG appendix table so the main
+% comparison stays like-for-like while preserving artifact traceability.
+The double-blind supplement includes repository-local source tables and
+result files. Public links are anonymized for review; code and data will be
+released upon acceptance.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Main evidence sources used by the paper. Paths are repository-local
+inside the anonymized artifact.}
+\label{tab:source_manifest}
+\begin{tabular}{ll}
+\toprule
+Claim area & Source files \\
+\midrule
+Matched CCS test & \verb|results/revision/fix_01/paired_wilcoxon.csv| \\
+Scaled pilot cell & \verb|results/revision/fix_02/headline_table.csv| \\
+Multi-metric scoring & \verb|results/revision/fix_03/table1_multimetric.csv| \\
+Human calibration & \verb|data/revision/fix_03/human_eval_*.csv| \\
+Threshold transfer & \verb|results/revision/fix_04/tau_transfer_matrix.csv| \\
+Noise separation & \verb|results/revision/fix_05/slope_response.csv| \\
+Full Self-RAG audit & \verb|data/revision/fix_06/per_query_full_selfrag.csv| \\
+Baseline summary & \verb|results/revision/fix_06/h2h_summary_full_selfrag.csv| \\
+RAPTOR cost table & \verb|results/revision/fix_11/raptor_full_table.csv| \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Human-Evaluation Details}
+\label{app:human_eval}
+
+The human calibration uses 99 examples sampled from the fixed-generation
+multi-metric cell. Two raters label each answer as \verb|supported|,
+\verb|partially_supported|, or \verb|unsupported| using only the provided
+retrieved passages. Disagreements are resolved in an adjudicated CSV.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Human calibration label distribution after adjudication.}
+\label{tab:human_label_distribution}
+\begin{tabular}{lrr}
+\toprule
+Label & Count & Proportion \\
+\midrule
+Supported & 75 & 0.758 \\
+Partially supported & 20 & 0.202 \\
+Unsupported & 4 & 0.040 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Raw agreement is 0.919 and Cohen's \(\kappa=0.774\). The correlation table in
+the main paper is computed from adjudicated ordinal labels
+(\verb|supported| \(=1\), \verb|partially_supported| \(=0.5\),
+\verb|unsupported| \(=0\)). Kendall \(\tau_b\) values are 0.114 for DeBERTa,
+0.311 for the second NLI scorer, and 0.421 for the RAGAS-style judge.
+
+\paragraph{Annotation instructions.}
+Raters judge answer support by the retrieved passages only. Outside knowledge
+is disallowed. If the context supports the main answer but the answer adds an
+unsupported qualifier or side detail, raters use \verb|partially_supported|.
+If the answer says the information is unavailable, raters mark it supported
+only when the provided context really omits the answer.
+
+\section{Self-RAG Artifact Traceability}
+\label{app:selfrag}
+
+% POLISH FIX 4: Added a dedicated harness-mismatch appendix table so Self-RAG
+% remains traceable without visually dominating the main matched-harness audit.
+The full Self-RAG package has been imported into repository-local files, so the
+paper does not depend on a path outside the anonymized artifact. The verified
+import contains the expected 1,600 per-query rows and 8 summary rows.
+
+\begin{table}[H]
+\centering
+\tiny
+\setlength{\tabcolsep}{2pt}
+\caption{Full Self-RAG artifact checksums.}
+\label{tab:selfrag_checksums}
+\begin{tabular}{p{0.43\linewidth}rp{0.42\linewidth}}
+\toprule
+File & Rows & SHA-256 \\
+\midrule
+\texttt{data/revision/fix\_06/per\_query\_full\_selfrag.csv} & 1600 &
+\texttt{aaf00af2f186a3d90c619c3885df2627e237580c54ac5837be31443f1360a5af} \\
+\texttt{results/revision/fix\_06/h2h\_summary\_full\_selfrag.csv} & 8 &
+\texttt{5d325428d24c7d62b4fa22e30108edec1f5842d862536fc75b5f56192dc82055} \\
+\texttt{results/revision/fix\_06/summary\_full\_selfrag.md} & -- &
+\texttt{cba4cadcd97b2705c6aaef7893816e7d2bdc1ce8f2ee67d92dce1fe537ba1574} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Harness-Mismatched Baseline: Self-RAG}
+\label{app:selfrag_harness}
+
+Self-RAG is included for artifact traceability, but it is not a like-for-like
+matched-harness baseline. The run uses the released fine-tuned Llama-2-7B
+Self-RAG checkpoint with 8-bit loading, while CRAG, HCPC-v2, and RAPTOR-2L use
+the Mistral-backed short-answer harness. Self-RAG is also trained for
+reflective decoding, whereas the entailment-style scorer used in the audit
+does not separately reward reflection tokens or task-specific citation
+behavior. These numbers should therefore be read as harness-conditional, not
+as a global comparison against Self-RAG.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Harness-mismatched Self-RAG baseline. Latency is milliseconds.}
+\label{tab:selfrag_harness}
+\begin{tabular}{lrrrr}
+\toprule
+Dataset & Faith & Halluc. & Mean lat. & p99 lat. \\
+\midrule
+SQuAD & 0.574 & 0.390 & 7542 & 44800 \\
+HotpotQA & 0.574 & 0.430 & 6158 & 46965 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Reproducibility Commands}
+\label{app:commands}
+
+All revision runs are designed for free local or Kaggle compute. The exact
+runbook is included in \verb|docs/revision/runbook.md|. Representative
+commands are:
+
+\begin{verbatim}
+python3 experiments/fix_01_causal_matched_pairs.py
+python3 experiments/fix_02_scaled_headline_n500.py
+python3 experiments/fix_03_multimetric_faithfulness.py
+python3 experiments/analyze_fix03_human_eval.py
+python3 experiments/fix_04_tau_generalization.py
+python3 experiments/fix_05_coherence_preserving_noise.py
+python3 experiments/fix_06_baseline_h2h_pareto.py
+python3 experiments/fix_11_raptor_full_table.py
+\end{verbatim}
+
+\section{Anonymous Release Placeholders}
+\label{app:release}
+
+During double-blind review, public author-identifying links are replaced with
+placeholders such as [anonymized repository], [anonymized dataset], and
+[anonymized DOI]. Post-review sources can restore the public repository,
+dataset, package, and DOI links after review.

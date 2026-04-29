@@ -68,7 +68,7 @@ def build_pipeline(dataset: str, model: str, seed: int, max_contexts: int,
         top_k=3,
         model_name=model,
         embed_model=EMBED_MODEL,
-        persist_dir=f"./chroma_db_fix02/{coll}",
+        persist_dir=f"./artifacts/generated/chroma_db_fix02/{coll}",
     )
     pipe.index_documents(docs, collection_name=coll)
     pipe.llm = make_llm(backend, model, temperature=0.0)

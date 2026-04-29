@@ -1,0 +1,97 @@
+% =====================================================================
+% neuripsnewpaper/main.tex
+%
+% Main-paper draft for the NeurIPS submission version.
+% The supplement is built separately from supplement.tex.
+%
+% Build:
+%   cd neuripsnewpaper
+%   pdflatex main && bibtex main && pdflatex main && pdflatex main
+% =====================================================================
+
+\documentclass[10pt]{article}
+
+% TODO(submission): place the official NeurIPS 2026 style file
+% `neurips_2026.sty` in this directory before final submission. The source
+% below uses it automatically when present; the geometry block is only a local
+% fallback so this draft remains buildable. Do not shrink margins or fonts.
+\newif\ifofficialneurips
+\IfFileExists{neurips_2026.sty}{%
+  \officialneuripstrue
+  \usepackage{neurips_2026}
+}{%
+  \officialneuripsfalse
+  \usepackage[letterpaper,margin=1.0in]{geometry}
+  \usepackage{natbib}
+}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\theoremstyle{plain}
+\newtheorem{proposition}{Proposition}
+\newtheorem{theorem}{Theorem}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+\usepackage{enumitem}
+\usepackage{float}
+
+\graphicspath{{figures/}}
+\setlength{\bibsep}{1pt plus 1pt minus 0pt}
+\renewcommand{\bibfont}{\footnotesize}
+\emergencystretch=2em
+\tolerance=400
+\raggedbottom
+
+\newcommand{\ccs}{\mathrm{CCS}}
+\newcommand{\simq}{\mathrm{Sim}_{q}}
+\newcommand{\method}{ControlledRAG}
+\newcommand{\fix}[1]{\textsc{Fix #1}}
+
+\title{\Large\bfseries Local Retrieval Scores Do Not Identify\\[0.2em]
+Faithfulness in Retrieval-Augmented Generation}
+
+\newif\ifanonymous
+\anonymoustrue
+
+\ifanonymous
+  \author{Anonymous Authors\\\textit{Submission under double-blind review}}
+\else
+  \author{Saket Maganti}
+\fi
+
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\input{sections/abstract}
+\end{abstract}
+
+\input{sections/introduction}
+\input{sections/problem}
+\input{sections/experimental_design}
+\input{sections/theory}
+\input{sections/results}
+\input{sections/discussion}
+\input{sections/related_work}
+\input{sections/limitations_ethics}
+\input{sections/conclusion}
+
+{\footnotesize
+\bibliographystyle{plainnat}
+\bibliography{references}
+}
+
+\end{document}

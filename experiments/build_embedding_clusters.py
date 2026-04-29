@@ -22,8 +22,8 @@ Inputs:
     SQuAD queries. Embedding model: sentence-transformers/all-MiniLM-L6-v2.
 
 Outputs:
-    ragpaper/figures/embedding_clusters.pdf
-    ragpaper/figures/embedding_clusters.tex
+    papers/arxiv_longform/figures/embedding_clusters.pdf
+    papers/arxiv_longform/figures/embedding_clusters.tex
     results/embedding_clusters/projection_table.csv
 
 Usage:
@@ -48,7 +48,7 @@ import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parent.parent
-OUT_DIR = ROOT / "ragpaper" / "figures"
+OUT_DIR = ROOT / "papers" / "arxiv_longform" / "figures"
 OUT_PDF = OUT_DIR / "embedding_clusters.pdf"
 OUT_TEX = OUT_DIR / "embedding_clusters.tex"
 OUT_CSV_DIR = ROOT / "results" / "embedding_clusters"
@@ -90,7 +90,7 @@ def _retrieve_per_condition(n_queries: int) -> pd.DataFrame:
         chunk_size=1024, chunk_overlap=100, top_k=3,
         model_name="mistral",
         embed_model="sentence-transformers/all-MiniLM-L6-v2",
-        persist_dir=f"./chroma_db_embcluster/{coll}",
+        persist_dir=f"./artifacts/generated/chroma_db_embcluster/{coll}",
     )
     pipe.index_documents(docs, collection_name=coll)
     hcpc_v1 = HCPCRetriever(pipeline=pipe, sim_threshold=0.50,

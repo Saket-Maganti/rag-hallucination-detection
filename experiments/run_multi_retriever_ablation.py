@@ -143,7 +143,7 @@ def run_one_tuple(
 
     embedding_obj    = build_embedder(embedder)
     collection_name  = f"mr_{dataset}_{embedder}"
-    persist_dir      = f"./chroma_db_mr/{collection_name}"
+    persist_dir      = f"./artifacts/generated/chroma_db_mr/{collection_name}"
 
     pipeline = RAGPipeline(
         chunk_size=CHUNK_SIZE,

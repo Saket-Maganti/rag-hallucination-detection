@@ -1,0 +1,79 @@
+\section{Cross-Dataset Hyperparameter Generalization}
+\label{sec:tau_generalization}
+
+The HCPC-v2 retriever exposes one tunable threshold $\tau$ that
+gates whether a passage is refined. The published HCPC-v2 numbers
+use $\tau$ tuned on a 50-query SQuAD held-out subset. This section
+asks whether that choice of $\tau$ transfers to other datasets.
+
+\paragraph{Protocol.}
+For each dataset $\mathcal{D} \in \{\text{SQuAD}, \text{PubMedQA},
+\text{HotpotQA}, \text{NaturalQuestions}, \text{TriviaQA}\}$ and
+each candidate $\tau \in \{0.30, 0.40, 0.50, 0.60, 0.70\}$, we run
+HCPC-v2 at $n{=}300$ queries and report
+\(\mathrm{recovery}(\mathcal{D},\tau) =
+(\overline{\phi}_{\text{ccs-gate}} - \overline{\phi}_{\text{HCPC-v1}})
+\,/\,(\overline{\phi}_{\text{baseline}} - \overline{\phi}_{\text{HCPC-v1}})\).
+Tuning ``on $\mathcal{D}$'' means picking the $\tau$ that
+maximizes $\mathrm{recovery}(\mathcal{D},\tau)$. Evaluating ``on
+$\mathcal{D}'$'' means using that $\tau$ to score
+$\mathrm{recovery}(\mathcal{D}',\tau)$ on the held-out dataset.
+Total: $5\times 5 \times 300 = 7{,}500$ evaluations.
+
+\paragraph{Result.}
+For each tuning dataset, we report the diagonal recovery
+($\mathcal{D}=\mathcal{D}'$) versus the mean off-diagonal recovery
+($\mathcal{D}\ne\mathcal{D}'$). A pre-registered flag fires when
+the gap exceeds $0.03$.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Cross-dataset $\tau$ generalization. ``Flag'' is set when
+\emph{(diagonal recovery $-$ off-diagonal mean recovery) $> 0.03$};
+flagged datasets must be acknowledged honestly in any HCPC-v2
+result that uses their tuned $\tau$.}
+\label{tab:tau-generalization}
+\begin{tabular}{lcccc}
+\toprule
+Tune dataset & Diagonal recovery & Off-diag mean recovery &
+Diag $-$ Off-diag & Flag \\
+\midrule
+PubMedQA           & $1.452$ & $0.451$ & $1.002$ & \textbf{Yes} \\
+NaturalQuestions   & $1.401$ & $0.211$ & $1.191$ & \textbf{Yes} \\
+SQuAD              & $0.823$ & $-0.141$ & $0.963$ & \textbf{Yes} \\
+TriviaQA           & $0.464$ & $0.698$ & $-0.234$ & No \\
+HotpotQA           & $-0.112$ & $0.093$ & $-0.205$ & No \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Interpretation.}
+Three datasets --- the SQuAD on which the published $\tau$ was
+tuned, plus PubMedQA and NaturalQuestions --- exhibit substantial
+in-distribution recovery that does not transfer to other datasets.
+Two datasets (TriviaQA, HotpotQA) generalize better than they
+in-distribution-tune.
+
+For SQuAD specifically: tuning $\tau$ on a 50-query SQuAD held-out
+yields a recovery of $0.823$ on the rest of SQuAD --- but when that
+same $\tau$ is evaluated on the other four datasets the mean
+recovery is \emph{negative} ($-0.141$). The headline HCPC-v2
+recovery number on SQuAD is therefore amplified by $\tau$ tuning,
+not just by the method.
+
+\paragraph{What this means generally.}
+Threshold-based RAG interventions are vulnerable to in-distribution
+$\tau$ tuning even when researchers report tuning on a
+``small held-out subset.'' The convention of reporting a single
+$\tau$ per system without disclosing which subset it was tuned on,
+or how the choice transfers across datasets, is an evaluation
+practice that systematically inflates within-dataset numbers
+relative to honest off-distribution numbers.
+For the rest of this paper we report all HCPC-v2 results at the
+\emph{cross-dataset off-diagonal} $\tau$ rather than the
+in-distribution diagonal $\tau$, which moves the SQuAD recovery
+estimate from $0.823$ to $-0.141$. The honest summary: the
+``HCPC-v2 recovers faithfulness'' claim depends on which $\tau$ is
+chosen, and the chosen $\tau$ in the published work was tuned on
+the very dataset on which the claim was reported.

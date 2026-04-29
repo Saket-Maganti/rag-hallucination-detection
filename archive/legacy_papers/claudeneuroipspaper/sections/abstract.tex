@@ -1,0 +1,49 @@
+Retrieval-augmented generation (RAG) is increasingly deployed in
+high-stakes settings, yet evaluation practices vary substantially
+across the literature: small samples, single faithfulness scorers,
+and unreported hyperparameter tuning are common. We present a
+pre-registered audit of one prominent claim --- the \emph{refinement
+paradox}, in which more aggressive per-passage refinement reduces
+answer faithfulness --- and use it to expose how
+evaluation choices shape RAG conclusions.
+We run \(>16{,}000\) pre-registered evaluations across SQuAD,
+PubMedQA, HotpotQA, NaturalQuestions, TriviaQA, MS-MARCO, and QASPER
+with five generators (Mistral-7B, Llama-3-8B, Qwen-2.5-7B,
+Llama-3.3-70B, GPT-OSS-120B) and three faithfulness scorers
+(DeBERTa-v3 NLI, roberta-large-mnli, and a Mistral-as-judge
+RAGAS-style rubric).
+
+Five findings emerge.
+\textbf{(i)} The published \(n{=}30\) paradox magnitude collapses at
+\(n{=}500{\times}5\) seeds: only one of five seeds reaches
+\(p<0.05\) on the paired contrast and the pooled bootstrap 95\,\% CI
+includes zero.
+\textbf{(ii)} Faithfulness scoring is metric-fragile: under
+DeBERTa-v3 the paradox magnitude is \(0.011\); under roberta-large-mnli
+it is \(0.032\); under a RAGAS-style LLM-judge it is \(0.140\),
+with pairwise Pearson \(r=0.18\)--\(0.67\).
+\textbf{(iii)} A pre-registered matched-similarity intervention
+(\(n{=}200\), \(\pm 0.02\) similarity tolerance) does not support
+context coherence as a causal mediator at fixed mean retrieval
+similarity (paired Wilcoxon \(p=0.628\), Cohen's \(d_z=-0.017\),
+95\,\% bootstrap CI \([-0.022,+0.017]\)).
+\textbf{(iv)} Retrieval threshold \(\tau\) does not transfer cleanly
+across datasets: \(\tau\) tuned on SQuAD, PubMedQA, or NaturalQuestions
+flags as leakage-prone (diagonal-vs-off-diagonal recovery gap \(>0.03\));
+TriviaQA and HotpotQA do not.
+\textbf{(v)} Head-to-head comparison of HCPC-v2 against CRAG, RAPTOR-2L,
+and Self-RAG (\(n{=}1{,}600\) evaluations) shows no method dominates:
+CRAG wins on HotpotQA short-answer multi-hop;
+HCPC-v2 narrowly ties RAPTOR-2L on SQuAD;
+Self-RAG underperforms in this matched harness
+(\(0.57\) faithfulness, 39--43\,\% hallucination, p99 latency
+\(45\)--\(47\)\,s vs.\ 3--5\,s for the others).
+
+Despite these null and weakened claims, one structural finding
+survives: at matched per-passage similarity, coherence-preserving
+uninformative noise produces a smaller faithfulness drop than random
+off-topic noise (slope \(-0.043\) vs.\ \(-0.069\)), suggesting
+context coherence carries signal beyond similarity even when CCS
+itself is not the causal mechanism.
+We release the benchmark, scripts, pre-registrations, and per-query
+CSVs so future RAG-faithfulness work can be audited the same way.

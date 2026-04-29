@@ -1,0 +1,100 @@
+\section{Causal Intervention: Matched-Similarity HIGH/LOW CCS}
+\label{sec:causal_intervention}
+
+The strongest version of the refinement-paradox claim is that
+context coherence \emph{causes} faithfulness changes that
+per-passage similarity alone does not. We test this directly with a
+matched-similarity intervention.
+
+\paragraph{Construction.}
+For each SQuAD query $Q$, we retrieve the top $N{=}20$ passages
+and compute the embedding $e_Q$ and passage embeddings $e_{p_i}$.
+For all $\binom{20}{3}{=}1140$ size-3 triples we compute
+\(\bar s = \tfrac{1}{3}\sum_{i \in T} \cos(e_Q, e_{p_i})\)
+and CCS as defined in \S\ref{sec:background}. We bin triples in
+$0.02$-wide buckets along $\bar s$. From the bucket with the
+largest CCS gap among triples sharing at most one passage, we pick
+the triple with maximum CCS as $T_H$ and the triple with minimum
+CCS as $T_L$, subject to (i) $|\bar s(T_H) - \bar s(T_L)|\le 0.02$
+and (ii) $\mathrm{CCS}(T_H) - \mathrm{CCS}(T_L) \ge 0.05$.
+Queries with no valid bucket are skipped and reported.
+
+\paragraph{Pre-registered hypothesis.}
+\(H_1\): \(\mathbb{E}[\phi(\mathcal{G}(Q, T_H)) - \phi(\mathcal{G}(Q, T_L))] > 0\),
+under faithfulness scorer $\phi=\phi_{\mathrm{DeBERTa}}$, with
+$n{=}200$ matched query pairs at seed $42$. Faithfulness is the
+per-query DeBERTa entailment mean. Cohen's $d_z$ on the paired
+differences is reported alongside the paired Wilcoxon signed-rank
+test (alternative=\textit{greater}). The matched-similarity
+construction itself is validated by a two-sided Wilcoxon test on
+$\bar s(T_H) - \bar s(T_L)$ that must \emph{fail} to reject for the
+construction to count as valid.
+
+\paragraph{Construction diagnostics.}
+For SQuAD: 200/200 valid pairs, mean similarity gap
+$0.0064$ (max $0.0185$), mean CCS gap $0.533$, minimum CCS gap
+$0.264$, maximum HIGH/LOW passage overlap $1$. The matched-similarity
+construction succeeded: similarity is held at near-equipoise within
+the pre-registered $\pm 0.02$ tolerance, CCS varies by an order of
+magnitude.
+
+\paragraph{Result.}
+
+\begin{table}[H]
+\centering
+\small
+\caption{Matched-similarity HIGH/LOW CCS intervention. Pre-registered
+sample size $n{=}200$ pairs, SQuAD/Mistral-7B/DeBERTa-v3 NLI,
+seed $42$, paired Wilcoxon alt=\textit{greater}.
+$H_1$ is supported only if $p<0.05$, $d_z > 0.2$, \emph{and}
+the 10{,}000-resample bootstrap 95\,\% CI excludes zero.}
+\label{tab:causal}
+\begin{tabular}{lcccccc}
+\toprule
+$n$ & $\overline{\phi}_{H}$ & $\overline{\phi}_{L}$ &
+$\overline{\Delta} = \overline{\phi}_{H} - \overline{\phi}_{L}$ &
+Wilcoxon $p$ & Cohen's $d_z$ & 95\,\% boot.\ CI \\
+\midrule
+$200$ & $0.6362$ & $0.6386$ & $\mathbf{-0.0024}$ &
+$\mathbf{0.628}$ & $\mathbf{-0.017}$ & $\mathbf{[-0.022,+0.017]}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The pre-registered $H_1$ is not supported. The mean paired
+difference is small and slightly \emph{negative}; the Wilcoxon test
+does not reject; Cohen's $d_z$ is essentially zero;
+the bootstrap 95\,\% CI on $\overline{\Delta}$ straddles zero.
+The hallucination rate (proportion of queries with $\phi < 0.5$)
+is in fact \emph{higher} for HIGH-CCS triples (16.5\,\%) than for
+LOW-CCS triples (9.0\,\%) --- the opposite direction predicted by a
+straightforward causal interpretation of CCS.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.55\linewidth]{fig_causal_paired.pdf}
+\caption{Matched-similarity HIGH-CCS vs.\ LOW-CCS faithfulness on
+SQuAD. Each point is one query; the diagonal is $y=x$. Points
+above the diagonal indicate HIGH $>$ LOW for that query. The cloud
+straddles the diagonal; the mean difference is $-0.002$.}
+\label{fig:causal}
+\end{figure}
+
+\paragraph{Interpretation.}
+At fixed mean per-passage retrieval similarity (\(\pm 0.02\)
+tolerance), CCS does not predict faithfulness on this $n{=}200$
+SQuAD intervention. The honest-reporting commitment of the
+pre-registration applied: in this paper we do not claim CCS as a
+causal mediator of faithfulness. We retain CCS as a
+\emph{descriptive} property of retrieval sets and as a candidate
+predictive signal, but do not assert that perturbing CCS at fixed
+similarity changes faithfulness.
+
+\paragraph{What the experiment does \emph{not} show.}
+The null does not imply that coherence is irrelevant: it only
+shows that the specific operationalization $\mathrm{CCS} =
+\overline{\mathrm{sim}} - \sigma_{\mathrm{sim}}$ does not predict
+faithfulness at fixed mean similarity. Section
+\S\ref{sec:coherence_noise} provides complementary evidence that
+coherence \emph{in some operationalization} carries signal beyond
+similarity, even if CCS is not the right one.

@@ -1,0 +1,88 @@
+\section{Related Work}
+
+\paragraph{Retrieval-augmented generation.}
+Retrieval-augmented generation connects parametric language models to external
+evidence at inference time \citep{lewis2020rag,karpukhin2020dpr}. The standard
+pipeline retrieves passages, optionally reranks or compresses them, and then
+conditions a generator on the selected context
+\citep{nogueira2019passage,glass2022re2g,xu2024recomp,izacard2022atlas}.
+Recent surveys document many variants of this pattern, including adaptive
+retrieval, query rewriting, reranking, and retrieval-time filtering
+\citep{gao2024ragsurvey,chen2024benchmarking}. Much of this work reports
+retrieval quality and answer quality side by side. That convention is useful,
+but it leaves a gap: a high-scoring passage set can still omit, fragment, or
+contradict the evidence needed to support the generated answer.
+
+\paragraph{Retrieval evaluation versus answer support.}
+Dense retrievers and cross-encoders are normally optimized for local
+query--passage relevance \citep{karpukhin2020dpr,reimers2019sbert,he2021deberta}.
+Benchmarks such as BEIR made cross-domain retrieval transfer a first-class
+evaluation problem \citep{thakur2021beir}. RAG faithfulness is a different
+estimand. The generator observes a set of passages, not an isolated passage,
+and the answer may depend on coverage, redundancy, ordering, contradiction,
+and whether the needed span is present at all. Work on distracting context and
+long-context position effects shows that extra retrieved text can change model
+behavior even when some relevant evidence is present
+\citep{shi2023large,liu2024lostmiddle}. \method{} brings that distinction into
+the evaluation protocol by separating local similarity from set-level
+structure and answer support.
+
+\paragraph{Faithfulness, factuality, and hallucination metrics.}
+Automatic faithfulness evaluation has a long record of useful but imperfect
+proxies. NLI-style factual consistency metrics, summarization consistency
+benchmarks, RAGAS-style RAG metrics, and atomic factuality metrics all capture
+different slices of the problem
+\citep{maynez2020faithfulness,honovich2022true,laban2022summac,es2024ragas,min2023factscore}.
+Surveys of hallucination emphasize the same point: unsupported generation is
+not a single observable variable \citep{ji2023hallucination}. Our contribution
+is not another faithfulness metric. We hold the generations fixed and show that
+three plausible faithfulness observers yield materially different intervention
+magnitudes.
+
+\paragraph{LLM-as-judge and evaluator disagreement.}
+LLM-based judges have become common because they are flexible and inexpensive
+relative to full human annotation
+\citep{liu2023geval,zheng2023judge}. They also introduce evaluator choice as
+a modeling decision. Prior work studies human agreement, preference
+benchmarks, and judge bias in open-ended generation. In RAG, the same issue
+appears as an identification problem: if a retrieval intervention changes
+DeBERTa faithfulness by 1.1 points but a local RAGAS-style judge by 14.0
+points on the same generations, the intervention effect is not identified by a
+single metric. The disagreement is part of the claim being estimated.
+
+\paragraph{Corrective and self-reflective RAG.}
+Corrective RAG methods try to detect retrieval failure and repair the evidence
+before generation, while Self-RAG trains a model to retrieve, generate, and
+critique using reflection tokens \citep{yan2024crag,asai2024selfrag}. These
+methods are natural baselines for our audit because they explicitly respond to
+retrieval failure rather than only changing the retriever. Our results should
+not be read as a global ranking of these systems. They show that in a matched
+short-answer harness, policy comparisons change across SQuAD and HotpotQA and
+depend on hallucination rate, mean latency, p99 latency, and indexing cost.
+
+\paragraph{Hierarchical retrieval and cost accounting.}
+RAPTOR builds tree-structured summaries so retrieval can operate over both
+raw chunks and higher-level summaries \citep{raptor2024}. That design can help
+when answer support is distributed across passages, but it also introduces an
+offline tree-building cost. Many RAG papers report online answer quality while
+leaving indexing cost and tail latency outside the main result table.
+\method{} treats those quantities as part of the deployment claim. A method
+that improves faithfulness on one dataset but has larger p99 latency or higher
+offline cost has not established deployment superiority by faithfulness alone.
+
+\paragraph{Benchmarks and cross-dataset transfer.}
+Cross-dataset evaluation is standard in retrieval, but less consistently used
+for RAG thresholds and faithfulness interventions. BEIR-style transfer asks
+whether a retriever trained or selected in one domain remains effective in
+another \citep{thakur2021beir}. We ask an analogous question for RAG policies:
+does a threshold tuned to recover faithfulness on one dataset transfer to the
+others? The answer is uneven in our audit, with SQuAD, PubMedQA, and
+NaturalQuestions showing large in-domain versus off-diagonal gaps.
+
+\paragraph{What prior work leaves open.}
+Prior work evaluates RAG systems, retrieval models, and faithfulness metrics.
+This paper instead tests whether common RAG faithfulness claims are
+identifiable once local similarity, context-set coherence, evaluator choice,
+threshold transfer, and cost are separated. That shift is the main difference:
+we are not proposing a new dominant RAG policy, but a controlled protocol for
+deciding which claims the evidence supports.

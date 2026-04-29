@@ -1,0 +1,88 @@
+\section{Scaling: The Paradox at Proper Sample Size}
+\label{sec:scaling}
+
+Published reports of the refinement paradox use $n{=}30$ queries
+per condition. We re-run the SQuAD/Mistral-7B headline cell at
+$n{=}500$ across five seeds (41--45), three conditions (baseline,
+HCPC-v1, HCPC-v2), for $7{,}500$ paired evaluations.
+
+\paragraph{Pooled headline.}
+Pooling across all five seeds (\(n=2{,}500\) per condition) and
+reporting bootstrap 95\,\% CIs for continuous metrics and Wilson
+score 95\,\% CIs for the hallucination proportion:
+
+\begin{table}[H]
+\centering
+\small
+\caption{SQuAD/Mistral-7B at $n{=}500{\times}5$ seeds = $2{,}500$
+queries per condition. Continuous metrics: 10{,}000-resample
+bootstrap 95\,\% CI. Hallucination rate: Wilson score 95\,\% CI.}
+\label{tab:scaling-pooled}
+\begin{tabular}{lccccc}
+\toprule
+Condition & $n$ & Faith.\ ($\pm$ 95\,\% CI) &
+Halluc (Wilson 95\,\% CI) & Mean retr.\ sim & Refine rate \\
+\midrule
+Baseline   & 2500 & $0.6609\;[0.6549, 0.6668]$ & $0.146\;[0.133, 0.160]$ & $0.5322$ & $0.000$ \\
+HCPC-v1    & 2500 & $0.6503\;[0.6447, 0.6560]$ & $0.147\;[0.134, 0.162]$ & $0.5689$ & $0.000$ \\
+HCPC-v2    & 2500 & $0.6612\;[0.6553, 0.6671]$ & $0.143\;[0.130, 0.157]$ & $0.5322$ & $0.705$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Per-seed paired contrasts.}
+The paradox magnitude is the per-seed paired
+$\Delta = \overline{\phi}_{\text{baseline}} - \overline{\phi}_{\text{HCPC-v1}}$.
+Recovery is $\overline{\phi}_{\text{HCPC-v2}} - \overline{\phi}_{\text{HCPC-v1}}$.
+Pre-registered analysis: paired Wilcoxon at $p<0.05$, alt=\textit{greater}.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Per-seed paired Wilcoxon signed-rank tests at $n{=}500$.
+Each row is one seed; significance is the unadjusted $p<0.05$
+threshold. The pre-revision n=30 estimate of paradox magnitude was
+$0.069 \pm 0.004$.}
+\label{tab:scaling-perseed}
+\begin{tabular}{cccccccc}
+\toprule
+Seed & $n$ & $\Delta$\textsubscript{baseline-v1} & $p$ & $d_z$
+     & $\Delta$\textsubscript{v2-v1} & $p$ & $d_z$ \\
+\midrule
+41 & 500 & $0.0107$ & $0.083$ & $0.072$ & $0.0132$ & $\mathbf{0.025}$ & $0.088$ \\
+42 & 500 & $0.0063$ & $0.234$ & $0.043$ & $0.0030$ & $0.504$ & $0.021$ \\
+43 & 499 & $0.0078$ & $0.174$ & $0.055$ & $0.0059$ & $0.215$ & $0.042$ \\
+44 & 500 & $0.0204$ & $\mathbf{0.008}$ & $0.134$ & $0.0191$ & $\mathbf{0.008}$ & $0.126$ \\
+45 & 500 & $0.0073$ & $0.203$ & $0.048$ & $0.0125$ & $\mathbf{0.036}$ & $0.081$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Result.}
+Per-seed paradox magnitudes are
+$\{0.011, 0.006, 0.008, 0.020, 0.007\}$, with
+mean $\bar{\Delta}=0.011$ and standard deviation $\sigma=0.006$.
+Only seed 44 reaches $p<0.05$ on the paradox contrast. The pooled
+bootstrap 95\,\% CI on the paradox contrast is
+$[-0.005, +0.027]$, which contains zero.\footnote{Reported in
+\texttt{results/revision/fix\_02/paired\_contrasts.csv}.}
+This is a substantial downgrade from the published
+$n{=}30$ estimate of $0.069$: the
+$10\times$-larger sample yields a $\sim 6\times$-smaller magnitude
+and a confidence interval consistent with no effect at all.
+
+The recovery contrast (HCPC-v2 vs.\ HCPC-v1) is more robust:
+3 of 5 seeds reach $p<0.05$, mean $\bar{\Delta}_{\mathrm{rec}} =
+0.011$. This is not by itself a useful effect size given the
+underlying paradox has collapsed --- if the baseline-vs-v1 contrast
+is in the noise, the v2-vs-v1 ``recovery'' is recovering from the
+same noise, not a real effect.
+
+\paragraph{Interpretation.}
+The published refinement-paradox magnitude on SQuAD/Mistral-7B is a
+sample-size artifact at this scale. Combined with the causal
+intervention null in \S\ref{sec:causal_intervention}, the empirical
+case for an HCPC-v2-style intervention as a controlled
+faithfulness probe is materially weaker than has been reported.
+Section \S\ref{sec:multimetric} examines whether the choice of
+faithfulness scorer changes this picture.

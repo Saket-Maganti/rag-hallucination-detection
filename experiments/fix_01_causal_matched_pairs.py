@@ -27,7 +27,7 @@ Outputs:
     data/revision/fix_01/COLUMNS.md
     results/revision/fix_01/*.csv
     results/revision/fix_01/summary.md
-    ragpaper/figures/fix_01_paired_diff.pdf
+    papers/arxiv_longform/figures/fix_01_paired_diff.pdf
 """
 
 from __future__ import annotations
@@ -58,7 +58,7 @@ from src.rag_pipeline import RAGPipeline, RAG_PROMPT
 
 OUT_DATA = Path("data/revision/fix_01")
 OUT_RESULTS = Path("results/revision/fix_01")
-OUT_FIG = Path("ragpaper/figures/fix_01_paired_diff.pdf")
+OUT_FIG = Path("papers/arxiv_longform/figures/fix_01_paired_diff.pdf")
 
 EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 TOP_N = 20

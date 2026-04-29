@@ -1,0 +1,61 @@
+\section{Problem: Identifying Faithfulness}
+
+\paragraph{Local relevance.}
+Let $q$ be a query and $P=\{p_1,\ldots,p_k\}$ a retrieved context set. A
+standard local query-passage score measures how much each passage resembles
+the query, often through embedding cosine similarity. We write the mean local
+similarity as
+\[
+  \simq(P)=\frac{1}{k}\sum_i \cos(e(q),e(p_i)).
+\]
+This score is useful for retrieval, but it treats the passages as separable
+items.
+
+\paragraph{Context coherence.}
+The Context Coherence Score is a set-level statistic:
+\[
+  \ccs(P)=\frac{2}{k(k-1)}\sum_{i<j}\cos(e(p_i),e(p_j)).
+\]
+It measures whether retrieved passages are mutually similar. CCS can expose
+structure that $\simq$ discards, but it is not assumed to be a sufficient
+condition for answer support.
+
+\paragraph{Faithfulness.}
+A generator $G$ produces $a=G(q,P)$. We use faithfulness to mean answer support
+by the retrieved context: the answer should be entailed by, or at least
+directly grounded in, $P$. This is a property of the set and the answer
+together. It is not implied by high local similarity, because a context set can
+look query-relevant while omitting the decisive evidence, duplicating the same
+partial fact, or combining passages that invite an unsupported synthesis.
+High CCS has the same problem in another form: topically coherent passages may
+all be answer-absent.
+
+\paragraph{Identifiability.}
+We use \emph{identifiability} in the empirical sense. A reported statistic
+identifies a faithfulness claim only if the claimed direction would remain
+distinguishable after the relevant alternatives are separated. If a method has
+higher $\simq(P)$ but lower support, local similarity did not identify
+faithfulness. If a coherence effect disappears after matching $\simq(P)$,
+coherence alone did not identify the effect. If different automatic judges
+give different intervention magnitudes on identical generations, a single
+metric did not identify the effect size.
+
+\paragraph{Research hypotheses.}
+The controlled suite tests five hypotheses that are often implicit in RAG
+papers:
+\begin{description}[leftmargin=1.2em,itemsep=2pt,topsep=2pt]
+  \item[H1: Coherence causality.] At fixed $\simq(P)$, higher CCS increases
+  answer faithfulness.
+  \item[H2: Scale robustness.] The refinement paradox remains large and
+  statistically stable at larger $n$ and multiple seeds.
+  \item[H3: Metric invariance.] Faithfulness conclusions are stable across
+  reasonable automatic evaluators.
+  \item[H4: Threshold transfer.] A refinement policy tuned on one dataset
+  transfers to others without large recovery loss.
+  \item[H5: Method dominance.] A coherence-aware policy dominates alternative
+  RAG interventions after latency and indexing cost are included.
+\end{description}
+The results reject H1, weaken H2, reject H3, qualify H4 as dataset-dependent,
+and reject H5. The remaining positive claim is narrower: CCS is a diagnostic
+variable that can reveal structure missed by local similarity, especially in
+the coherent-noise control, but it is not a validated mechanism.

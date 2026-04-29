@@ -52,7 +52,7 @@ def main() -> None:
         chunk_overlap=100,
         top_k=3,
         model_name=args.model,
-        persist_dir="./chroma_db_fix07/squad",
+        persist_dir="./artifacts/generated/chroma_db_fix07/squad",
     )
     pipe.index_documents(docs, collection_name="fix07_squad")
     pipe.llm = make_llm("together", args.model, temperature=0.0)

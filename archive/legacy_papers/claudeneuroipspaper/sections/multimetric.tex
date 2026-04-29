@@ -1,0 +1,107 @@
+\section{Faithfulness Scoring Is Metric-Fragile}
+\label{sec:multimetric}
+
+The previous two sections held the faithfulness scorer fixed at
+DeBERTa-v3 NLI. Different scorers can disagree substantially on
+the same answers; we re-score the entire $7{,}500$-row
+$n{=}500{\times}5$-seed cell from \S\ref{sec:scaling} with two
+additional scorers in parallel: roberta-large-mnli (a different
+NLI model with independent training data) and a Mistral-7B-as-judge
+RAGAS-style rubric.
+
+\paragraph{Per-condition means across the three scorers.}
+
+\begin{table}[H]
+\centering
+\small
+\caption{Per-condition means across three faithfulness scorers on
+the same $n{=}7{,}500$ rows. The paradox magnitude
+$\overline{\phi}_{\text{baseline}} - \overline{\phi}_{\text{v1}}$
+is reported in the right column.}
+\label{tab:multimetric-means}
+\begin{tabular}{lccccc}
+\toprule
+Condition & $n$ & DeBERTa-v3 & mnli & RAGAS judge & Magnitude (b-v1) \\
+\midrule
+Baseline   & 2500 & 0.6609 & 0.3501 & 0.7296 & --- \\
+HCPC-v1    & 2500 & 0.6503 & 0.3184 & 0.5904 & --- \\
+HCPC-v2    & 2500 & 0.6612 & 0.3509 & 0.7279 & --- \\
+\midrule
+\multicolumn{2}{l}{\textbf{Paradox magnitude:}} & $0.011$ & $0.032$ & $\mathbf{0.140}$ & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The paradox magnitude is metric-dependent by an order of magnitude.
+Under DeBERTa-v3 the magnitude is $0.011$; under
+roberta-large-mnli, $0.032$; under the RAGAS-style LLM-judge,
+$0.140$.
+
+\paragraph{Pairwise agreement.}
+Pairwise Pearson and Spearman correlations across all $n{=}7{,}500$
+paired observations:
+
+\begin{table}[H]
+\centering
+\small
+\caption{Pairwise correlations among the three faithfulness
+scorers on $n{=}7{,}500$ paired observations.}
+\label{tab:multimetric-corr}
+\begin{tabular}{llcc}
+\toprule
+Metric A & Metric B & Pearson $r$ & Spearman $\rho$ \\
+\midrule
+DeBERTa-v3 & roberta-large-mnli & $0.259$ & $0.265$ \\
+DeBERTa-v3 & RAGAS judge        & $\mathbf{0.182}$ & $0.212$ \\
+roberta-large-mnli & RAGAS judge & $0.674$ & $0.651$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+DeBERTa-v3 and the RAGAS judge agree at Pearson $r=0.18$ on
+faithfulness over the same $7{,}500$ paired observations. By
+contrast, mnli and the RAGAS judge agree at $r=0.67$. DeBERTa-v3
+is the outlier: under it the paradox magnitude is small
+($0.011$); under either alternative the magnitude is several times
+larger.
+
+\paragraph{Two interpretations, both honest.}
+\textbf{(a) The paradox is real and DeBERTa-v3 systematically
+underestimates it.} Under the RAGAS judge, the paradox magnitude
+($0.140$) is large, robust across seeds, and the recovery effect
+($v2 - v1 = 0.138$) is correspondingly large. If the RAGAS judge is
+the more accurate measurement, the published paradox claim is
+supported but the published \emph{magnitude} is wrong because
+DeBERTa-v3 understates it.
+
+\textbf{(b) The paradox is small and the RAGAS judge inflates it.}
+Under DeBERTa-v3 the paradox magnitude is $0.011$; under
+roberta-large-mnli it is $0.032$. If those two NLI models are
+better-calibrated for sentence-level entailment, the RAGAS-style
+judge --- a larger generative model graded by a different
+distribution --- may be picking up signals other than entailment
+(answer fluency, surface plausibility, format).
+
+\paragraph{Self-bias risk.}
+The RAGAS judge in our setup uses a separate Mistral-7B instance,
+which is the same model family as the system under test. We mitigate
+direct identity by running the judge as an independent process with
+a different prompt template, no shared context, and a structured
+JSON-schema response, but the residual self-bias risk is real and
+we report it as a limitation. A future version of this audit using
+a frontier-scale judge (Claude-3.5-Sonnet, GPT-4o) would resolve
+this --- but doing so honestly costs paid API tokens that the
+zero-dollar constraint of this work disallows.
+
+\paragraph{What this means for the literature.}
+Across recent RAG-faithfulness papers, single-scorer evaluation
+is the norm. Our finding has direct implications: any RAG
+faithfulness claim with a magnitude under $\sim 0.05$ on a single
+scorer should be reported alongside a second scorer with low
+overall agreement to the first, and the magnitude should be
+reported per-scorer. Not doing so risks publishing magnitudes
+that are scorer-dependent without acknowledging it.
+A 99-item two-rater human-eval template is staged at
+\texttt{data/revision/fix\_03/human\_eval\_template.jsonl} for
+follow-up work that wants to anchor the choice between
+interpretations (a) and (b) in human judgement.

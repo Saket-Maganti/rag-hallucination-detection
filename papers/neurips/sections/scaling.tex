@@ -1,0 +1,31 @@
+\section{Scaling the Pilot Paradox}
+\label{sec:scaling}
+
+The pilot refinement paradox is interesting only if it survives adequate
+sampling. We therefore rerun the SQuAD/Mistral cell at \(n=500\) over five
+seeds and three conditions: dense baseline, HCPC-v1 refinement, and HCPC-v2
+gated refinement. Under the DeBERTa scorer, the baseline-minus-HCPC-v1 effect
+is 1.1 faithfulness points, and only one of five seeds reaches \(p<0.05\) for
+the paired contrast.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Scaled SQuAD/Mistral headline cell. The pilot direction survives as a
+small DeBERTa-measured non-monotonicity, not as a large stable effect.}
+\label{tab:scaled}
+\begin{tabular}{lrrrr}
+\toprule
+Condition & \(n\) & Faithfulness & Hallucination & Retrieval similarity \\
+\midrule
+Baseline & 2500 & 0.661 & 0.146 & 0.532 \\
+HCPC-v1 & 2500 & 0.650 & 0.147 & 0.569 \\
+HCPC-v2 & 2500 & 0.661 & 0.143 & 0.532 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The result should be read as a scale correction. HCPC-v1 raises retrieval
+similarity while lowering DeBERTa faithfulness, but the magnitude is small and
+seed-sensitive. HCPC-v2 recovers the HCPC-v1 drop on average, yet this does
+not establish a general solution to hallucination or a global method ranking.

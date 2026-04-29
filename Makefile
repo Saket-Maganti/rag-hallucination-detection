@@ -16,7 +16,7 @@
 #   make docker-run          — run a smoke check inside the container
 
 PYTHON      ?= python3
-RAGPAPER    := ragpaper
+RAGPAPER    := papers/arxiv_longform
 RESULTS_DIR := results
 LOGS_DIR    := logs
 
@@ -61,22 +61,22 @@ paper:
 	@echo "[make] $(RAGPAPER)/main.pdf updated (legacy combined, ~55 pages)."
 
 paper-longform:
-	cd paper_longform && pdflatex -interaction=nonstopmode main.tex && \
+	cd papers/arxiv_longform && pdflatex -interaction=nonstopmode main.tex && \
 		bibtex main && \
 		pdflatex -interaction=nonstopmode main.tex && \
 		pdflatex -interaction=nonstopmode main.tex
-	@echo "[make] paper_longform/main.pdf updated (~55 pages, full appendix)."
+	@echo "[make] papers/arxiv_longform/main.pdf updated (~55 pages, full appendix)."
 
 paper-neurips:
-	cd paper_neurips && pdflatex -interaction=nonstopmode main.tex && \
+	cd papers/neurips && pdflatex -interaction=nonstopmode main.tex && \
 		bibtex main && \
 		pdflatex -interaction=nonstopmode main.tex && \
 		pdflatex -interaction=nonstopmode main.tex
-	@echo "[make] paper_neurips/main.pdf updated (~12 pages, body only, NeurIPS submission)."
+	@echo "[make] papers/neurips/main.pdf updated (NeurIPS submission)."
 
 papers: paper-longform paper-neurips
 	@echo "[make] both PDFs built:"
-	@ls -lh paper_longform/main.pdf paper_neurips/main.pdf
+	@ls -lh papers/arxiv_longform/main.pdf papers/neurips/main.pdf
 
 lint:
 	$(PYTHON) scripts/lint_paper.py
@@ -109,7 +109,7 @@ hf-dataset:
 
 hf-space:
 	$(PYTHON) scripts/prepare_hf_space.py --overwrite
-	@echo "[make] space staged at space_deploy/. push manually to HF (see CLAUDE.md)."
+	@echo "[make] Space staging generated. See scripts/prepare_hf_space.py output and PROJECT_HISTORY.md."
 
 # ── Standalone pip package ───────────────────────────────────────────
 

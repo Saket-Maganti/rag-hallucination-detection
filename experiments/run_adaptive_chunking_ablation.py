@@ -183,7 +183,7 @@ def run_config(
         top_k=top_k,
         model_name=MODEL_NAME,
         embed_model=EMBED_MODEL,
-        persist_dir=f"./chroma_db_adaptive/{collection_name}",
+        persist_dir=f"./artifacts/generated/chroma_db_adaptive/{collection_name}",
         chunker=chunker,
     )
 
@@ -327,7 +327,7 @@ def main():
     _seed_pipeline = RAGPipeline(
         model_name=MODEL_NAME,
         embed_model=EMBED_MODEL,
-        persist_dir="./chroma_db_adaptive/seed",
+        persist_dir="./artifacts/generated/chroma_db_adaptive/seed",
     )
     shared_emb = _seed_pipeline.embeddings
 

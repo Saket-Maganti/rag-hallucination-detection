@@ -326,7 +326,7 @@ def run_dataset(dataset_name: str, docs_raw, qa_pairs, reranker):
         top_k=TOP_K,
         model_name=MODEL_NAME,
         embed_model=EMBED_MODEL,
-        persist_dir=f"./chroma_db_reranker_{dataset_name}",
+        persist_dir=f"./artifacts/generated/chroma_db_reranker_{dataset_name}",
     )
     collection_name = f"reranker_{dataset_name}"
     pipeline.index_documents(docs_raw[:N_DOCS], collection_name=collection_name)

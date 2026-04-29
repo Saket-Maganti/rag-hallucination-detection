@@ -22,8 +22,8 @@ Inputs (any with ccs ≥ 0 are merged):
     results/frontier_scale/per_query.csv
 
 Outputs:
-    ragpaper/figures/disentanglement.pdf
-    ragpaper/figures/disentanglement.tex
+    papers/arxiv_longform/figures/disentanglement.pdf
+    papers/arxiv_longform/figures/disentanglement.tex
     results/disentanglement/quartile_table.csv
 
 Usage:
@@ -42,7 +42,7 @@ import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parent.parent
-OUT_DIR = ROOT / "ragpaper" / "figures"
+OUT_DIR = ROOT / "papers" / "arxiv_longform" / "figures"
 OUT_PDF = OUT_DIR / "disentanglement.pdf"
 OUT_TEX = OUT_DIR / "disentanglement.tex"
 OUT_CSV_DIR = ROOT / "results" / "disentanglement"

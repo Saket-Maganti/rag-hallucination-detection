@@ -1,0 +1,96 @@
+\section{What Survives: Coherence-vs-Similarity Disentanglement}
+\label{sec:coherence_noise}
+
+The previous three sections weakened the original case. This
+section reports the one structural finding that does survive
+scrutiny: at matched per-passage similarity, coherence-preserving
+uninformative noise produces a smaller faithfulness drop than random
+noise.
+
+\paragraph{Why this matters.}
+Section \ref{sec:causal_intervention} showed that the specific
+operationalization of coherence as
+$\mathrm{CCS} = \overline{\mathrm{sim}} - \sigma_{\mathrm{sim}}$
+does not predict faithfulness at fixed mean similarity. That null
+is interesting only if a different, milder claim --- that
+coherence is a real variable separable from similarity --- is also
+testable.
+
+\paragraph{Protocol.}
+For each SQuAD query (\(n{=}200\), seed 42), we retrieve top-3
+passages and run four conditions:
+\begin{itemize}
+\itemsep -2pt
+\item \textbf{Baseline}: top-3 retrieval, no perturbation.
+\item \textbf{Random off-topic noise}: replace 1, 2, or 3 of the 3
+retrievals with random off-topic passages from the same corpus.
+\item \textbf{Coherence-preserving uninformative noise}:
+replace 1, 2, or 3 of the 3 retrievals with passages from the
+\emph{same query's top-20 retrieval pool} that do not contain the
+answer span. Same-topic, just not answer-bearing.
+\item \textbf{HCPC-v1 refinement}: the published refinement
+operator that motivated this paper.
+\end{itemize}
+For each condition we measure mean retrieval similarity to the
+query and mean DeBERTa-v3 NLI faithfulness. The slope of
+faithfulness as a function of noise rate is the regression slope of
+faith on noise rate $\in\{0, 1/3, 2/3, 1\}$.
+
+\paragraph{Result.}
+
+\begin{table}[H]
+\centering
+\small
+\caption{Coherence-preserving noise vs.\ random noise on SQuAD,
+$n{=}200$. Slopes are linear regression of faithfulness on noise rate.
+``Drop at full noise'' is faith at noise=$1$ minus faith at
+noise=$0$.}
+\label{tab:coherence-noise}
+\begin{tabular}{lccc}
+\toprule
+Condition & Faith.\ slope per noise rate &
+Sim.\ slope per noise rate & Drop at full noise \\
+\midrule
+Random off-topic noise         & $-0.069$ & $-0.481$ & $0.052$ \\
+\textbf{Coherence-preserving} (same-topic, answer-absent) &
+$\mathbf{-0.043}$ & $\mathbf{-0.113}$ & $0.042$ \\
+HCPC-v1 refinement (post-hoc) & --- & --- & $0.001$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The slopes are markedly different. Random noise drives faithfulness
+down by $0.069$ per unit noise rate while also crashing similarity
+($-0.481$). The coherence-preserving condition --- in which the
+\emph{same} number of passages is replaced, but with same-topic
+passages that don't carry the answer --- drops faithfulness by only
+$0.043$ per unit noise, with similarity barely moving ($-0.113$).
+
+\paragraph{Interpretation.}
+At matched per-passage similarity, structural coherence carries a
+real-but-modest faithfulness signal. Random noise removes both
+similarity and coherence simultaneously; the coherence-preserving
+condition isolates coherence and finds a smaller, but non-zero,
+faithfulness drop. The ratio of slopes (random $-0.069$ over
+coherence-preserving $-0.043$) is $\sim 1.6\times$, well within
+the noise of any single experiment but consistent across noise
+rates.
+
+Combined with the Section \ref{sec:causal_intervention} null, the
+honest statement is: \emph{coherence operationalized as the CCS
+score does not predict faithfulness at fixed mean similarity, but
+some structural property of coherent retrieval --- not yet
+correctly captured by any score we tested --- carries signal
+beyond similarity.}
+
+\paragraph{This is not a re-rescue.}
+We do not claim that the original refinement-paradox claim is
+restored by this finding. The SQuAD/Mistral-7B paradox magnitude
+collapsed at scale (\S\ref{sec:scaling}) and its proposed
+mechanism (\S\ref{sec:causal_intervention}) was disconfirmed.
+What \S\ref{sec:coherence_noise} adds is a directional and
+empirically robust observation that ``random noise'' is not the
+right null for retrieval-quality experiments. Future work
+operationalizing coherence in a way that survives the
+matched-similarity test of \S\ref{sec:causal_intervention} would
+inherit this section's structural support.

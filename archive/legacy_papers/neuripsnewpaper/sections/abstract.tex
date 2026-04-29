@@ -1,0 +1,19 @@
+RAG papers often assume that improving local query-passage relevance is
+evidence that generated answers will be more faithful. We test when such
+faithfulness claims are identifiable once retrieval similarity, context-set
+structure, evaluator choice, transfer, and cost are separated. \method{} uses
+controlled similarity matching, a scaled SQuAD/Mistral rerun, multi-metric
+scoring of identical generations, cross-dataset threshold transfer, and
+cost-aware baselines. The results are mostly negative. At fixed mean
+query-passage similarity, HIGH-CCS contexts do not improve faithfulness over
+LOW-CCS contexts (0.636 vs. 0.639; Wilcoxon $p=0.628$; 95\% bootstrap CI
+$[-0.022,0.017]$), while hallucinating more often (16.5\% vs. 9.0\%). Scaling
+the original refinement cell to $n=500$ across five seeds reduces the
+DeBERTa-measured effect to 1.1 points, with only 1/5 seeds significant. The
+same 7,500 generations imply different effect sizes under DeBERTa, a second
+NLI model, and a local RAGAS-style judge (0.011, 0.032, and 0.140), with
+DeBERTa--RAGAS correlation $r=0.182$. Threshold transfer is uneven, and no
+tested baseline is uniformly best once latency and indexing cost are included. CCS remains
+useful as a diagnostic: coherent uninformative noise hurts less than random
+noise. \method{} packages these controls as a reusable protocol for auditing
+RAG faithfulness claims.

@@ -1,0 +1,39 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+We pre-registered an audit of one prominent RAG faithfulness claim
+--- the refinement paradox --- and used it to expose how
+evaluation choices shape the conclusions that get reported. The
+published $n{=}30$ paradox magnitude collapsed at $n{=}500 \times 5$
+seeds; the proposed causal mechanism (CCS) was not supported by a
+matched-similarity intervention; the choice of faithfulness scorer
+moved the magnitude by an order of magnitude on the same paired
+outputs; the published threshold $\tau$ did not transfer cleanly
+across datasets; head-to-head comparison against published
+baselines showed no method dominates.
+
+A structural finding survived: at matched per-passage similarity,
+coherence-preserving uninformative noise produces a smaller
+faithfulness drop than random off-topic noise. Coherence is real
+in some operationalization, even if the published one (CCS) is
+not the right one.
+
+We release the benchmark, scripts, pre-registrations, and
+per-query CSVs at
+\href{https://github.com/Saket-Maganti/rag-hallucination-detection}{github.com/Saket-Maganti/rag-hallucination-detection}
+and DOI \href{https://doi.org/10.5281/zenodo.19757291}{10.5281/zenodo.19757291},
+on free hardware, so the same audit can be run on any candidate
+RAG faithfulness intervention before its claims are finalized.
+We argue that pre-registration, multi-scorer reporting, and
+explicit cross-dataset $\tau$ disclosure should become the minimum
+bar for empirical claims in RAG faithfulness research.
+
+\paragraph{Acknowledgments.}
+\ifanonymous
+We omit acknowledgments under double-blind review.
+\else
+We thank the prior reviewers whose feedback prompted this audit,
+and the maintainers of Hugging Face Hub, Zenodo, Kaggle, and
+Ollama for the free infrastructure that made the work possible
+under a zero-dollar constraint.
+\fi

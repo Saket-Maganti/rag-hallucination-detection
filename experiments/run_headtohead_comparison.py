@@ -160,7 +160,7 @@ def run_dataset(
         chunk_overlap=int(CHUNK_SIZE * 0.1),
         top_k=TOP_K,
         embed_model=EMBED_MODEL,
-        persist_dir=f"./chroma_db_h2h/{collection_name}",
+        persist_dir=f"./artifacts/generated/chroma_db_h2h/{collection_name}",
     )
     pipeline.index_documents(docs, collection_name=collection_name)
 

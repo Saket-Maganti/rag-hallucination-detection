@@ -1,0 +1,50 @@
+\section{Background and Problem Setup}
+\label{sec:background}
+
+% POLISH FIX 3: Restored the implemented CCS definition (mean minus standard
+% deviation of off-diagonal passage similarities) to resolve the draft mismatch.
+\paragraph{RAG faithfulness.}
+RAG systems retrieve passages and condition a generator on the resulting
+context \citep{lewis2020rag,karpukhin2020dpr}. A generated answer is faithful
+when its substantive claims are supported by the retrieved context, not merely
+when the answer is true in the world. This distinction matters because a model
+can answer from parametric memory even when retrieval failed, or can produce
+unsupported details despite apparently relevant passages
+\citep{maynez2020faithfulness,ji2023hallucination}.
+
+\paragraph{Local retrieval similarity.}
+Most retrieval metrics are local: they score each query-passage pair with
+embedding similarity, cross-encoder relevance, or reranking rank. Local scores
+are useful, but they do not identify answer support. Three individually
+relevant passages may be redundant, contradictory, or missing a bridge fact.
+One lower-scoring passage may contain the answer.
+
+\paragraph{Context coherence and CCS.}
+% POLISH FIX 3: Restored the original CCS definition used by the code and
+% matched-pair CSVs, resolving the mean-only wording mismatch.
+The Context Coherence Score (CCS) is a retrieval-time statistic over a
+retrieved context set \(C\):
+\(\ccs(C)=\operatorname{mean}_{i<j}\cos(e_i,e_j)-
+\operatorname{sd}_{i<j}\cos(e_i,e_j)\), where \(e_i\) and \(e_j\) are passage
+embeddings. The mean term rewards mutual topical compatibility, while the
+standard-deviation penalty reduces scores for uneven sets with one coherent
+sub-cluster and one outlying passage.
+CCS asks a set-level question that local relevance does not: do the passages
+look mutually compatible? The audit treats CCS as a diagnostic candidate. It
+does not assume that CCS causes faithfulness, and the matched test in
+Section~\ref{sec:matched_similarity} rejects that strong interpretation.
+
+\paragraph{Identifiability.}
+We use ``identified'' in a practical evaluation sense. A RAG claim is not
+identified if another unreported factor could plausibly explain the reported
+effect. A local retrieval improvement does not identify support if context-set
+structure is uncontrolled. A single automatic metric does not identify an
+effect size if other faithfulness observers disagree. A tuned threshold does
+not identify a reusable policy if off-diagonal transfer is poor. A method does
+not identify deployment value if p99 latency and indexing cost are omitted.
+
+\paragraph{Why the usual evidence is risky.}
+The risky combination is small samples, one scorer, threshold tuning on the
+reporting domain, no human calibration, and partial cost reporting. Each choice
+can be reasonable in isolation. Together, they let a paper report a clean
+faithfulness story without separating the variables needed to support it.

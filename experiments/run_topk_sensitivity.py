@@ -128,7 +128,7 @@ def run_tuple(
         top_k=k,
         model_name=model,
         embed_model=EMBED_MODEL,
-        persist_dir=f"./chroma_db_topk/{collection}",
+        persist_dir=f"./artifacts/generated/chroma_db_topk/{collection}",
     )
     pipeline.index_documents(docs, collection_name=collection)
 

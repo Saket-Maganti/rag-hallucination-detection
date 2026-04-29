@@ -56,8 +56,8 @@ echo "[release] tag:       $TAG"
 echo "[release] dry-run:   $DRY_RUN"
 echo
 
-# ── 1. Tree must be clean (ignore binary chroma + cache noise) ──────────
-DIRTY=$(git status --porcelain | grep -vE '(\.DS_Store|chroma_db/|__pycache__/|\.pyc$|ragpaper\.zip$)' || true)
+# ── 1. Tree must be clean (ignore generated DBs + cache noise) ──────────
+DIRTY=$(git status --porcelain | grep -vE '(\.DS_Store|chroma_db/|artifacts/generated/chroma_db|__pycache__/|\.pyc$|\.zip$)' || true)
 if [[ -n "$DIRTY" ]]; then
   echo "[release] ❌ uncommitted changes (excluding caches):"
   echo "$DIRTY"
@@ -68,7 +68,7 @@ echo "[release] ✅ working tree clean (caches ignored)"
 
 # ── 2. Sanity: required artifacts exist ─────────────────────────────────
 REQUIRED=(
-  "ragpaper/main.tex"
+  "papers/arxiv_longform/main.tex"
   "results/multidataset/summary.csv"
   "results/headtohead/summary.csv"
   "results/multiseed"
@@ -101,11 +101,11 @@ if (( DRY_RUN == 0 )); then
       --exclude='__pycache__' \
       --exclude='*.pyc' \
       --exclude='.DS_Store' \
-      --exclude='ragpaper/build' \
-      --exclude='ragpaper/main.aux' \
-      --exclude='ragpaper/main.log' \
+      --exclude='papers/arxiv_longform/build' \
+      --exclude='papers/arxiv_longform/main.aux' \
+      --exclude='papers/arxiv_longform/main.log' \
       -czf "$ARTIFACT" \
-      ragpaper/main.tex ragpaper/main.pdf ragpaper/sections ragpaper/figures ragpaper/references.bib \
+      papers/arxiv_longform/main.tex papers/arxiv_longform/main.pdf papers/arxiv_longform/sections papers/arxiv_longform/figures papers/arxiv_longform/references.bib \
       results/multidataset/summary.csv \
       results/multidataset/coherence_paradox.csv \
       results/headtohead/summary.csv \
@@ -139,7 +139,7 @@ Headlines:
   - 6 robustness checks (multi-seed, RAPTOR, prompt, sub-chunk, long-form, noise)
 
 Artifacts:
-  - ragpaper/        — full LaTeX + compiled PDF
+  - papers/arxiv_longform/        — full LaTeX + compiled PDF
   - results/         — per-query and aggregated metrics
   - space/           — Gradio demo
   - leaderboard/     — submission portal

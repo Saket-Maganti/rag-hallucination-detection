@@ -1,0 +1,4 @@
+category,n
+type-C: both gates wrong; set is genuinely hard,16
+type-B: gate did not fire on baseline-incoherent set,11
+"type-A: gate fired, refinement made it worse",9
