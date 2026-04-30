@@ -1,0 +1,856 @@
+\section{Introduction}
+\label{sec:intro}
+
+Retrieval-augmented generation (RAG)~\citep{lewis2020rag} now powers
+deployed systems across medical QA, legal research, and customer
+support, yet many papers still evaluate faithfulness with a narrow
+template: one retriever, one generator, one scorer, one threshold, and
+one benchmark. That template is convenient, but it
+\emph{under-identifies} the claim. A result that looks decisive in one
+generator/retriever/scorer cell can change sign, shrink, or become a
+deployment tradeoff under an equally defensible audit choice.
+
+The trigger for this paper is a refinement-paradox result from our own
+prior work: improving per-passage retrieval appeared to reduce answer
+faithfulness. The headline was interesting enough to audit, but it does
+not survive the controls reported here. At scale, the original
+SQuAD/Mistral contrast shrinks to $0.661 / 0.650 / 0.661$ across
+baseline / HCPC-v$1$ / HCPC-v$2$; a matched-similarity CCS intervention
+is null; threshold-transfer cells change sign; and a cost-aware
+head-to-head produces no dominating system.
+
+The audit reframes the original headline as a stronger
+methodological result. The problem is not that a coherence hypothesis
+``failed''; the problem is that single-cell RAG faithfulness numbers
+hide too many degrees of freedom. Under fixed Mistral generations,
+three plausible scorers produce raw score contrasts $0.011$, $0.032$,
+and $0.140$; z-scored contrasts on the same rows remain separated
+($0.071$, $0.231$, $0.337$ SD); a compact Qwen$2.5$ replication
+preserves the raw-contrast ordering; and a
+two-rater human calibration shows that no automated scorer should be
+treated as an unqualified reference standard. The empirical results are not
+independent anecdotes: each one corresponds to an axis that a RAG
+faithfulness claim must disclose.
+
+The positive contribution is \textbf{ControlledRAG}: a reusable audit
+protocol and prescriptive minimum reporting standard for RAG
+faithfulness claims. ControlledRAG is not a new retriever, not a new
+faithfulness metric, and not a method leaderboard. It asks authors to
+vary or explicitly hold fixed seven axes---generator, retriever,
+context structure, scorer, human calibration, threshold transfer, and
+cost---so reviewers can tell whether a claim is robust or merely a
+metric, retriever, generator, threshold, or cost artifact.
+
+\paragraph{Recommended minimum reporting standard for RAG faithfulness
+claims.}
+\begin{enumerate}
+  \item \textbf{Generator.} Family, parameter count, decoding settings,
+        and whether outputs are fixed before scoring.
+  \item \textbf{Retriever.} Embedding model, indexer, reranker (if
+        any), and any post-retrieval refinement step.
+  \item \textbf{Context-set structure.} At least two diagnostics beyond
+        per-passage similarity (e.g., CCS, answer-span presence, mean
+        query similarity).
+  \item \textbf{Scorer.} At least two faithfulness scorers, with a
+        reported Pearson or Spearman cross-scorer correlation.
+  \item \textbf{Human calibration.} A multi-rater panel with inter-rater
+        agreement and Spearman correlation against each automated scorer.
+  \item \textbf{Threshold transfer.} Sensitivity of any tuned threshold
+        $\tau$ across datasets, reported as a transfer table.
+  \item \textbf{Cost.} Per-condition latency, indexing time, and
+        external-call cost---including baselines.
+\end{enumerate}
+
+\paragraph{Contributions.} We make five contributions, each mapped to
+the standard.
+\begin{enumerate}
+  \item \textbf{ControlledRAG standard
+    (\S\ref{sec:controlledrag}).} A seven-axis minimum reporting
+    standard for RAG faithfulness claims.
+  \item \textbf{Fixed-generation metric fragility
+    (\S\ref{sec:metric_fragility}).} A $7{,}500$-row Mistral audit, a
+    compact Qwen$2.5$ replication, and a $99$-item human calibration
+    showing why scorer choice is an audit axis rather than an
+    implementation detail.
+  \item \textbf{Matched-context diagnostics
+    (\S\ref{sec:matched_ccs}).} A pre-registered CCS null plus an
+    answer-span/control diagnostic showing that answer-bearing evidence
+    and context structure carry complementary signal in the matched
+    cell.
+  \item \textbf{Transfer and deployment audit
+    (\S\ref{sec:threshold_transfer}--\S\ref{sec:cost}).}
+    Threshold-transfer, noise, cost-aware baseline, stronger-retriever,
+    and long-form stress results that expose the remaining audit axes
+    without turning the paper into a method leaderboard.
+  \item \textbf{Review artifact.} An anonymized package containing
+    auditable per-query outputs, matched context pairs, source tables,
+    scripts, supplement traces, and documentation is provided for
+    review; public release links will follow acceptance.
+\end{enumerate}
+
+\paragraph{Roadmap.} \S\ref{sec:bg} positions the work against prior
+RAG evaluation. \S\ref{sec:setup} describes the pipeline and the
+audited cells. \S\ref{sec:controlledrag} defines ControlledRAG.
+\S\ref{sec:matched_ccs}--\S\ref{sec:cost} run the seven-axis audit.
+\S\ref{sec:discussion} discusses what survives and what does not.
+\S\ref{sec:related} returns to the broader literature.
+\S\ref{sec:limits} states limitations and ethical considerations.
+\S\ref{sec:conclusion} concludes.
+
+\section{Background and Related Work}
+\label{sec:bg}
+
+\paragraph{The standard RAG pipeline.} A modern RAG
+system~\citep{lewis2020rag,gao2024ragsurvey} threads a dense retriever
+\citep{karpukhin2020dpr,xiong2024embedder} returning the top-$k$
+passages by query--passage similarity, an optional cross-encoder
+reranker~\citep{nogueira2019passage}, an optional refinement module
+that further filters or compresses each retained passage
+(e.g., extractive sentence selection, query-conditioned summarisation,
+or learned compression~\citep{xu2024recomp}), and a generator that
+produces the final answer conditioned on the assembled context. Each
+stage individually is reported to improve task performance on standard
+benchmarks~\citep{karpukhin2020dpr,izacard2022few,xiong2024embedder};
+the implicit assumption is that better local retrieval produces more
+faithful answers globally.
+
+\paragraph{Decoder-side correction.} Two influential lines move the
+correction \emph{into} the decoder.
+Self-RAG~\citep{asai2024selfrag} fine-tunes the generator to emit
+``reflection tokens'' that decide whether to retrieve, retrieve again,
+or stop, paying a fine-tune-time cost and a $2$--$3\times$ inference
+latency cost. CRAG~\citep{yan2024crag} introduces a lightweight
+retrieval evaluator that triggers web search when document relevance is
+judged poor, paying an external-call latency cost. Both take the
+position that the generator (or a learned auxiliary) is the right place
+to fix retrieval failures. ControlledRAG is orthogonal: it does not
+prescribe a place to fix retrieval and does not declare a winner among
+deployment policies. It prescribes how a faithfulness claim should be
+\emph{reported} so that a reader can tell from the paper which
+deployment policy would actually have looked better under a different
+scorer or retriever.
+
+\paragraph{Hierarchical retrieval.} RAPTOR~\citep{raptor2024} clusters
+retrieved passages into a tree and retrieves from both leaves and
+LLM-summarised internal nodes, producing higher-coherence summary
+contexts at the cost of an offline LLM-summarisation pass. We compare
+against a $2$-level RAPTOR baseline (\S\ref{sec:cost}) and find no
+single dominating system across faithfulness, hallucination, and
+latency.
+
+\paragraph{Faithfulness evaluation.} Faithfulness---whether a generated
+answer is supported by the retrieved context---is typically assessed
+via NLI-style scoring or LLM judging of the answer against the retrieved
+documents~\citep{honovich2022true,laban2022summac,es2024ragas},
+occasionally complemented by human annotation. Our frozen artifact uses
+three automated support proxies: a DeBERTa-v$3$ zero-shot entailment
+label score (\texttt{cross-encoder/nli-deberta-v3-base}), a
+\texttt{roberta-large-mnli} zero-shot proxy, and a context-conditioned
+RAGAS-style local judge. The supplement reports the exact scorer input
+formats. Cross-scorer disagreement on the same fixed generations is
+itself one of the strongest pieces of evidence for ControlledRAG
+(\S\ref{sec:metric_fragility}).
+
+\paragraph{RAG evaluation frameworks.} Recent systems such as
+ARES~\citep{saadfalcon2024ares}, RAGChecker~\citep{ru2024ragchecker},
+RAGTruth~\citep{niu2024ragtruth}, MIRAGE~\citep{park2025mirage},
+FaithJudge~\citep{tamber2025faithjudge}, RAGAS~\citep{es2024ragas},
+TRUE~\citep{honovich2022true}, and SummaC~\citep{laban2022summac}
+provide evaluators, datasets, benchmark suites, or diagnostic metrics.
+ControlledRAG is complementary. It does not replace those metrics or
+leaderboards; it asks whether a RAG faithfulness claim survives the
+hidden degrees of freedom those tools often instantiate.
+
+\paragraph{Coherence and context structure.} Discourse coherence has a
+long history in classical text
+generation~\citep{li2014coherence,mesgar2018neural,nguyen2021conditional}
+but, to our knowledge, has not been quantified as a deployment-time
+RAG signal. \citet{shi2023large} show that LLMs are distracted by
+irrelevant context but do not consider the case where each individual
+passage is relevant yet the \emph{set} is internally fragmented;
+\citet{liu2024lostmiddle} document position-dependent context
+utilisation in long contexts. We treat the Context Coherence Score
+(CCS) and answer-bearing evidence presence as two complementary
+context-structure variables to \emph{report} alongside per-passage
+similarity, not as substitutes for human evaluation or for cross-scorer
+checks.
+
+\paragraph{What we add.} Existing work proposes new retrievers,
+generators, scorers, datasets, or auxiliary models. We do not.
+ControlledRAG is not another metric suite or leaderboard. It is a
+disclosure standard: it asks authors to show which generator, retriever,
+context-structure, scorer, threshold, human-calibration, and cost
+choices their claim survives.
+
+\section{Setup and Audited Cells}
+\label{sec:setup}
+
+We hold the entire RAG pipeline fixed across audit experiments and vary
+only the audit axis under test. The audited cells are deliberately
+narrow---primarily short-answer extractive QA on SQuAD and PubMedQA
+with $7$B-class generators---so that scorer, retriever, and generator
+choices can be cleanly separated.
+
+\paragraph{Datasets.} The matched-context, scaled, metric-fragility,
+and span-control experiments use SQuAD~\citep{rajpurkar2016squad}; the
+threshold-transfer and noise experiments additionally use
+PubMedQA~\citep{jin2019pubmedqa}, HotpotQA~\citep{yang2018hotpotqa},
+NaturalQuestions~\citep{kwiatkowski2019nq}, and TriviaQA. The long-form
+stress test on QASPER and MS-MARCO is supplement-only and not treated
+as broad generalization evidence (\S\ref{sec:limits} and supplement).
+
+\paragraph{Pipeline.} Embeddings come from
+\texttt{sentence-transformers/all-MiniLM-L$6$-v$2$}; indexing uses
+ChromaDB; refinement uses
+\texttt{cross-encoder/ms-marco-MiniLM-L-$6$-v$2$}. Default chunk size is
+$1024$ characters with $10\%$ overlap and default top-$k$ is $3$.
+Generators are served via local Ollama (Mistral-$7$B,
+Qwen$2.5$-$7$B). The matched-context audit also re-encodes the same
+$200$ pairs with BGE-large and E5-large.
+
+\paragraph{Conditions.} Three retrieval configurations are evaluated
+head-to-head per query: \textbf{baseline} (top-$k$ dense retrieval, no
+refinement), \textbf{HCPC-v$1$} (Hybrid Context-Preserving Chunking:
+refine all retrieved passages through sub-chunking and cross-encoder
+selection---the original failure-mode condition), and
+\textbf{HCPC-v$2$} (a coherence-gated HCPC variant with top-rank
+protection, a refinement cap, and merge-back). The audit treats these
+three conditions as instruments to measure the audit surface, not as
+systems to crown a winner.
+
+\paragraph{Metrics.} Per-query \textbf{faithfulness} in the legacy
+audit tables means the stored automated support score in $[0,1]$;
+\textbf{hallucination} is the indicator that this score is $<0.5$
+unless a table explicitly states another label source. The frozen
+DeBERTa score averages sentence-level
+\texttt{cross-encoder/nli-deberta-v3-base} zero-shot entailment-label
+scores over generated answer sentences. The second automated score is a
+\texttt{roberta-large-mnli} zero-shot entailment-label proxy. In both
+legacy NLI-proxy implementations, the answer sentence is the sequence
+classified against the labels entailment/neutral/contradiction with
+\texttt{hypothesis\_template="\{\}"}; the retrieved context remains in
+the row but is not consumed by that proxy. The RAGAS-style judge is
+context-conditioned: local \texttt{Mistral-$7$B} receives the question,
+retrieved context, and answer and returns a support score on $[0,1]$
+with a short rationale. This implementation detail is precisely why
+scorer choice is an audit axis rather than a hidden detail.
+\textbf{Retrieval similarity} is the mean cosine similarity between the
+query and each retained chunk. \textbf{CCS} is the mean minus the
+standard deviation of off-diagonal pairwise cosine similarities between
+retained chunk embeddings under
+\texttt{sentence-transformers/all-MiniLM-L6-v2}. The answer-span
+indicator is whether any normalised gold-answer alias appears in the
+retrieved context (lowercased, punctuation-stripped,
+whitespace-normalised lexical match, no model).
+
+\paragraph{Statistical protocol.} The matched-context test is
+pre-registered with paired Wilcoxon and a $10{,}000$-resample
+bootstrap CI on the mean paired difference; the scaled audit reports
+seed-level paired Wilcoxon over five seeds; binary rates are reported
+with Wilson $95\%$ CIs; the answer-span/control models report bootstrap
+$95\%$ CIs on $R^2$ and AUROC. P-values outside the pre-registered
+primary matched tests are descriptive across multiple audit cells; we
+do not treat exploratory $p<0.05$ rows as standalone discoveries. All
+audit cells, paired contrasts, and per-query CSVs are included in the
+anonymized review artifact.
+
+\section{ControlledRAG: The Minimum Reporting Standard}
+\label{sec:controlledrag}
+
+The seven-axis executive summary appeared in \S\ref{sec:intro}. This
+section turns it into a reporting standard. For each axis, the author
+must report what was varied or held fixed, why the axis matters, and
+which overclaim the disclosure prevents.
+
+\begin{table}[!htb]
+\centering
+\caption{ControlledRAG seven-axis audit map. The table is a reporting
+standard, not a method prescription.}
+\label{tab:controlledrag_audit_map}
+\scriptsize
+\setlength{\tabcolsep}{2pt}
+\begin{tabular}{@{}p{0.12\linewidth}p{0.21\linewidth}p{0.21\linewidth}p{0.18\linewidth}p{0.17\linewidth}@{}}
+\toprule
+Axis & What to report & Why it matters & Evidence here & Overclaim prevented \\
+\midrule
+Generator & model family, size, decoding, fixed vs regenerated outputs &
+same context can yield generator-specific behavior & Mistral main audit; Qwen$2.5$ compact replication &
+generator-universal claims \\
+Retriever & embedder, index, reranker, refinement policy &
+retriever identity changes the context surface & MiniLM plus BGE/E5/GTE sanity checks &
+``retrieval quality'' as one variable \\
+Context structure & CCS, answer span, similarity, retained chunks &
+support and coherence can diverge & matched CCS null; span/control diagnostic &
+CCS as oracle or causal mediator \\
+Scorer & scorer names, input format, thresholds, correlations &
+same generations can produce scorer-dependent contrasts & three-scorer fixed-output audit &
+single-score faithfulness claims \\
+Human calibration & label protocol, raters, agreement, scorer alignment &
+automated scores are not reference labels & $n=99$ two-rater calibration &
+metric ranking as settled \\
+Threshold & tuned $\tau$, tune data, off-diagonal transfer &
+tuned policies may not transport & $5\times5$ transfer table &
+reusable threshold claims \\
+Cost & latency, indexing time, external-call assumptions, hardware &
+deployment rankings depend on resource costs & CRAG / HCPC-v$2$ / RAPTOR-$2$L &
+leaderboard without cost \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{enumerate}
+  \item \textbf{Generator.} Report the generator family, parameter
+        count, decoding settings, and whether outputs are fixed before
+        scoring or regenerated per condition. This prevents
+        Mistral-only conclusions from being read as generator-general
+        claims; the Qwen$2.5$ replication is a compact example, not a
+        complete generator panel.
+  \item \textbf{Retriever.} Report the embedding model, indexer,
+        reranker, and any post-retrieval refinement step. This prevents
+        MiniLM/BGE/E5 differences from being hidden under the word
+        ``retrieval''; stronger embeddings can change the retrieval
+        surface (\S\ref{sec:matched_ccs} and supplement).
+  \item \textbf{Context structure.} Report at least two context-set
+        diagnostics beyond per-passage similarity. CCS, mean query
+        similarity, and answer-span presence are jointly informative
+        (\S\ref{sec:matched_ccs}); this prevents coherence, similarity,
+        and answer support from being collapsed into one retrieval
+        quality number.
+  \item \textbf{Scorer.} Report at least two faithfulness scorers, their
+        input format, and a Pearson or Spearman cross-scorer
+        correlation. Raw score contrasts and standardized contrasts are
+        scorer-sensitive on the same fixed generations
+        (\S\ref{sec:metric_fragility}); this prevents single-metric
+        faithfulness claims.
+  \item \textbf{Human calibration.} Report a multi-rater reference human
+        label set, inter-rater agreement, and scorer correlation against
+        the reference labels (\S\ref{sec:human_cal}). Calibration is not
+        scorer endorsement; it prevents automatic metrics from being
+        treated as reference labels.
+  \item \textbf{Threshold transfer.} Report how any tuned threshold
+        $\tau$ transfers across datasets. Cross-dataset transfer is
+        uneven (\S\ref{sec:threshold_transfer}); this prevents a tuned
+        threshold from being presented as a reusable policy without
+        off-diagonal evidence.
+  \item \textbf{Cost.} Report latency, indexing time, and external-call
+        cost for every condition, including baselines. This prevents
+        method rankings that ignore deployment cost
+        (\S\ref{sec:cost}).
+\end{enumerate}
+
+The contribution is the standard, not any specific number. The rest of
+the paper supplies one matched, pre-registered self-application in
+which each empirical result motivates a required disclosure axis.
+
+\section{The Matched-Context Audit}
+\label{sec:matched_ccs}
+
+The matched-context audit asks the diagnostic question directly:
+\emph{at fixed mean per-passage query--passage similarity, does higher
+CCS predict higher faithfulness?} The null answer is not the end of the
+analysis. It creates a constructive diagnostic question: what variables
+distinguish answer support once mean similarity is fixed?
+
+\paragraph{Construction.} For SQuAD with Mistral, we form $200$
+HIGH/LOW pairs from the per-query audit data so that mean
+query--passage similarity is matched to within $0.02$ between members
+of a pair while CCS is large in HIGH and small in LOW. Mean similarity
+is $0.4236$/$0.4215$ across HIGH/LOW; mean CCS is $0.670$/$0.137$. The
+similarity Wilcoxon is significant only because the residual noise is
+two orders of magnitude smaller than the CCS gap, not because the
+similarity gap is meaningful in absolute terms.
+
+\paragraph{Result.} Table~\ref{tab:matched_ccs_main} reports the
+pre-registered HIGH--LOW contrast. The mean paired difference is
+$-0.002$, paired Wilcoxon $p = 0.628$, Cohen's $d_z = -0.017$,
+$10{,}000$-resample bootstrap $95\%$ CI $[-0.022, +0.017]$. The HIGH
+hallucination rate is also \emph{higher} than the LOW rate
+($16.5\%$ vs.\ $9.0\%$). The pre-registered $H_1$
+(HIGH$>$LOW faithfulness) is not supported in the audited cell. The
+continuous mean contrast and the thresholded hallucination contrast
+measure different parts of the score distribution, so a null mean can
+coexist with threshold-sensitive tail differences. The matched test
+rules out the simple HIGH-CCS-improves-faithfulness story in this
+audited cell.
+
+\begin{table}[!htb]
+\centering
+\caption{Matched-context audit on SQuAD/Mistral ($n{=}200$ pairs,
+matched mean query--passage similarity).}
+\label{tab:matched_ccs_main}
+\footnotesize
+\begin{tabular}{lcccc}
+\toprule
+Quantity & HIGH-CCS & LOW-CCS & Difference & Test \\
+\midrule
+Mean similarity & $0.4236$ & $0.4215$ & $+0.0021$ & matched by construction \\
+Mean CCS        & $0.670$  & $0.137$  & $+0.533$  & --- \\
+Faithfulness    & $0.636$  & $0.639$  & $-0.002$  & paired Wilcoxon $p=0.628$ \\
+Hallucination   & $16.5\%$ & $9.0\%$  & $+7.5$ pp & McNemar $p=0.011$ \\
+$95\%$ CI on faith diff & --- & --- & $[-0.022, +0.017]$ & $10{,}000$-resample bootstrap \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Span presence in matched contexts.} The first candidate is
+answer-bearing evidence.
+The lexical span detector finds the gold answer string more often in
+LOW-CCS contexts than in HIGH-CCS contexts ($27.0\%$ vs.\ $17.0\%$,
+McNemar $p=0.011$). This is itself a useful finding: under the
+matched-similarity construction, the structural property captured by
+CCS is not the same property as ``the retrieved context contains the
+answer''. The lexical span variable is also a weak proxy: a context can
+contain the answer string while failing to support the generated answer,
+and thresholded hallucination and mean score can diverge. ControlledRAG
+does not discard context structure; it decomposes it.
+
+\paragraph{Answer-span/control diagnostic.}
+Table~\ref{tab:span_control_main} extends the span check into a
+regression and classification panel on the matched cell ($n=400$
+contexts). We fit single-variable, two-variable, and three-variable
+models against (i) continuous DeBERTa faithfulness ($R^2$) and (ii) the
+binary hallucination indicator (AUROC).
+
+\begin{table}[!htb]
+\centering
+\caption{Answer-span/control diagnostic on the matched SQuAD/Mistral
+cell. $R^2$ is for continuous DeBERTa faithfulness; AUROC is for the
+binary hallucination label. Bootstrap $95\%$ CIs are in the
+supplement.}
+\label{tab:span_control_main}
+\footnotesize
+\begin{tabular}{lcc}
+\toprule
+Predictors & Faithfulness $R^2$ & Hallucination AUROC \\
+\midrule
+answer span present                       & $0.019$ & $0.531$ \\
+mean query similarity                     & $0.002$ & $0.586$ \\
+CCS                                       & $0.003$ & $0.639$ \\
+answer span $+$ similarity                & $0.024$ & $0.590$ \\
+answer span $+$ CCS                       & $0.022$ & $0.631$ \\
+answer span $+$ similarity $+$ CCS        & $\mathbf{0.025}$ & $\mathbf{0.643}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Interpretation.} Three patterns are robust within the
+audited cell. (i) For continuous faithfulness, answer-span presence is
+the strongest \emph{single} predictor. (ii) For binary hallucination,
+CCS is the strongest single predictor; the lexical span check is barely
+above chance. (iii) The full feature set has the highest score on both quantities.
+The $R^2$ values are small in absolute terms, so the table is not an
+explanatory model of faithfulness. Its value is comparative: answer
+support and context structure diagnose complementary failure modes, and
+a faithfulness claim is more informative when both are reported. We
+deliberately do not claim that either variable has a directional role, that
+span subsumes CCS, or that CCS subsumes span.
+
+\section{The Scaled Audit}
+\label{sec:scaling}
+
+The matched-context audit is intentionally local. The scaled audit
+asks the same headline question---does HCPC-v$1$ refinement reliably
+hurt faithfulness on SQuAD/Mistral?---at $n{=}2{,}500$ examples per
+condition with five seeds, with each seed analysed by paired Wilcoxon
+on $500$-pair contrasts.
+
+\paragraph{Result.} Table~\ref{tab:scaling_main} reports the headline
+table over the five seeds. The pooled means are
+$0.661 / 0.650 / 0.661$ for baseline / HCPC-v$1$ / HCPC-v$2$, with
+overlapping Wilson CIs on hallucination rate ($14.6\% / 14.7\% /
+14.3\%$). Per-seed paired Wilcoxon yields one of five seeds significant
+at $p<0.05$ for the baseline$-$HCPC-v$1$ contrast (seed 44, paired
+$p=0.008$); the other four seeds yield $p \in [0.083, 0.234]$. The
+v$2$$-$v$1$ contrast reaches significance in $3$ of $5$ seeds, but
+the magnitude is small (per-seed mean diff $0.003$--$0.019$).
+
+\begin{table}[!htb]
+\centering
+\caption{Scaled audit on SQuAD/Mistral, $n=2{,}500$ per condition,
+pooled across five seeds.}
+\label{tab:scaling_main}
+\footnotesize
+\begin{tabular}{lcccc}
+\toprule
+Condition & Faithfulness ($95\%$ CI) & Hallucination (Wilson) & Retrieval sim.\ & Refine rate \\
+\midrule
+Baseline   & $0.661 \, [0.655, 0.667]$ & $14.6\% \, [13.3, 16.0]$ & $0.532$ & $0.000$ \\
+HCPC-v$1$  & $0.650 \, [0.645, 0.656]$ & $14.7\% \, [13.4, 16.2]$ & $0.569$ & $1.000$ \\
+HCPC-v$2$  & $0.661 \, [0.655, 0.667]$ & $14.3\% \, [13.0, 15.7]$ & $0.532$ & $0.705$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Interpretation.} The original $n=30$ headline contrast
+($0.7995 \to 0.6407$) does not survive at scale. The scaled contrast on
+SQuAD/Mistral is small and seed-sensitive, and the headline should not
+be cited as a broad refinement-hurts-faithfulness claim. This finding
+is itself a ControlledRAG-style audit lesson: at $n=30$, the contrast
+looked clean enough to be reported as a phenomenon, but the contrast at
+$n=2{,}500$ rejects that reading without further controls. We treat the
+remaining audits as the controls, not as reasons to reverse the
+original claim.
+
+\section{Fixed-Generation Metric Fragility}
+\label{sec:metric_fragility}
+
+This section is the core empirical pillar for the scorer axis. For the
+scaled audit's $7{,}500$ Mistral rows, outputs are fixed before
+rescoring, retrieval condition is fixed, and the only changed component
+is the scorer. The three scorers are not guaranteed to be calibrated to
+the same numerical scale, so raw score differences are not interpreted
+as directly comparable causal estimates. The important claim is that
+the sign, magnitude, and ranking of the reported contrast are
+scorer-sensitive even on fixed generations. We then replicate the raw
+contrast compactly on a second generator (Qwen$2.5$) at $n=100$ fixed
+contexts per condition.
+
+\begin{table}[!htb]
+\centering
+\caption{Fixed-generation metric fragility. Raw values are
+baseline$-$HCPC-v$1$ score differences on each scorer's native scale.
+Mistral z/rank columns standardize each scorer over the same fixed rows
+before computing the paired contrast; bootstrap CIs are in the
+supplement.}
+\label{tab:metric_fragility_main}
+\footnotesize
+\begin{tabular}{lcccc}
+\toprule
+Scorer & Mistral raw & Mistral z & Mistral rank & Qwen$2.5$ raw \\
+\midrule
+DeBERTa proxy & $0.011$ & $0.071$ SD & $0.022$ & $0.015$ \\
+roberta-large-MNLI proxy & $0.032$ & $0.231$ SD & $0.062$ & $0.046$ \\
+RAGAS-style judge & $0.140$ & $0.337$ SD & $0.085$ & $0.134$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[!htb]
+\centering
+\caption{Cross-scorer correlations on fixed-generation rows.}
+\label{tab:metric_correlations_main}
+\footnotesize
+\begin{tabular}{lcccc}
+\toprule
+Metric pair & Mistral $r$ & Mistral $\rho$ & Qwen$2.5$ $r$ & Qwen$2.5$ $\rho$ \\
+\midrule
+DeBERTa vs.\ roberta-large-MNLI       & $0.259$ & $0.265$ & $0.380$ & $0.429$ \\
+DeBERTa vs.\ RAGAS-style              & $0.182$ & $0.212$ & $0.280$ & $0.318$ \\
+roberta-large-MNLI vs.\ RAGAS-style   & $0.674$ & $0.651$ & $0.721$ & $0.668$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Scorer implementations.} The DeBERTa and
+\texttt{roberta-large-mnli} rows are legacy zero-shot entailment-label
+proxies from the frozen artifact; the local RAGAS-style judge is the
+context-conditioned scorer. This is not a critique of any metric. It is
+the audit point: scorer model, prompt, input formatting, and threshold
+are part of the reported claim.
+
+\paragraph{Interpretation.} Scorer choice is, on this audit, the single
+largest movable quantity in the headline number. The human-calibration
+panel in the next section also shows that no scorer should be treated as
+an unqualified reference standard. Scorer choice is therefore an audit axis,
+not an implementation detail: ControlledRAG requires at least two
+scorers and a cross-scorer correlation to be reported. Scorer
+triangulation is not proof of correctness; it discloses how much of the
+reported number is scorer-dependent.
+
+\section{Human Calibration}
+\label{sec:human_cal}
+
+Two raters (one expert, one general-domain) independently label $99$
+matched-cell items with a faithful/hallucinated decision and a
+$0$--$1$ confidence score. We use rater~$1$'s labels as the reference
+human label set and rater~$2$'s labels as an independent reliability
+check; we do not collapse the two raters by majority or discussion
+(with two raters either procedure would be ill-defined). The supplement
+details the protocol.
+
+\paragraph{Agreement and correlation.} Raters reach Cohen's
+$\kappa = 0.774$ on the binary label, which is in the substantial-
+to high-agreement range for this kind of task. Spearman correlations
+between the rater-$1$ label set and the three automated scorers are
+$\rho_{\textrm{DeBERTa}} = 0.140$,
+$\rho_{\textrm{second NLI}} = 0.380$, and
+$\rho_{\textrm{RAGAS-style}} = 0.441$. Bootstrap $95\%$ CIs on the
+three correlations overlap, so the metric ranking is suggestive
+rather than settled.
+
+\paragraph{Interpretation.} Two human raters who reach substantial
+agreement still give an uneven picture of scorer alignment. The right
+reading is calibration, not scorer endorsement: the panel reports how
+well each scorer aligns with the reference human label set on this
+audited cell, and that alignment is uneven enough to merit explicit
+disclosure. ControlledRAG asks for this calibration as a routine
+reporting axis, not as a means of crowning one scorer.
+
+\section{Threshold Transfer}
+\label{sec:threshold_transfer}
+
+A faithfulness claim that depends on a tuned operating threshold $\tau$
+should report whether $\tau$ transfers across datasets. We sweep
+$\tau \in \{0.3, 0.4, 0.5, 0.6, 0.7\}$ for a CCS-gate retrieval
+intervention. For each tune dataset, $\tau^\ast$ is the threshold that
+maximises recovery on that dataset alone; diagonal recovery evaluates
+that $\tau^\ast$ on the same dataset, while off-diagonal recovery
+evaluates it on the other datasets. Recovery is a dimensionless
+normalised contrast,
+\[
+R_\tau(d)=
+\frac{\mathrm{faith}_{\mathrm{gate},\tau}(d) -
+      \mathrm{faith}_{\mathrm{HCPC}\text{-}v1}(d)}
+     {\mathrm{faith}_{\mathrm{baseline}}(d) -
+      \mathrm{faith}_{\mathrm{HCPC}\text{-}v1}(d)}.
+\]
+Values can exceed $1$ when the gate beats the baseline relative to
+HCPC-v$1$, and they can be negative or sign-inverted when the
+baseline$-$HCPC-v$1$ denominator is small or negative. We therefore use
+the table as a transport diagnostic, not as a universal utility score.
+A tuned threshold is not a reusable policy unless this off-diagonal
+transfer is reported.
+
+\begin{table}[!htb]
+\centering
+\caption{Threshold transfer summary. For each tune dataset, $\tau^\ast$
+is the value of $\tau$ that maximises recovery on that dataset alone;
+``diagonal recovery'' is recovery at $\tau^\ast$ on the same dataset;
+``off-diagonal mean'' is the mean recovery at $\tau^\ast$ over the four
+\emph{other} eval datasets. A large positive gap means the tuned
+$\tau^\ast$ does not transport. The full per-cell transfer matrix is
+in supplement \S 9.}
+\label{tab:threshold_transfer_main}
+\footnotesize
+\begin{tabular}{lcrrr}
+\toprule
+$\tau$ tuned on & $\tau^\ast$ & Diagonal recovery & Off-diagonal mean & Gap (diag $-$ off-diag) \\
+\midrule
+PubMedQA  & $0.4$ & $+1.452$ & $+0.451$ & $+1.002$ \\
+NaturalQs & $0.5$ & $+1.401$ & $+0.211$ & $+1.191$ \\
+SQuAD     & $0.3$ & $+0.823$ & $-0.141$ & $+0.963$ \\
+TriviaQA  & $0.4$ & $+0.464$ & $+0.698$ & $-0.234$ \\
+HotpotQA  & $0.3$ & $-0.112$ & $+0.093$ & $-0.205$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Interpretation.} PubMedQA, NaturalQuestions, and SQuAD show
+a positive diagonal-vs-off-diagonal gap large enough to flag: tuning
+$\tau$ on one of them and transporting it loses most of the
+on-diagonal normalized contrast. TriviaQA and HotpotQA show a negative
+gap; their $\tau^\ast$ does not win on their own data (HotpotQA's
+diagonal value is itself negative), so transport is moot. The
+supplement reports the full $5 \times 5$ per-cell matrix. ControlledRAG
+asks for the transfer table to be reported because per-cell normalized
+contrasts can change sign depending on which dataset $\tau$ is tuned
+on; we do not claim universal threshold failure from this one sweep.
+
+\section{Coherence vs.\ Generic Retrieval Noise}
+\label{sec:noise}
+
+A reasonable objection to any context-structure diagnostic is whether it
+is just a re-statement of generic retrieval noise. We test this by
+injecting controlled retrieval noise at three rates ($1/3$, $2/3$, and
+fully replaced) and comparing two noise types: random off-topic
+passages, and coherence-preserving uninformative passages (passages
+drawn from the same topic distribution that do not contain the answer).
+
+\paragraph{Result.} The faithfulness slope per noise rate is
+$-0.069$ for random noise and $-0.043$ for coherence-preserving
+uninformative noise. The similarity slope is much larger for random
+noise ($-0.481$ per noise rate) than for coherence-preserving noise
+($-0.113$), as expected. Coherence-preserving noise has a
+distinguishably smaller faithfulness drop at the same nominal
+substitution rate.
+
+\paragraph{Interpretation.} On this matched comparison, coherence
+carries some signal that is not captured by mean per-passage
+similarity. We do not claim that the gap is large in absolute terms,
+only that the two noise types produce distinguishable faithfulness
+slopes at matched substitution rate. The right reading is that
+coherence and similarity are correlated but not identical; ControlledRAG
+asks for both to be reported when a context-structure claim is made.
+
+\section{Cost-Aware Baselines}
+\label{sec:cost}
+
+Faithfulness numbers reported without latency and indexing cost are
+under-identified along the cost axis. This section is not a leaderboard;
+it is an identifiability test for deployment claims. We re-run a
+head-to-head on $n=200$ SQuAD and $n=200$ HotpotQA queries with three
+baselines: CRAG~\citep{yan2024crag}, HCPC-v$2$, and a $2$-level
+RAPTOR~\citep{raptor2024} index.
+
+\begin{table}[!htb]
+\centering
+\caption{Cost-aware head-to-head, $n=200$ per (dataset, condition).
+Latency is end-to-end per query. Indexing time is the offline cost of
+building the dataset's retrieval structure. Faithfulness CIs are
+bootstrap $95\%$ intervals; hallucination CIs are Wilson $95\%$
+intervals. RAPTOR-$2$L's indexing cost is $17$--$22\times$ the dense
+baseline's.}
+\label{tab:cost_main}
+\scriptsize
+\begin{tabular}{llcccc}
+\toprule
+Dataset & Condition & Faithfulness & Hallucination & Mean latency & Indexing \\
+\midrule
+SQuAD    & CRAG        & $0.698\,[0.675,0.722]$ & $12.0\%\,[8.2,17.2]$ & $1{,}440$ ms & $\phantom{1}8.0$ s \\
+SQuAD    & HCPC-v$2$   & $0.708\,[0.685,0.732]$ & $12.5\%\,[8.6,17.8]$ & $1{,}720$ ms & $\phantom{1}8.0$ s \\
+SQuAD    & RAPTOR-$2$L & $0.710\,[0.685,0.735]$ & $12.5\%\,[8.6,17.8]$ & $1{,}714$ ms & $175.4$ s \\
+HotpotQA & CRAG        & $0.643\,[0.627,0.658]$ & $10.5\%\,[7.0,15.5]$ & $1{,}941$ ms & $\phantom{1}8.0$ s \\
+HotpotQA & HCPC-v$2$   & $0.633\,[0.617,0.650]$ & $12.5\%\,[8.6,17.8]$ & $2{,}289$ ms & $\phantom{1}8.0$ s \\
+HotpotQA & RAPTOR-$2$L & $0.631\,[0.615,0.647]$ & $13.0\%\,[9.0,18.4]$ & $2{,}414$ ms & $134.0$ s \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Harness and cost accounting.} This is a closed, zero-dollar
+local/free-tier harness: local Ollama/Mistral generation, Chroma
+indexing, MiniLM cross-encoders, and no paid APIs. The CRAG
+reimplementation uses the documented evaluator/strip-refinement
+structure with live web search disabled, so its external-call count and
+external dollar cost are both zero in this cell. A live-web CRAG run
+would need to report web-call count, API cost, and network latency as a
+separate deployment setting.
+
+\paragraph{Self-RAG.} Self-RAG~\citep{asai2024selfrag} is reported in
+the supplement because its reflective decoding protocol violates the
+fixed-context assumption used in the main audit. ControlledRAG asks
+that any baseline of this kind be reported with its harness and
+excluded from head-to-head averages it cannot fairly support.
+
+\paragraph{Interpretation.} On SQuAD, all three systems are within
+$1.2$ percentage points on faithfulness with overlapping intervals;
+HCPC-v$2$ and RAPTOR-$2$L have the same hallucination rate while CRAG
+is numerically lower. On HotpotQA, CRAG is numerically strongest on
+faithfulness, hallucination, and latency in this small cell. RAPTOR-$2$L's offline
+indexing time is $17$--$22\times$ the dense baseline's. There is no
+method that is uniformly preferred once faithfulness, hallucination, latency, and
+indexing cost are considered, and ControlledRAG's cost axis exists
+precisely so that contrasts of this kind are reported rather than
+chosen.
+
+\section{Discussion}
+\label{sec:discussion}
+
+\paragraph{What survives.} The under-identification thesis is not a
+collection of negative results; it is the reason a reporting standard is
+needed. The matched intervention is null, the scaled headline is small
+and seed-sensitive, fixed-generation metric fragility changes raw and
+standardized reported contrasts, the threshold table has sign-changing
+cells, and
+the cost-aware head-to-head has no dominator. Each cell corresponds to a
+ControlledRAG axis. The positive contribution is a standard of evidence:
+RAG faithfulness claims should not be accepted from a single retrieval
+score, faithfulness scorer, tuned threshold, or favorable baseline row.
+
+\paragraph{What CCS is and is not.} CCS is one of several context-set
+diagnostics ControlledRAG asks for. It is not a faithfulness oracle,
+not a guarantee, and not a substitute for human evaluation or for
+cross-scorer triangulation. The matched-context audit rules out a
+clean directional mediating role for CCS in the audited cell. The
+answer-span/control diagnostic shows that span and CCS are
+complementary axes, with span carrying more continuous-faithfulness
+signal and CCS carrying more hallucination-AUROC signal. We report
+both; ControlledRAG asks readers to do likewise.
+
+\paragraph{Where the audit stops short.} Two visible gaps remain. The
+second-generator replication uses one local Qwen$2.5$ model, not a
+broad generator panel; the long-form stress test on QASPER and MS-MARCO
+has only $40$ distinct questions and is supplement-only. We report both
+gaps as part of the audit because the standard is meant to make scope
+visible, not to hide it.
+
+\section{Related Work, Continued}
+\label{sec:related}
+
+Beyond the RAG-evaluation context in \S\ref{sec:bg}, this paper sits
+next to a small but growing literature on RAG \emph{evaluation
+methodology}. \citet{honovich2022true} re-evaluate factual-consistency
+evaluation broadly and conclude that no single NLI-based scorer is
+universally preferred; ControlledRAG's metric-fragility axis is the
+operational consequence of that conclusion for RAG.
+\citet{es2024ragas} propose RAGAS as a metric suite; we use a
+RAGAS-style judge as one of three scorers and treat its disagreement
+with NLI scorers as evidence for the standard, not as a critique of
+RAGAS.
+
+\begin{table}[!htb]
+\centering
+\caption{Positioning against recent RAG evaluation work.}
+\label{tab:related_positioning}
+\scriptsize
+\begin{tabular}{p{0.17\linewidth}p{0.36\linewidth}p{0.36\linewidth}}
+\toprule
+Work & Primary contribution & ControlledRAG relation \\
+\midrule
+ARES~\citep{saadfalcon2024ares} & trained judges for context relevance, answer faithfulness, and answer relevance with PPI calibration & complementary evaluator; ControlledRAG asks whether claims survive scorer/retriever/generator choices \\
+RAGChecker~\citep{ru2024ragchecker} & fine-grained retrieval and generation diagnostics for RAG systems & complementary metric framework; ControlledRAG is the disclosure layer around such diagnostics \\
+RAGTruth~\citep{niu2024ragtruth} & manually annotated hallucination corpus with word-level labels & complementary benchmark; ControlledRAG asks how benchmark conclusions transport across audit axes \\
+MIRAGE~\citep{park2025mirage} & RAG benchmark with component-specific metrics and adaptability probes & complementary benchmark; ControlledRAG emphasizes reporting hidden degrees of freedom \\
+FaithJudge~\citep{tamber2025faithjudge} & LLM-as-judge faithfulness benchmark and evolving leaderboard & complementary scorer/leaderboard; ControlledRAG requires scorer calibration and cross-scorer disclosure \\
+RAGAS / TRUE / SummaC~\citep{es2024ragas,honovich2022true,laban2022summac} & reference-free or NLI-style factual-consistency metrics & metrics used as audit inputs, not treated as reference standards \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Limitations and Ethics}
+\label{sec:limits}
+
+\paragraph{Audited surface.} The audited cells are mostly short-answer
+extractive QA on SQuAD with $7$B-class generators. The matched-context
+audit is on SQuAD only. The conclusions are scoped to that surface.
+Stronger embeddings (BGE-large, E5-large) preserve the matched
+HIGH$>$LOW CCS ordering but the fixed-generation result remains null
+because the generations are unchanged; the supplement reports the
+multi-retriever generation table as a sanity check, not as exhaustive
+robustness.
+
+\paragraph{Generators.} The second-generator replication uses one
+local Qwen$2.5$ model at $n=100$ fixed contexts per condition. The
+metric-fragility ordering is preserved, but ControlledRAG explicitly
+asks for a broader generator panel before any universal-generator claim
+can be made. We do not make that claim here.
+
+\paragraph{Long-form scope.} The QASPER/MS-MARCO long-form stress test
+has $40$ distinct questions and is included only as an exploratory
+scope probe in the supplement. The short-answer paradox does not
+generalise cleanly to that small long-form sample (MS-MARCO span-faith
+paradox drop $-0.033$, QASPER $0.002$). This is reported as a scope
+limit, not as broad long-form generalization evidence.
+
+\paragraph{Human evaluation.} Two raters at $n=99$ is calibration, not
+a settled scorer ranking. Bootstrap CIs on the Spearman correlations
+overlap; the human ranking is suggestive only.
+
+\paragraph{Self-RAG harness.} The Self-RAG~\citep{asai2024selfrag}
+appendix baseline runs in a harness mismatched with the audit's
+fixed-context protocol. We report the row in the supplement and
+exclude it from head-to-head averages. We explicitly do not generalize
+from this mismatched harness to Self-RAG overall.
+
+\paragraph{Ethics.} The audit uses public datasets and free-tier or
+local compute. No human-subjects data is collected beyond the two-rater
+calibration panel, which is not personally identifiable and does not
+involve sensitive content. The review artifact is anonymized; public
+release links will follow acceptance.
+
+\paragraph{Scope as a feature.} These limitations are precisely the
+axes ControlledRAG asks future papers to disclose. Our evidence is
+deliberately scoped, and the standard makes that scope explicit.
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+A RAG faithfulness claim should not be a single number tied to a single
+scorer, retriever, generator, threshold, or baseline. The audit
+experiments in this paper, taken together, show that under any one of
+those collapsed axes the reported headline can move materially.
+The positive contribution is a prescriptive minimum reporting standard,
+ControlledRAG, that names the seven axes a faithfulness claim has to
+report together, and demonstrates the standard by self-applying it to
+our own prior contribution. ControlledRAG turns RAG faithfulness
+evaluation from a single-score claim into a seven-axis auditable
+evidence standard.

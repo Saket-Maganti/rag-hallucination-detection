@@ -1,0 +1,30 @@
+RAG faithfulness claims are often reported from one retriever, one
+generator, one scorer, one threshold, and one dataset. We show that
+such claims are under-identified: the same fixed generations can support
+different reported contrasts depending on which reasonable audit axis is
+exposed. In $7{,}500$ fixed Mistral generations, one intervention has
+raw score contrasts $0.011$, $0.032$, and $0.140$ under DeBERTa, a
+second NLI-style proxy, and a local RAGAS-style judge; after z-scoring
+each scorer over the same rows, the contrasts remain separated
+($0.071$, $0.231$, $0.337$ SD). A compact $n{=}100$ Qwen$2.5$
+replication preserves the raw-contrast ordering ($0.015$, $0.046$,
+$0.134$). A $99$-example two-rater human calibration reaches
+Cohen's $\kappa = 0.774$, while scorer alignment with the reference
+human label set is uneven (Spearman $0.140 / 0.380 / 0.441$) and not
+settled. The proposed CCS explanation also does not survive a matched
+context test: in $200$ HIGH/LOW CCS pairs at fixed mean query--passage
+similarity, HIGH--LOW faithfulness is $-0.002$ ($p = 0.628$, $95\%$ CI
+$[-0.022, 0.017]$), while answer-span presence and CCS carry
+complementary diagnostic signal. At scale, the SQuAD/Mistral
+baseline / HCPC-v$1$ / HCPC-v$2$ cell shrinks to $0.661 / 0.650 /
+0.661$ over $2{,}500$ examples per condition; a $5\times5$
+threshold-transfer table has sign-changing cells; and a cost-aware
+head-to-head across CRAG, HCPC-v$2$, and RAPTOR-$2$L produces no
+dominating system. We distill these results into
+\textbf{ControlledRAG}, a reusable audit protocol and prescriptive
+minimum reporting standard whose seven axes are generator, retriever,
+context structure, scorer, human calibration, threshold transfer, and
+cost. The anonymized artifact contains auditable per-query outputs,
+matched context pairs, source tables, scripts, and supplement traces.
+ControlledRAG turns RAG faithfulness from a single-score claim into an
+auditable, seven-axis evidence standard.
