@@ -4,12 +4,14 @@
 % POLISH FIX 4: Moved Self-RAG out of the main matched-harness table/figure
 % and into the appendix because its backbone, quantization, fine-tuning, and
 % reflection-oriented outputs make it a harness-mismatched comparison.
-We compare HCPC-v2, CRAG \citep{yan2024crag}, RAPTOR-2L
-\citep{raptor2024} in a matched short-answer harness. Self-RAG
-\citep{asai2024selfrag} is reported separately in the supplement: its
-released fine-tuned Llama-2-7B
-checkpoint, 8-bit inference path, reflective decoding behavior, and
-entailment-style scoring make that comparison harness-conditional.
+This section is not a leaderboard. It asks whether a deployment-level
+preference remains identifiable once p99 latency and offline indexing cost
+are reported alongside faithfulness and hallucination. We compare HCPC-v2,
+CRAG \citep{yan2024crag}, and RAPTOR-2L \citep{raptor2024} in a matched
+short-answer harness. Self-RAG \citep{asai2024selfrag} is reported separately
+in the supplement: its released fine-tuned Llama-2-7B checkpoint, 8-bit
+inference path, reflective decoding behavior, and entailment-style scoring
+make that comparison harness-conditional.
 
 \begin{figure}[H]
 \centering
@@ -49,7 +51,9 @@ faithfulness and lower in p99 latency. On HotpotQA, CRAG has higher
 faithfulness, lower hallucination, and lower latency. Self-RAG numbers are in
 the supplement; a fair evaluation requires a scoring protocol that accounts
 for reflective decoding rather than treating every extra token as ordinary
-answer content.
+answer content. The preferred matched-harness method changes once dataset
+and cost axes are included, so a single-row deployment claim is not
+identified by this evidence.
 
 \begin{table}[H]
 \centering

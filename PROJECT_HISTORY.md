@@ -301,3 +301,72 @@ What changed:
 - Added `docs/project/REORGANIZATION_REPORT.md`.
 
 See `docs/project/REORGANIZATION_REPORT.md` for validation status and git push metadata.
+
+## 18. 2026-04-29 Prescriptive ControlledRAG Polish
+
+Polish run date: 2026-04-29.
+
+Goal: address senior-reviewer / professor feedback that the paper risked
+being read as a collection of negative results. ControlledRAG was sharpened
+into an explicit prescriptive minimum reporting standard for RAG faithfulness
+audits, while preserving every verified value, rejected hypothesis, and
+forbidden-claim rule.
+
+What changed in `papers/neurips/`:
+
+- `sections/protocol.tex`: added `\paragraph{ControlledRAG as a minimum
+  reporting standard.}` (`\label{sec:controlledrag_standard}`) so the
+  prescriptive framing has a named anchor used by the discussion and
+  conclusion.
+- `sections/matched_similarity.tex`: added an identifiability bridge
+  clarifying that the matched CCS null does not imply context structure is
+  irrelevant; it shows coherence alone is insufficient and points forward to
+  the separable reporting axes.
+- `sections/cost_baselines.tex`: opens with "this section is not a
+  leaderboard" and closes with the identifiability message that the
+  preferred matched-harness method changes once dataset and cost axes are
+  included.
+- `sections/discussion.tex`: extended the "what can and cannot be claimed"
+  ledger with an explicit pointer to `sec:controlledrag_standard` for future
+  RAG faithfulness papers.
+- `sections/conclusion.tex`: final sentence promotes ControlledRAG from
+  operational deliverable to prescriptive minimum standard of evidence.
+- `sections/related_work.tex`: condensed the three-paragraph related-work
+  block into one paragraph to free vertical space; every previously cited
+  reference is preserved.
+- `sections/limitations_ethics.tex`: merged short-answer scope and CCS scope,
+  and merged Self-RAG and large-model reproduction limitations, freeing
+  additional vertical space.
+- `sections/metric_fragility.tex`, `sections/introduction.tex`: minor
+  compression to keep the body+references inside the 10-page envelope.
+- `CLAIMS_AUDIT.md`: added prescriptive ControlledRAG entry to allowed
+  claims; added "ControlledRAG certifies faithful RAG outputs" and
+  "ControlledRAG validates any single faithfulness scorer" to forbidden
+  claims.
+- `SOURCE_TRACE.md`: added a row for `sec:controlledrag_standard` mapping
+  the seven-item minimum reporting standard to the section sources.
+- `SUBMISSION_CHECKLIST.md`: added explicit ControlledRAG-prescriptive,
+  metric-fragility-central, human-calibration-as-calibration, cost-as-
+  identifiability, and matched-CCS-bridge items.
+- `README.md`: added a "ControlledRAG: a prescriptive minimum standard"
+  section, plus blocks describing where source data lives, how to verify
+  the human evaluation, how to verify the artifact package, and what is
+  anonymized for review.
+- `main.pdf` and `supplement.pdf` rebuilt; `main_submission.pdf` and
+  `supplement_submission.pdf` refreshed.
+
+Verification status:
+
+- Main PDF: 10 pages including references; PDF metadata blank for Title,
+  Subject, Keywords, and Author.
+- Supplement PDF: 2 pages; metadata blank.
+- Dangerous-language scan: every match in §sections is a rejected hypothesis,
+  limitation, descriptive method name, or table label.
+- Double-blind scan: no author identifiers, no local paths, no
+  acknowledgments, no thanks, no camera-ready text in `main.tex`,
+  `supplement.tex`, `references.bib`, or any of `sections/*.tex`.
+- All verified numbers preserved: matched CCS null (HIGH-LOW = -0.002,
+  p = 0.628, 95% CI [-0.022, 0.017]), HIGH/LOW hallucination 16.5%/9.0%,
+  span presence 27.0%/17.5% with McNemar p=0.011, intervention magnitudes
+  0.011/0.032/0.140, human eval n=99 / kappa=0.774 / Spearman 0.140/0.380/
+  0.441.

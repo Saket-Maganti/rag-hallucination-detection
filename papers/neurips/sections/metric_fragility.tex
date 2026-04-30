@@ -49,17 +49,14 @@ Second NLI / RAGAS-style judge & 0.674 [0.661, 0.686] & 0.651 [0.638, 0.665] \\
 \end{tabular}
 \end{table}
 
-This is the central positive result. The DeBERTa-measured effect is
-small; the second NLI effect is moderate; the RAGAS-style judge effect is
-roughly an order of magnitude larger than DeBERTa's. Because DeBERTa and
-the RAGAS-style judge correlate weakly on identical generations, the
-disagreement is not a monotone rescaling. The
-\S\ref{sec:human_calibration} human calibration shows that none of the
-three scorers is strongly aligned with adjudicated support, so the
-disagreement cannot be resolved by privileging the scorer with the
-largest measured effect: evaluator choice changes the empirical
-conclusion, and no single automatic observer in this audit cleanly
-adjudicates that choice.
+This is the central positive result. The DeBERTa-measured effect is small;
+the second NLI effect is moderate; the RAGAS-style judge effect is roughly an
+order of magnitude larger. Because DeBERTa and the RAGAS-style judge correlate
+weakly on identical generations, the disagreement is not a monotone rescaling.
+The \S\ref{sec:human_calibration} human calibration shows none of the three
+scorers is strongly aligned with adjudicated support, so evaluator choice
+changes the empirical conclusion and no single automatic observer in this
+audit cleanly adjudicates the choice.
 
 \subsection{Human Calibration of Metric Disagreement}
 \label{sec:human_calibration}

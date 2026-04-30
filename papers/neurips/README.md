@@ -15,6 +15,23 @@ retrieval scores, context-set structure, metric choice, human calibration,
 threshold transfer, and cost are audited separately. It does not claim that CCS
 causes faithfulness or that HCPC-v2 is a deployment solution.
 
+## ControlledRAG: a prescriptive minimum standard
+
+ControlledRAG is offered as the minimum standard of evidence for making RAG
+faithfulness claims. A faithfulness claim that omits any of the following
+axes is treated as under-identified:
+
+1. Paired query-level contrasts with bootstrap intervals.
+2. Local query-passage similarity and at least one set-level context statistic.
+3. Multiple faithfulness scorers.
+4. A small human calibration whenever automatic scorers disagree.
+5. Threshold transfer across datasets.
+6. Hallucination rates with Wilson intervals.
+7. Mean latency, p99 latency, and offline indexing cost.
+
+ControlledRAG operationalizes this standard. It does not certify faithful
+outputs and it does not crown a single faithfulness metric.
+
 ## Important Files
 
 - `main.tex`: 10-page main paper source.
@@ -45,6 +62,42 @@ pdflatex -interaction=nonstopmode main.tex
 pdflatex -interaction=nonstopmode supplement.tex
 pdflatex -interaction=nonstopmode supplement.tex
 ```
+
+## Where source data lives
+
+- `source_tables/`: CSVs and checksums used directly by the paper tables.
+- `../../results/revision/fix_*/`: per-fix scored outputs.
+- `../../data/revision/fix_*/`: per-query inputs and human-eval rater files.
+
+## Verify the human evaluation
+
+```bash
+python3 ../../scripts/verify_human_eval.py
+```
+
+The script recomputes the 99-example two-rater agreement, Cohen's kappa,
+adjudicated label distribution, and metric/label correlations from the raw
+rater and adjudication CSVs. The 2026-04-29 verification artifact is
+`../../results/revision/fix_03/human_eval_verification.md`.
+
+## Verify the artifact package
+
+The double-blind artifact directory `anonymized_artifact_package/` ships with
+`MANIFEST.txt` and `CHECKSUMS.sha256`. Re-verify with:
+
+```bash
+cd anonymized_artifact_package
+shasum -a 256 -c CHECKSUMS.sha256
+```
+
+## What is anonymized for review
+
+Author name, email, personal repository links, dataset username, public DOIs,
+acknowledgments, and thanks sections are stripped from `main.tex` and
+`supplement.tex`. Public author-identifying URLs are replaced with
+`[anonymized repository]`, `[anonymized dataset]`, and `[anonymized DOI]` in
+the supplement. Build logs are excluded from upload because they contain
+local TeX cache paths.
 
 Or from the repository root:
 

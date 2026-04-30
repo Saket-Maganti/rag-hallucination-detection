@@ -4,7 +4,7 @@
   this repository. TODO: Replace fallback or temporary style with official
   `neurips_2026.sty` before final submission.
 - [x] Main PDF compiles. Current build: `main.pdf`, 10 pages including
-  references.
+  references (rebuilt 2026-04-29 after the prescriptive ControlledRAG pass).
 - [x] Supplement PDF compiles. Current build: `supplement.pdf`, 2 pages,
   appendix separated from the main paper.
 - [x] Double-blind anonymization applied in `main.tex` and `supplement.tex`.
@@ -24,6 +24,17 @@
 - [x] Self-RAG checksums verified against supplement Table 3.
 - [x] No dangerous CCS/HCPC causal or dominance language in the paper except
   rejected-hypothesis and limitation contexts.
+- [x] ControlledRAG framed as a prescriptive minimum reporting standard in
+  abstract, introduction (§1 seven-item list), protocol (§3.1
+  `sec:controlledrag_standard`), discussion (§10), and conclusion (§13).
+- [x] Metric fragility named as the central positive result in abstract,
+  introduction, and §6 metric-fragility section.
+- [x] Human evaluation framed as calibration of metric disagreement, not
+  validation of any scorer, in abstract, introduction, §6.1, and limitations.
+- [x] Cost-aware baseline section opens and closes with identifiability framing
+  rather than a method-ranking claim.
+- [x] Matched CCS null is followed by an identifiability bridge clarifying
+  that context structure is not irrelevant; coherence alone is insufficient.
 - [x] Independent 70B rerun limitation disclosed.
 - [x] No paid API claims in the revision evidence.
 - [ ] NeurIPS checklist included. Add the official checklist when the venue

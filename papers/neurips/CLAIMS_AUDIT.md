@@ -19,6 +19,7 @@ paper's safe thesis is:
 | Threshold transfer is uneven. | Table `tab:tauflags` | `results/revision/fix_04/generalization_flags.csv`; `results/revision/fix_04/tau_transfer_matrix.csv` | SQuAD, PubMedQA, and NaturalQuestions show diagonal-vs-off-diagonal gaps greater than 0.03. TriviaQA and HotpotQA do not flag. |
 | No matched-harness tested method has one deployment ordering across dataset/cost surfaces. | Figure `fig:pareto_p99`; Tables `tab:h2h`, `tab:raptorcost` | `results/revision/fix_06/h2h_summary_full_selfrag.csv`; `data/revision/fix_06/per_query_full_selfrag.csv`; `results/revision/fix_11/raptor_full_table.csv` | SQuAD faithfulness: RAPTOR-2L 0.710022, HCPC-v2 0.708378, CRAG 0.698205. HotpotQA: CRAG 0.643152 beats HCPC-v2 0.632306 and RAPTOR-2L 0.630825 with lower hallucination and lower p99 latency. RAPTOR tree build is 99.740-161.203 s. Self-RAG is separated into a harness-mismatched supplement table and is not used for the matched-harness ordering claim. |
 | ControlledRAG is a reusable audit protocol. | Table `tab:controlledrag_protocol` | `experiments/fix_01_log.md` through `experiments/fix_06_log.md`; `experiments/fix_11_log.md`; `docs/revision/runbook.md` | The protocol combines matched similarity, multi-seed scaling, fixed-generation multi-metric and human-calibrated scoring, threshold transfer, coherent-vs-random noise, and cost-aware baseline auditing. |
+| ControlledRAG is a prescriptive minimum reporting standard for RAG faithfulness audits. | §1 minimum reporting standard list; §3.1 `sec:controlledrag_standard`; §10 discussion; §13 conclusion | `papers/neurips/sections/introduction.tex`; `papers/neurips/sections/protocol.tex`; `papers/neurips/sections/discussion.tex`; `papers/neurips/sections/conclusion.tex` | The paper recommends the seven-item standard (paired contrasts with bootstrap intervals, local query-passage similarity plus a context-set statistic, multiple faithfulness scorers, human calibration when scorers disagree, threshold transfer across datasets, hallucination rates with Wilson intervals, mean and p99 latency plus offline indexing cost) as the minimum admissible evidence for a RAG faithfulness claim; ControlledRAG operationalizes that standard but does not certify faithful outputs. |
 
 ## Forbidden Claims
 
@@ -35,4 +36,6 @@ rejected hypothesis, limitation, or forbidden-language reminder:
 - Self-RAG is globally weak.
 - Human evaluation definitively settles faithfulness metric validity.
 - The benchmark certifies faithful RAG outputs.
+- ControlledRAG certifies faithful RAG outputs.
+- ControlledRAG validates any single faithfulness scorer.
 - This is submission-ready if style, checklist, and page count are not fixed.

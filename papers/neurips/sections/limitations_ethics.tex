@@ -3,10 +3,13 @@
 
 % POLISH FIX 4/P2-B: Reframed Self-RAG as harness-mismatched and clarified
 % that earlier large-model observations are not central revision evidence.
-\paragraph{Short-answer scope.}
-The main evidence concerns short-answer extractive QA. It should not be used
-to claim the same behavior in long-form synthesis, agentic workflows, or
-domain-specific retrieval without additional controls.
+\paragraph{Scope.}
+The main evidence concerns short-answer extractive QA on SQuAD/Mistral and
+should not be used to claim the same behavior in long-form synthesis, agentic
+workflows, or domain-specific retrieval without additional controls. The
+matched-similarity test rejects the strong CCS interpretation in that setting
+but does not exhaust all context-structure hypotheses; threshold transfer is
+also uneven, so thresholded policies should report off-diagonal behavior.
 
 \paragraph{Human calibration and judge bias.}
 The human evaluation has 99 examples, two raters, and adjudicated labels: it
@@ -15,22 +18,12 @@ validate any faithfulness metric. The RAGAS-style judge is local and
 zero-dollar, but may share family-level biases with the generator; the stronger
 conclusion is metric fragility, not that the judge is universally correct.
 
-\paragraph{CCS and threshold scope.}
-The matched-similarity test is a single-domain causal test on SQuAD/Mistral.
-It rejects the strong CCS interpretation in that setting; it does not exhaust
-all possible context-structure hypotheses. Threshold transfer is also uneven,
-so thresholded policies should report off-diagonal behavior.
-
-\paragraph{Self-RAG harness fairness.}
-Self-RAG is a harness-mismatched appendix baseline because it uses a different
-backbone, quantization path, and reflective decoding objective than the
-Mistral-backed methods in the main table. Its measured behavior should not be
-read as a global statement about Self-RAG.
-
-\paragraph{Large-model reproduction.}
-The pilot's 70B and 120B observations are not re-verified under the zero-dollar
-revision constraint and therefore are not treated as central evidence; they
-are not contradicted by the audit.
+\paragraph{Self-RAG and large-model reproduction.}
+Self-RAG is a harness-mismatched appendix baseline (different backbone,
+quantization, and reflective decoding objective); its numbers should not be
+read as a global statement about Self-RAG. The pilot's 70B and 120B
+observations are not re-verified under the zero-dollar revision constraint and
+are therefore not treated as central evidence.
 
 \paragraph{Ethics.}
 The audit is intended to reduce overclaims about faithful RAG systems. The
